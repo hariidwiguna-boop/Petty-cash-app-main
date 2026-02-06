@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  StyleSheet, 
-  Platform, 
-  ActivityIndicator,
-  Dimensions,
+import {
+    View,
+    Text,
+    ScrollView,
+    StyleSheet,
+    Platform,
+    ActivityIndicator,
+    Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -53,9 +53,9 @@ export default function ReportsScreen() {
 
     const generateReport = async () => {
         if (!startDate || !endDate) { showModal("Error", "Pilih tanggal", "error"); return; }
-        
+
         setIsLoading(true);
-        
+
         try {
             // Fetch data from all sources
             const [kasMasukResult, transactionsKeluarResult, transactionsMasukResult] = await Promise.all([
@@ -63,23 +63,23 @@ export default function ReportsScreen() {
                 supabase.from("transactions").select("*, outlets(nama_outlet)").eq("tipe", "Kas Keluar").gte("tanggal", startDate).lte("tanggal", endDate),
                 supabase.from("transactions").select("*, outlets(nama_outlet)").eq("tipe", "Kas Masuk").gte("tanggal", startDate).lte("tanggal", endDate)
             ]);
-            
+
             // Combine data with proper mapping
             const allData = [
                 ...(kasMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: item.jumlah })),
                 ...(transactionsKeluarResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Keluar" })),
                 ...(transactionsMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk" }))
             ].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
-            
+
             setReport(allData);
-            
+
             // Calculate totals
             let m = 0, k = 0;
-            allData?.forEach(tx => { 
-                tx.tipe === "Kas Keluar" ? k += tx.grand_total : m += tx.grand_total; 
+            allData?.forEach(tx => {
+                tx.tipe === "Kas Keluar" ? k += tx.grand_total : m += tx.grand_total;
             });
             setTotals({ masuk: m, keluar: k, saldo: m - k });
-            
+
         } catch (error: any) {
             showModal("Error", error.message, "error");
         } finally {
@@ -93,7 +93,7 @@ export default function ReportsScreen() {
 
         try {
             showModal("Info", "Mengambil data transaksi...", "info");
-            
+
             // 1. Fetch data from all sources
             const [kasMasukResult, transactionsKeluarResult, transactionsMasukResult] = await Promise.all([
                 supabase
@@ -137,21 +137,21 @@ export default function ReportsScreen() {
 
             // 2. Combine and standardize data
             const allTransactions = [
-                ...kasMasukData.map((item: any) => ({ 
-                    ...item, 
-                    tipe: "Kas Masuk", 
-                    grand_total: item.jumlah, 
-                    source_table: "kas_masuk" 
+                ...kasMasukData.map((item: any) => ({
+                    ...item,
+                    tipe: "Kas Masuk",
+                    grand_total: item.jumlah,
+                    source_table: "kas_masuk"
                 })),
-                ...transactionsKeluarData.map((item: any) => ({ 
-                    ...item, 
-                    tipe: "Kas Keluar", 
-                    source_table: "transactions" 
+                ...transactionsKeluarData.map((item: any) => ({
+                    ...item,
+                    tipe: "Kas Keluar",
+                    source_table: "transactions"
                 })),
-                ...transactionsMasukData.map((item: any) => ({ 
-                    ...item, 
-                    tipe: "Kas Masuk", 
-                    source_table: "transactions" 
+                ...transactionsMasukData.map((item: any) => ({
+                    ...item,
+                    tipe: "Kas Masuk",
+                    source_table: "transactions"
                 }))
             ];
 
@@ -218,7 +218,7 @@ export default function ReportsScreen() {
 
             // 7. Add Outlet Sheets (limit to first 3 outlets to prevent timeout)
             const outletNames = Object.keys(transactionsByOutlet).slice(0, 3);
-            
+
             for (const outletName of outletNames) {
                 const txs = transactionsByOutlet[outletName];
 
@@ -275,9 +275,9 @@ export default function ReportsScreen() {
             // 8. Write File - handle web and mobile differently
             const wbout = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
             const fileName = `Laporan_PettyCash_${startDate}_sd_${endDate}.xlsx`;
-            
+
             showModal("Success", "Export berhasil! File akan diunduh.", "success");
-            
+
             if (Platform.OS === 'web') {
                 // Web: Create download link
                 const uri = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + wbout;
@@ -317,8 +317,8 @@ export default function ReportsScreen() {
         title: string; value: number; icon: string; color: string; trend?: string;
     }) => {
         return (
-            <GlassCard 
-                floating={true} 
+            <GlassCard
+                floating={true}
                 elevation="heavy"
                 style={styles.summaryCard}
             >
@@ -360,7 +360,7 @@ export default function ReportsScreen() {
                             <Text style={styles.rowOutlet}>{tx.outlets?.nama_outlet}</Text>
                         </View>
                         <Text style={[
-                            styles.rowAmount, 
+                            styles.rowAmount,
                             tx.tipe === "Kas Keluar" ? { color: "#ef4444" } : { color: "#10b981" }
                         ]}>
                             {tx.tipe === "Kas Keluar" ? "-" : "+"}{formatCurrency(tx.grand_total)}
@@ -375,112 +375,115 @@ export default function ReportsScreen() {
         <SafeAreaView style={styles.container}>
             {/* Background Gradient */}
             <LinearGradient
-                colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
+                colors={['#1e293b', '#0f172a']}
                 style={StyleSheet.absoluteFillObject}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
             />
 
-            {/* Header Section */}
-            <GlassCard elevation="extreme" style={styles.headerCard}>
-                <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>
-                        📊 Premium Reports
-                    </Text>
-                    <View style={styles.datePickerContainer}>
-                        <View style={styles.datePickerWrapper}>
-                            <PlatformDatePicker
-                                label="Dari"
-                                value={startDate ? new Date(startDate) : new Date()}
-                                onChange={(d) => setStartDate(d.toISOString().split('T')[0])}
-                            />
-                        </View>
-                        <View style={styles.datePickerWrapper}>
-                            <PlatformDatePicker
-                                label="Sampai"
-                                value={endDate ? new Date(endDate) : new Date()}
-                                onChange={(d) => setEndDate(d.toISOString().split('T')[0])}
-                            />
-                        </View>
-                    </View>
-                    
-                    {/* Action Buttons */}
-                    <View style={styles.actionContainer}>
-                        <GlassButton
-                            variant="primary"
-                            onPress={generateReport}
-                            loading={isLoading}
-                            particles={true}
-                            particleTrigger="onPress"
-                            fullWidth
-                        >
-                            {isLoading ? 'Loading...' : '📊 Generate View'}
-                        </GlassButton>
-                        <GlassButton
-                            variant="secondary"
-                            onPress={generateExcelReport}
-                            loading={isExporting}
-                            particles={true}
-                            particleTrigger="onPress"
-                            fullWidth
-                        >
-                            {isExporting ? 'Loading...' : '📥 Export Excel'}
-                        </GlassButton>
-                    </View>
-                </View>
-            </GlassCard>
-
-            {/* Summary Cards */}
-            <View style={styles.summaryContainer}>
-                <AnimatedSummaryCard
-                    title="Kas Masuk"
-                    value={totals.masuk}
-                    icon="trending-up"
-                    color="#10b981"
-                    trend="+12.5%"
-                />
-                <AnimatedSummaryCard
-                    title="Kas Keluar"
-                    value={totals.keluar}
-                    icon="trending-down"
-                    color="#ef4444"
-                    trend="-8.3%"
-                />
-                <AnimatedSummaryCard
-                    title="Saldo Net"
-                    value={totals.saldo}
-                    icon="wallet"
-                    color={totals.saldo >= 0 ? "#10b981" : "#ef4444"}
-                    trend="+5.7%"
-                />
-                <AnimatedSummaryCard
-                    title="Total Transaksi"
-                    value={report.length}
-                    icon="receipt"
-                    color="#3b82f6"
-                    trend="+15"
-                />
-            </View>
-
-            {/* Data Table */}
-            <ScrollView 
-                style={styles.scrollContainer}
-                showsVerticalScrollIndicator={false}
+            <ScrollView
+                style={styles.mainScroll}
                 contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
             >
-                <GlassDataTable />
-            </ScrollView>
+                {/* Header Section */}
+                <GlassCard elevation="extreme" style={styles.headerCard}>
+                    <View style={styles.headerContent}>
+                        <Text style={styles.headerTitle}>
+                            📊 Premium Reports
+                        </Text>
+                        <View style={styles.datePickerContainer}>
+                            <View style={styles.datePickerWrapper}>
+                                <PlatformDatePicker
+                                    label="Dari"
+                                    value={startDate ? new Date(startDate) : new Date()}
+                                    onChange={(d) => setStartDate(d.toISOString().split('T')[0])}
+                                />
+                            </View>
+                            <View style={styles.datePickerWrapper}>
+                                <PlatformDatePicker
+                                    label="Sampai"
+                                    value={endDate ? new Date(endDate) : new Date()}
+                                    onChange={(d) => setEndDate(d.toISOString().split('T')[0])}
+                                />
+                            </View>
+                        </View>
 
-            {/* Fixed Bottom Action */}
-            <View style={styles.bottomActions}>
-                <GlassButton
-                    variant="secondary"
-                    onPress={() => router.back()}
-                    style={styles.backButton}
-                >
-                    ← Kembali
-                </GlassButton>
-            </View>
+                        {/* Action Buttons */}
+                        <View style={styles.actionContainer}>
+                            <GlassButton
+                                variant="primary"
+                                onPress={generateReport}
+                                loading={isLoading}
+                                particles={true}
+                                particleTrigger="onPress"
+                                fullWidth
+                                style={{ marginBottom: 12 }}
+                                leftIcon={<Text style={{ fontSize: 18 }}>📊</Text>}
+                            >
+                                {isLoading ? 'Loading...' : 'Generate View'}
+                            </GlassButton>
+                            <GlassButton
+                                variant="secondary"
+                                onPress={generateExcelReport}
+                                loading={isExporting}
+                                particles={true}
+                                particleTrigger="onPress"
+                                fullWidth
+                                leftIcon={<Text style={{ fontSize: 18 }}>📥</Text>}
+                            >
+                                {isExporting ? 'Loading...' : 'Export Excel'}
+                            </GlassButton>
+                        </View>
+                    </View>
+                </GlassCard>
+
+                {/* Summary Cards */}
+                <View style={styles.summaryContainer}>
+                    <AnimatedSummaryCard
+                        title="Kas Masuk"
+                        value={totals.masuk}
+                        icon="trending-up"
+                        color="#10b981"
+                        trend="+12.5%"
+                    />
+                    <AnimatedSummaryCard
+                        title="Kas Keluar"
+                        value={totals.keluar}
+                        icon="trending-down"
+                        color="#ef4444"
+                        trend="-8.3%"
+                    />
+                    <AnimatedSummaryCard
+                        title="Saldo Net"
+                        value={totals.saldo}
+                        icon="wallet"
+                        color={totals.saldo >= 0 ? "#10b981" : "#ef4444"}
+                        trend="+5.7%"
+                    />
+                    <AnimatedSummaryCard
+                        title="Total Transaksi"
+                        value={report.length}
+                        icon="receipt"
+                        color="#3b82f6"
+                        trend="+15"
+                    />
+                </View>
+
+                {/* Data Table */}
+                <GlassDataTable />
+
+                {/* Action Back - Moved inside ScrollView */}
+                <View style={styles.bottomActions}>
+                    <GlassButton
+                        variant="secondary"
+                        onPress={() => router.back()}
+                        style={styles.backButton}
+                    >
+                        ← Kembali
+                    </GlassButton>
+                </View>
+            </ScrollView>
 
             {/* Message Modal */}
             <MessageModal
@@ -499,9 +502,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
     },
+    mainScroll: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingBottom: 40,
+    },
     headerCard: {
         marginHorizontal: 16,
-        marginTop: 60,
+        marginTop: 20,
         marginBottom: 20,
     },
     headerContent: {
@@ -518,13 +527,14 @@ const styles = StyleSheet.create({
     datePickerContainer: {
         width: '100%',
         gap: 12,
-        marginBottom: 20,
+        marginBottom: 24,
     },
     datePickerWrapper: {
-        flex: 1,
+        width: '100%',
     },
     actionContainer: {
         width: '100%',
+        gap: 12,
     },
     summaryContainer: {
         flexDirection: 'row',
@@ -532,12 +542,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         marginBottom: 20,
         gap: 12,
+        justifyContent: 'center',
     },
     summaryCard: {
-        width: screenWidth > 600 ? '23%' : '48%',
-        marginHorizontal: 4,
-        marginVertical: 8,
-        padding: 20,
+        width: screenWidth > 600 ? '23%' : '44%',
+        marginHorizontal: 0,
+        marginVertical: 4,
+        padding: 16,
         alignItems: 'center',
     },
     cardHeader: {
@@ -552,27 +563,23 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     cardValue: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '800',
         marginBottom: 4,
         textAlign: 'center',
     },
     cardTitle: {
-        fontSize: 12,
+        fontSize: 11,
         color: 'rgba(255, 255, 255, 0.7)',
         textAlign: 'center',
     },
-    scrollContainer: {
-        flex: 1,
-        marginHorizontal: 16,
-    },
-    scrollContent: {
-        paddingBottom: 100,
-    },
     tableContainer: {
+        marginHorizontal: 16,
         padding: 20,
+        marginBottom: 20,
     },
     emptyContainer: {
+        marginHorizontal: 16,
         padding: 40,
         alignItems: 'center',
     },
@@ -608,13 +615,12 @@ const styles = StyleSheet.create({
         fontWeight: '800',
     },
     bottomActions: {
-        position: 'absolute',
-        bottom: 40,
-        left: 16,
-        right: 16,
-        zIndex: 100,
+        paddingHorizontal: 16,
+        paddingVertical: 20,
+        alignItems: 'center',
+        width: '100%',
     },
     backButton: {
-        marginBottom: 0,
+        minWidth: 150,
     },
 });

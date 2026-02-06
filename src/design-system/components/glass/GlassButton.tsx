@@ -172,8 +172,6 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   const glassStyle = [
     styles.glassButton,
     {
-      paddingHorizontal: currentSize.padding,
-      paddingVertical: currentSize.padding / 2,
       borderRadius: currentSize.borderRadius,
       minHeight: currentSize.minHeight,
       opacity: disabled || loading ? 0.6 : 1,
@@ -193,8 +191,11 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
 
   const gradientStyle = {
     flex: 1,
+    width: '100%',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+    paddingHorizontal: currentSize.padding,
+    paddingVertical: currentSize.padding / 2,
     borderRadius: currentSize.borderRadius,
     backgroundColor: currentVariant.background,
     borderColor: currentVariant.border,
@@ -205,8 +206,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     styles.buttonText,
     {
       fontSize: currentSize.fontSize,
-      color: disabled || loading ? 
-        'rgba(255, 255, 255, 0.5)' : 
+      color: disabled || loading ?
+        'rgba(255, 255, 255, 0.5)' :
         'rgba(255, 255, 255, 0.95)',
     },
     textStyle,
