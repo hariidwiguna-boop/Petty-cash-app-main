@@ -85,16 +85,18 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
 
 const styles = StyleSheet.create({
     dailySummaryCard: {
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
         borderRadius: 16,
         padding: 16,
         marginHorizontal: 20,
         marginBottom: 16,
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.6)",
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 4,
     },
     dailyHeader: {
         flexDirection: "row",
@@ -103,7 +105,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     dailyIcon: {
-        fontSize: 20,
+        fontSize: 18,
     },
     dailyTitle: {
         fontSize: 14,

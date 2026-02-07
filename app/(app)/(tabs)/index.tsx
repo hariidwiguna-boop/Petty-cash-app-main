@@ -16,6 +16,8 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase, Transaction } from "../../../lib/supabase";
 import { DashboardHeader, KpiCards, DailySummary, ActionButtons, RecentTransactions } from "../../../components/dashboard";
+import { theme } from "../../../src/design-system/theme";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function DashboardScreen() {
     const { profile, outlet, isAdmin, adminSelectedOutlet, setAdminSelectedOutlet } = useAuthStore();
@@ -206,79 +208,86 @@ export default function DashboardScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            {/* Header Component */}
-            <DashboardHeader
-                onSettingsPress={openSettings}
-                onAdminMenuPress={() => setShowAdminMenu(true)}
-                onLogoutPress={handleLogoutPress}
-            />
-
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                refreshControl={
-                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                }
-            >
-                {/* KPI Cards Component */}
-                <KpiCards data={{
-                    saldoSekarang: dashboardData.saldoSekarang,
-                    kasAwalHariIni: dashboardData.kasAwalHariIni,
-                    kasMasukHariIni: dashboardData.kasMasukHariIni,
-                    kasKeluarHariIni: dashboardData.kasKeluarHariIni,
-                }} />
-
-                {/* Daily Summary Component */}
-                <DailySummary 
-                    data={{
-                        todayTransactions: dashboardData.todayTransactions,
-                        usagePercent,
-                        saldoLimit,
-                    }} 
-                    today={today}
+        <LinearGradient
+            colors={[theme.colors.background.start, theme.colors.background.end]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ flex: 1 }}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                {/* Header Component */}
+                <DashboardHeader
+                    onSettingsPress={openSettings}
+                    onAdminMenuPress={() => setShowAdminMenu(true)}
+                    onLogoutPress={handleLogoutPress}
                 />
 
-                {/* Alert Banner */}
-                {isLowBalance && (
-                    <View style={styles.alertBanner}>
-                        <Text style={styles.alertIcon}>⚠️</Text>
-                        <Text style={styles.alertText}>
-                            Saldo hampir habis! Segera ajukan reimbursement.
-                        </Text>
-                    </View>
-                )}
-
-                {/* Action Buttons Component */}
-                <ActionButtons />
-
-                {/* Recent Transactions Component */}
-                <RecentTransactions transactions={dashboardData.recentTransactions} />
-
-                {/* Footer */}
-                <View style={styles.footer}>
-                    <View style={styles.footerUser}>
-                        <Text style={styles.footerUserIcon}>👤</Text>
-                        <Text style={styles.footerUserName}>{profile?.nama || "User"}</Text>
-
-                    </View>
-                </View>
-            </ScrollView>
-
-            {/* Admin Menu Modal */}
-            <Modal
-                visible={showAdminMenu}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setShowAdminMenu(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowAdminMenu(false)}
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
                 >
-                    <View style={styles.adminMenuContent}>
-                        <View style={styles.adminMenuHeader}>
+                    {/* KPI Cards Component */}
+                    <KpiCards data={{
+                        saldoSekarang: dashboardData.saldoSekarang,
+                        kasAwalHariIni: dashboardData.kasAwalHariIni,
+                        kasMasukHariIni: dashboardData.kasMasukHariIni,
+                        kasKeluarHariIni: dashboardData.kasKeluarHariIni,
+                    }} />
+
+                    {/* Daily Summary Component */}
+                    <DailySummary
+                        data={{
+                            todayTransactions: dashboardData.todayTransactions,
+                            usagePercent,
+                            saldoLimit,
+                        }}
+                        today={today}
+                    />
+
+                    {/* Alert Banner */}
+                    {isLowBalance && (
+                        <View style={styles.alertBanner}>
+                            <Text style={styles.alertIcon}>⚠️</Text>
+                            <Text style={styles.alertText}>
+                                Saldo hampir habis! Segera ajukan reimbursement.
+                            </Text>
+                        </View>
+                    )}
+
+                    {/* Action Buttons Component */}
+                    <ActionButtons />
+
+                    {/* Recent Transactions Component */}
+                    <RecentTransactions transactions={dashboardData.recentTransactions} />
+
+                    {/* Footer */}
+                    <View style={styles.footer}>
+                        <View style={styles.footerUser}>
+                            <Text style={styles.footerUserIcon}>👤</Text>
+                            <Text style={styles.footerUserName}>{profile?.nama || "User"}</Text>
+
+                        </View>
+                    </View>
+                </ScrollView>
+
+                {/* Admin Menu Modal - Fullscreen */}
+                <Modal
+                    visible={showAdminMenu}
+                    animationType="slide"
+                    transparent={false}
+                    onRequestClose={() => setShowAdminMenu(false)}
+                >
+                    <View style={styles.adminMenuFullscreen}>
+                        {/* Header with Emerald Gradient */}
+                        <LinearGradient
+                            colors={['#10b981', '#059669']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.adminMenuHeader}
+                        >
                             <View>
                                 <Text style={styles.adminMenuTitle}>👑 Admin Control Center</Text>
                                 <Text style={styles.adminMenuSubtitle}>Pusat kendali & navigasi</Text>
@@ -286,12 +295,12 @@ export default function DashboardScreen() {
                             <TouchableOpacity style={styles.closeCircleBtn} onPress={() => setShowAdminMenu(false)}>
                                 <Text style={styles.closeCircleText}>✕</Text>
                             </TouchableOpacity>
-                        </View>
+                        </LinearGradient>
 
                         <ScrollView style={styles.adminMenuBody} showsVerticalScrollIndicator={false}>
                             {/* Outlet Selection */}
                             <View style={styles.menuSection}>
-                                <Text style={styles.menuSectionTitle}>📍 Monitoring Outlet</Text>
+                                <Text style={styles.menuSectionTitle}>📍 MONITORING OUTLET</Text>
                                 <TouchableOpacity
                                     style={styles.outletSelectionCard}
                                     onPress={() => {
@@ -309,7 +318,7 @@ export default function DashboardScreen() {
 
                             {/* Shortcuts Grid */}
                             <View style={styles.menuSection}>
-                                <Text style={styles.menuSectionTitle}>🚀 Akses Cepat</Text>
+                                <Text style={styles.menuSectionTitle}>🚀 AKSES CEPAT</Text>
                                 <View style={styles.adminGrid}>
                                     <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin" as any); }}>
                                         <View style={[styles.adminGridIconBg, { backgroundColor: '#fffbeb' }]}>
@@ -353,89 +362,89 @@ export default function DashboardScreen() {
                             </TouchableOpacity>
                         </ScrollView>
                     </View>
-                </TouchableOpacity>
-            </Modal>
+                </Modal>
 
-            {/* Custom Logout Confirmation Modal */}
-            <Modal visible={showLogoutConfirm} transparent animationType="fade" onRequestClose={() => setShowLogoutConfirm(false)}>
-                <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, marginHorizontal: 20, width: '80%' }}>
-                        <Text style={{ fontSize: 18, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: '#ef4444' }}>
-                            ⚠️ Konfirmasi Keluar
-                        </Text>
-                        <Text style={{ textAlign: 'center', marginBottom: 24, fontSize: 16, color: '#374151' }}>
-                            Apakah Anda yakin ingin keluar dari aplikasi?
-                        </Text>
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
-                            <TouchableOpacity
-                                style={{ flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                onPress={() => setShowLogoutConfirm(false)}
-                            >
-                                <Text style={{ fontWeight: '700', color: '#64748b' }}>Batal</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                onPress={() => {
-                                    setShowLogoutConfirm(false);
-                                    setTimeout(() => useAuthStore.getState().signOut(), 300);
-                                }}
-                            >
-                                <Text style={{ fontWeight: '700', color: 'white' }}>Ya, Keluar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
-
-            {/* Outlet Selector Modal */}
-            <Modal
-                visible={showOutletModal}
-                animationType="fade"
-                transparent={true}
-                onRequestClose={() => setShowOutletModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowOutletModal(false)}
-                >
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Pilih Outlet Monitoring</Text>
-                            <TouchableOpacity onPress={() => setShowOutletModal(false)}>
-                                <Text style={styles.closeText}>✕</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <FlatList
-                            data={outletsList}
-                            keyExtractor={(item) => item.id}
-                            renderItem={({ item }) => (
+                {/* Custom Logout Confirmation Modal */}
+                <Modal visible={showLogoutConfirm} transparent animationType="fade" onRequestClose={() => setShowLogoutConfirm(false)}>
+                    <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+                        <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, marginHorizontal: 20, width: '80%' }}>
+                            <Text style={{ fontSize: 18, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: '#ef4444' }}>
+                                ⚠️ Konfirmasi Keluar
+                            </Text>
+                            <Text style={{ textAlign: 'center', marginBottom: 24, fontSize: 16, color: '#374151' }}>
+                                Apakah Anda yakin ingin keluar dari aplikasi?
+                            </Text>
+                            <View style={{ flexDirection: 'row', gap: 12 }}>
                                 <TouchableOpacity
-                                    style={[
-                                        styles.outletItem,
-                                        selectedOutlet?.id === item.id && styles.outletItemSelected
-                                    ]}
-                                    onPress={() => handleSelectOutlet(item)}
+                                    style={{ flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
+                                    onPress={() => setShowLogoutConfirm(false)}
                                 >
-                                    <Text style={[
-                                        styles.outletName,
-                                        selectedOutlet?.id === item.id && styles.outletNameSelected
-                                    ]}>{item.nama_outlet}</Text>
-                                    {selectedOutlet?.id === item.id && <Text style={styles.checkIcon}>✓</Text>}
+                                    <Text style={{ fontWeight: '700', color: '#64748b' }}>Batal</Text>
                                 </TouchableOpacity>
-                            )}
-                        />
+                                <TouchableOpacity
+                                    style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
+                                    onPress={() => {
+                                        setShowLogoutConfirm(false);
+                                        setTimeout(() => useAuthStore.getState().signOut(), 300);
+                                    }}
+                                >
+                                    <Text style={{ fontWeight: '700', color: 'white' }}>Ya, Keluar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>
-                </TouchableOpacity>
-            </Modal>
-        </SafeAreaView >
+                </Modal>
+
+                {/* Outlet Selector Modal */}
+                <Modal
+                    visible={showOutletModal}
+                    animationType="fade"
+                    transparent={true}
+                    onRequestClose={() => setShowOutletModal(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setShowOutletModal(false)}
+                    >
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Pilih Outlet Monitoring</Text>
+                                <TouchableOpacity onPress={() => setShowOutletModal(false)}>
+                                    <Text style={styles.closeText}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <FlatList
+                                data={outletsList}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.outletItem,
+                                            selectedOutlet?.id === item.id && styles.outletItemSelected
+                                        ]}
+                                        onPress={() => handleSelectOutlet(item)}
+                                    >
+                                        <Text style={[
+                                            styles.outletName,
+                                            selectedOutlet?.id === item.id && styles.outletNameSelected
+                                        ]}>{item.nama_outlet}</Text>
+                                        {selectedOutlet?.id === item.id && <Text style={styles.checkIcon}>✓</Text>}
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
+        backgroundColor: "transparent",
     },
     scrollView: {
         flex: 1,
@@ -600,44 +609,32 @@ const styles = StyleSheet.create({
         fontWeight: "800",
         color: "#78350f"
     },
-    // Admin Menu Modal Styles
-    adminMenuContent: {
-        backgroundColor: "white",
-        width: "90%",
-        borderRadius: 24,
-        alignSelf: "center",
-        overflow: "hidden",
-        marginTop: "auto",
-        marginBottom: "auto",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.25,
-        shadowRadius: 10,
-        elevation: 10,
-        maxHeight: "85%", // Limit height on small screens
+    // Admin Menu Modal Styles - Fullscreen
+    adminMenuFullscreen: {
+        flex: 1,
+        backgroundColor: "#f3f4f6",
     },
     adminMenuHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
         padding: 20,
-        backgroundColor: "#fffbeb",
-        borderBottomWidth: 1,
-        borderBottomColor: "#fcd34d",
+        paddingTop: 50,
+        borderBottomWidth: 0,
     },
     adminMenuTitle: {
         fontSize: 18,
         fontWeight: "800",
-        color: "#92400e",
+        color: "#ffffff",
     },
     adminMenuSubtitle: {
         fontSize: 12,
-        color: "#b45309",
+        color: "rgba(255, 255, 255, 0.9)",
     },
     closeCircleBtn: {
         width: 32,
         height: 32,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: 16,
         alignItems: "center",
         justifyContent: "center",
@@ -645,10 +642,12 @@ const styles = StyleSheet.create({
     closeCircleText: {
         fontSize: 14,
         fontWeight: "bold",
-        color: "#92400e",
+        color: "#ffffff",
     },
     adminMenuBody: {
+        flex: 1,
         padding: 20,
+        backgroundColor: "#f3f4f6",
     },
     menuSection: {
         marginBottom: 24,
@@ -665,9 +664,9 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(249, 250, 251, 0.6)",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(229, 231, 235, 0.5)",
         padding: 16,
         borderRadius: 16,
     },
@@ -691,14 +690,19 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     adminGridItem: {
-        width: "48%", // Approximately 2 columns
-        backgroundColor: "white",
+        width: "48%",
+        backgroundColor: "rgba(255, 255, 255, 0.7)",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(229, 231, 235, 0.5)",
         borderRadius: 16,
         padding: 16,
         alignItems: "center",
         gap: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
     adminGridIconBg: {
         width: 48,
@@ -708,7 +712,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
     },
     adminGridIcon: {
-        fontSize: 24,
+        fontSize: 20,
     },
     adminGridLabel: {
         fontSize: 13,
@@ -716,13 +720,15 @@ const styles = StyleSheet.create({
         color: "#374151",
     },
     menuLogoutBtn: {
-        backgroundColor: "#fee2e2",
+        backgroundColor: "rgba(254, 226, 226, 0.7)",
         padding: 16,
         borderRadius: 16,
         alignItems: "center",
         flexDirection: "row",
         justifyContent: "center",
         gap: 8,
+        borderWidth: 1,
+        borderColor: "rgba(220, 38, 38, 0.2)",
     },
     menuLogoutText: {
         fontSize: 14,

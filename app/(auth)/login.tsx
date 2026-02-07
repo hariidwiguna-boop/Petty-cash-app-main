@@ -4,15 +4,17 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
+    ScrollView,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../stores/authStore";
 import MessageModal from "../../components/MessageModal";
 import CustomLoading from "../../components/CustomLoading";
 import { validateEmail, validatePassword, formatValidationErrors } from "../../lib/validation";
+import { theme } from "../../src/design-system/theme";
 
 export default function LoginScreen() {
     const [username, setUsername] = useState("");
@@ -40,23 +42,21 @@ export default function LoginScreen() {
     };
 
     const handleLogin = async () => {
-        // Validasi input
         const isEmailInput = username.includes("@");
         let validationResult;
-        
+
         if (isEmailInput) {
             validationResult = validateEmail(username);
         } else {
-            // Untuk username, minimal validasi basic
             if (!username || username.trim().length === 0) {
                 showMessage("Error", "Username wajib diisi", "error");
                 return;
             }
             validationResult = { isValid: true, errors: [] };
         }
-        
+
         const passwordValidation = validatePassword(password);
-        
+
         if (!validationResult.isValid || !passwordValidation.isValid) {
             const allErrors = [...validationResult.errors, ...passwordValidation.errors];
             showMessage("Error Validasi", formatValidationErrors(allErrors), "error");
@@ -65,19 +65,15 @@ export default function LoginScreen() {
 
         setIsLoading(true);
 
-        // Check if input is email or username
         const isEmail = username.includes("@");
         let result;
 
         if (isEmail) {
             result = await signIn(username, password);
         } else {
-            // Login with email format: username@pettycash.com or try direct email
-            // Ensure we use the same cleaning logic as registration
             const cleanUsername = username.toLowerCase().replace(/\s+/g, '');
             result = await signIn(`${cleanUsername}@pettycash.com`, password);
             if (result.error) {
-                // Fallback try as direct email
                 result = await signIn(username, password);
             }
         }
@@ -91,7 +87,7 @@ export default function LoginScreen() {
             if (result.error.includes("Email not confirmed")) {
                 showMessage(
                     "Email Belum Dikonfirmasi",
-                    "Fitur 'Confirm Email' aktif di Supabase. Mohon matikan fitur tersebut di dashboard Supabase (Authentication -> Providers -> Email -> Confirm User).",
+                    "Fitur 'Confirm Email' aktif di Supabase. Mohon matikan fitur tersebut di dashboard Supabase.",
                     "warning"
                 );
             } else if (result.error.includes("Invalid login credentials")) {
@@ -107,101 +103,123 @@ export default function LoginScreen() {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
-            {/* Message Modal */}
-            <MessageModal
-                visible={modalVisible}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onClose={() => setModalVisible(false)}
-            />
+            <LinearGradient
+                colors={[theme.colors.background.start, theme.colors.background.end]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.gradientBackground}
+            >
+                <MessageModal
+                    visible={modalVisible}
+                    title={modalConfig.title}
+                    message={modalConfig.message}
+                    type={modalConfig.type}
+                    onClose={() => setModalVisible(false)}
+                />
 
-            {/* Custom Loading */}
-            <CustomLoading visible={isLoading} text="Masuk..." />
+                <CustomLoading visible={isLoading} text="Masuk..." />
 
-            <View style={styles.loginCard}>
-                {/* Logo Section */}
-                <View style={styles.headerWrapper}>
-                    <View style={styles.logoContainer}>
-                        <View style={styles.logoLeft}>
-                            <View style={styles.logoBar} />
-                            <View style={styles.logoBar} />
-                            <View style={styles.logoBar} />
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
+                    <View style={styles.loginCard}>
+                        {/* Logo Section */}
+                        <View style={styles.headerWrapper}>
+                            <View style={styles.logoContainer}>
+                                <View style={styles.logoLeft}>
+                                    <View style={styles.logoBar} />
+                                    <View style={styles.logoBar} />
+                                    <View style={styles.logoBar} />
+                                </View>
+                                <View style={styles.logoRight}>
+                                    <View style={styles.logoRectangle} />
+                                    <View style={styles.logoCircle} />
+                                </View>
+                            </View>
+                            <View style={styles.loginHeader}>
+                                <Text style={styles.title}>Petty Cash{"\n"}Management</Text>
+                                <Text style={styles.brandName}>@evrdayplcs</Text>
+                            </View>
                         </View>
-                        <View style={styles.logoRight}>
-                            <View style={styles.logoRectangle} />
-                            <View style={styles.logoCircle} />
-                        </View>
-                    </View>
-                    <View style={styles.loginHeader}>
-                        <Text style={styles.title}>Petty Cash{"\n"}Management</Text>
-                        <Text style={styles.brandName}>@evrdayplcs</Text>
-                    </View>
-                </View>
 
-                {/* Login Form */}
-                <View style={styles.form}>
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Username</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Masukkan username"
-                            placeholderTextColor="#999"
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                        />
-                    </View>
+                        {/* Login Form */}
+                        <View style={styles.form}>
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Username</Text>
+                                <View style={styles.inputWrapper}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Masukkan username"
+                                        placeholderTextColor={theme.colors.text.tertiary}
+                                        value={username}
+                                        onChangeText={setUsername}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                </View>
+                            </View>
 
-                    <View style={styles.formGroup}>
-                        <Text style={styles.label}>Password</Text>
-                        <View style={styles.passwordWrapper}>
-                            <TextInput
-                                style={styles.inputPassword}
-                                placeholder="Masukkan password"
-                                placeholderTextColor="#999"
-                                value={password}
-                                onChangeText={setPassword}
-                                secureTextEntry={!showPassword}
-                            />
+                            <View style={styles.formGroup}>
+                                <Text style={styles.label}>Password</Text>
+                                <View style={styles.passwordWrapper}>
+                                    <TextInput
+                                        style={styles.inputPassword}
+                                        placeholder="Masukkan password"
+                                        placeholderTextColor={theme.colors.text.tertiary}
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.passwordToggle}
+                                        onPress={() => setShowPassword(!showPassword)}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    >
+                                        <Text style={styles.passwordToggleText}>
+                                            {showPassword ? "Hide" : "Show"}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View style={styles.loginOptions}>
+                                <TouchableOpacity
+                                    style={styles.rememberMe}
+                                    onPress={() => setRememberMe(!rememberMe)}
+                                >
+                                    <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
+                                        {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                                    </View>
+                                    <Text style={styles.rememberText}>Ingat saya</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity>
+                                    <Text style={styles.forgotLink}>Lupa password?</Text>
+                                </TouchableOpacity>
+                            </View>
+
                             <TouchableOpacity
-                                style={styles.passwordToggle}
-                                onPress={() => setShowPassword(!showPassword)}
-                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                style={[styles.submitBtn, isLoading && styles.submitBtnDisabled]}
+                                onPress={handleLogin}
+                                disabled={isLoading}
+                                activeOpacity={0.8}
                             >
-                                <Text style={styles.passwordToggleText}>
-                                    {showPassword ? "Hide" : "Show"}
-                                </Text>
+                                <LinearGradient
+                                    colors={[theme.colors.primary[500], theme.colors.primary[600]]}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    style={styles.submitBtnGradient}
+                                >
+                                    <Text style={styles.submitBtnText}>
+                                        {isLoading ? "Memproses..." : "Sign In"}
+                                    </Text>
+                                </LinearGradient>
                             </TouchableOpacity>
                         </View>
                     </View>
-
-                    <View style={styles.loginOptions}>
-                        <TouchableOpacity
-                            style={styles.rememberMe}
-                            onPress={() => setRememberMe(!rememberMe)}
-                        >
-                            <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
-                                {rememberMe && <Text style={styles.checkmark}>✓</Text>}
-                            </View>
-                            <Text style={styles.rememberText}>Ingat saya</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Text style={styles.forgotLink}>Lupa password?</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <TouchableOpacity
-                        style={[styles.submitBtn, isLoading && styles.submitBtnDisabled]}
-                        onPress={handleLogin}
-                        disabled={isLoading}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.submitBtnText}>{isLoading ? "Memproses..." : "Sign In"}</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                </ScrollView>
+            </LinearGradient>
         </KeyboardAvoidingView>
     );
 }
@@ -209,45 +227,44 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
-        justifyContent: "center",
-        padding: 20,
+    },
+    gradientBackground: {
+        flex: 1,
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        padding: theme.spacing.xl,
     },
     loginCard: {
-        backgroundColor: "white",
-        borderRadius: 24,
-        padding: 32,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 40,
-        elevation: 10,
+        ...theme.components.card.base,
+        padding: theme.spacing['3xl'],
     },
     headerWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 20,
-        marginBottom: 32,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: theme.spacing.xl,
+        marginBottom: theme.spacing['4xl'],
     },
     logoContainer: {
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: 'row',
+        alignItems: 'center',
         gap: 6,
     },
     logoLeft: {
-        flexDirection: "column",
+        flexDirection: 'column',
         gap: 4,
     },
     logoBar: {
         width: 28,
         height: 8,
-        backgroundColor: "#1a1a1a",
-        borderRadius: 0,
+        backgroundColor: theme.colors.primary[500],
+        borderRadius: 2,
     },
     logoRight: {
-        flexDirection: "row",
-        alignItems: "flex-start",
+        flexDirection: 'row',
+        alignItems: 'flex-start',
         gap: 4,
         height: 32,
     },
@@ -255,139 +272,122 @@ const styles = StyleSheet.create({
         width: 8,
         height: 32,
         borderWidth: 2,
-        borderColor: "#1a1a1a",
-        borderRadius: 0,
-        backgroundColor: "transparent",
+        borderColor: theme.colors.primary[500],
+        borderRadius: 2,
+        backgroundColor: 'transparent',
     },
     logoCircle: {
         width: 10,
         height: 10,
-        backgroundColor: "#C94C4C",
-        borderRadius: 5, // Make it round
+        backgroundColor: theme.colors.warning.main,
+        borderRadius: 5,
         marginTop: 0,
     },
     loginHeader: {
-        alignItems: "flex-start",
+        alignItems: 'flex-start',
     },
     title: {
-        fontSize: 20,
-        fontWeight: "800",
-        color: "#1a1a1a",
-        textAlign: "left",
-        lineHeight: 24,
+        ...theme.components.header.title,
     },
     brandName: {
-        fontSize: 13,
-        color: "#C94C4C",
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.primary[500],
         marginTop: 2,
-        fontWeight: "600",
+        fontWeight: theme.typography.fontWeight.semibold,
     },
     form: {
-        gap: 16,
+        gap: theme.spacing.xl,
     },
     formGroup: {
-        gap: 8,
+        gap: theme.spacing.sm,
     },
     label: {
-        fontSize: 14,
-        fontWeight: "600",
-        color: "#1a1a1a",
+        fontSize: theme.typography.fontSize.base,
+        fontWeight: theme.typography.fontWeight.semibold,
+        color: theme.colors.text.primary,
+    },
+    inputWrapper: {
+        ...theme.components.input.base,
     },
     input: {
-        backgroundColor: "#f8f9fa",
-        borderWidth: 1,
-        borderColor: "#e0e0e0",
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontSize: 16,
-        color: "#1a1a1a",
+        fontSize: theme.typography.fontSize.md,
+        color: theme.colors.text.primary,
     },
     passwordWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#f8f9fa",
-        borderWidth: 1,
-        borderColor: "#e0e0e0",
-        borderRadius: 12,
-        overflow: "hidden", // Ensure children respect radius
-        paddingRight: 8, // Add spacing for icon
+        ...theme.components.input.base,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingRight: 0,
     },
     inputPassword: {
         flex: 1,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontSize: 16,
-        color: "#1a1a1a",
-        height: "100%", // Fill height
+        fontSize: theme.typography.fontSize.md,
+        color: theme.colors.text.primary,
     },
     passwordToggle: {
-        padding: 10,
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100%",
+        paddingHorizontal: theme.spacing.lg,
+        paddingVertical: theme.spacing.md,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     passwordToggleText: {
-        fontSize: 13,
-        fontWeight: "600",
-        color: "#3b82f6",
+        fontSize: theme.typography.fontSize.sm,
+        fontWeight: theme.typography.fontWeight.semibold,
+        color: theme.colors.primary[500],
     },
     loginOptions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: 8,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: theme.spacing.sm,
     },
     rememberMe: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing.sm,
     },
     checkbox: {
         width: 20,
         height: 20,
         borderWidth: 2,
-        borderColor: "#d0d0d0",
-        borderRadius: 4,
-        alignItems: "center",
-        justifyContent: "center",
+        borderColor: theme.colors.border.normal,
+        borderRadius: theme.borderRadius.sm,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     checkboxActive: {
-        backgroundColor: "#C94C4C",
-        borderColor: "#C94C4C",
+        backgroundColor: theme.colors.primary[500],
+        borderColor: theme.colors.primary[500],
     },
     checkmark: {
-        color: "white",
+        color: theme.colors.text.inverse,
         fontSize: 12,
-        fontWeight: "bold",
+        fontWeight: 'bold' as const,
     },
     rememberText: {
-        fontSize: 13,
-        color: "#666",
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.text.secondary,
     },
     forgotLink: {
-        fontSize: 13,
-        color: "#3b82f6",
-        fontWeight: "600",
+        fontSize: theme.typography.fontSize.sm,
+        color: theme.colors.text.link,
+        fontWeight: theme.typography.fontWeight.semibold,
     },
     submitBtn: {
-        backgroundColor: "#C94C4C",
-        borderRadius: 12,
-        paddingVertical: 16,
-        alignItems: "center",
-        marginTop: 16,
-        shadowColor: "#C94C4C",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.35,
-        shadowRadius: 20,
-        elevation: 6,
+        marginTop: theme.spacing['2xl'],
+        borderRadius: theme.borderRadius.md,
+        overflow: 'hidden',
+        ...theme.shadows.md,
     },
     submitBtnDisabled: {
-        backgroundColor: "#d97979",
+        opacity: 0.6,
+    },
+    submitBtnGradient: {
+        paddingVertical: theme.spacing.lg,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     submitBtnText: {
-        color: "white",
-        fontSize: 16,
-        fontWeight: "800",
+        ...theme.components.button.text.primary,
     },
 });

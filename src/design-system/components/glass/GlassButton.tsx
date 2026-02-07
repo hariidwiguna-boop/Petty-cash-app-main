@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -7,21 +7,10 @@ import {
   ViewStyle,
   TextStyle,
   Platform,
+  Animated,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withSequence,
-  withTiming,
-  runOnJS,
-} from 'react-native-reanimated';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { glassmorphism } from '../../../design-system/tokens/glassmorphism';
-import { springConfigs } from '../../../design-system/tokens/animations';
-import { particleEffects } from '../../../design-system/tokens/particles';
-import ParticleEngine from '../animations/ParticleEngine';
 
 // GlassButton props interface
 interface GlassButtonProps {
@@ -31,9 +20,6 @@ interface GlassButtonProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
   disabled?: boolean;
-  magnetic?: boolean;
-  particles?: boolean;
-  particleTrigger?: 'onPress' | 'onMount' | 'none';
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -92,9 +78,6 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   size = 'md',
   loading = false,
   disabled = false,
-  magnetic = true,
-  particles = false,
-  particleTrigger = 'onPress',
   fullWidth = false,
   leftIcon,
   rightIcon,
@@ -102,74 +85,66 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   textStyle,
   onLongPress,
 }) => {
-  // Animation values
-  const scale = useSharedValue(1);
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-  const [showParticles, setShowParticles] = useState(false);
+  // Animation values using React Native Animated
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const currentSize = sizeConfig[size];
   const currentVariant = variantConfig[variant];
 
-  // Magnetic hover effect
-  const panGesture = Gesture.Pan()
-    .onUpdate((event) => {
-      if (!disabled && !loading && magnetic) {
-        translateX.value = event.translationX * 0.15;
-        translateY.value = event.translationY * 0.15;
-      }
-    })
-    .onEnd(() => {
-      if (!disabled && !loading && magnetic) {
-        translateX.value = withSpring(0, springConfigs.smooth);
-        translateY.value = withSpring(0, springConfigs.smooth);
-      }
-    });
-
-  // Press animation
-  const handlePressIn = useCallback(() => {
+  // Press animation handlers
+  const handlePressIn = () => {
     if (!disabled && !loading) {
-      scale.value = withSequence(
-        withTiming(0.95, { duration: 100 }),
-        withTiming(1.05, { duration: 100 })
-      );
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 0.95,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1.05,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  }, [disabled, loading]);
+  };
 
-  const handlePressOut = useCallback(() => {
+  const handlePressOut = () => {
     if (!disabled && !loading) {
-      scale.value = withSpring(1, springConfigs.bouncy);
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
     }
-  }, [disabled, loading]);
+  };
 
-  const handlePress = useCallback(() => {
+  const handlePress = () => {
     if (!disabled && !loading) {
       // Success animation
-      scale.value = withSequence(
-        withTiming(1.1, { duration: 150 }),
-        withTiming(1, { duration: 300 })
-      );
-
-      // Trigger particles
-      if (particles && particleTrigger === 'onPress') {
-        setShowParticles(true);
-        setTimeout(() => setShowParticles(false), 2000);
-      }
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 1.1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
 
       onPress();
     }
-  }, [disabled, loading, particles, particleTrigger, onPress]);
+  };
 
-  // Animated styles
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: withSpring(translateX.value, springConfigs.smooth) },
-      { translateY: withSpring(translateY.value, springConfigs.smooth) },
-      { scale: withSpring(scale.value, springConfigs.smooth) },
-    ],
-  }));
+  const animatedStyle = {
+    transform: [{ scale: scaleAnim }],
+  };
 
-  const glassStyle = [
+  const buttonStyle = [
     styles.glassButton,
     {
       borderRadius: currentSize.borderRadius,
@@ -182,16 +157,9 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     style,
   ];
 
-  const contentStyle = {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    gap: currentSize.padding / 2,
-  };
-
   const gradientStyle = {
     flex: 1,
-    width: '100%',
+    width: '100%' as const,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     paddingHorizontal: currentSize.padding,
@@ -200,6 +168,13 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
     backgroundColor: currentVariant.background,
     borderColor: currentVariant.border,
     borderWidth: 1,
+  };
+
+  const contentStyle = {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    gap: currentSize.padding / 2,
   };
 
   const buttonTextStyle = [
@@ -214,14 +189,14 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
   ];
 
   return (
-    <GestureDetector gesture={panGesture}>
+    <Animated.View style={buttonStyle}>
       <Pressable
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onLongPress={onLongPress}
         disabled={disabled || loading}
-        style={glassStyle}
+        style={{ flex: 1 }}
       >
         <LinearGradient
           colors={currentVariant.gradient}
@@ -237,17 +212,8 @@ export const GlassButton: React.FC<GlassButtonProps> = ({
             {rightIcon}
           </View>
         </LinearGradient>
-
-        {/* Particle effect overlay */}
-        {showParticles && (
-          <ParticleEngine
-            trigger="custom"
-            config={particleEffects.buttonClick}
-            count={20}
-          />
-        )}
       </Pressable>
-    </GestureDetector>
+    </Animated.View>
   );
 };
 
@@ -262,17 +228,6 @@ const styles = StyleSheet.create({
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
     }),
-  },
-  gradient: {
-    flex: 1,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonContent: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   buttonText: {
     fontWeight: '600' as const,

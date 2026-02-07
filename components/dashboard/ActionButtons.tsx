@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         elevation: 8,
     },
     mainActionIcon: {
-        fontSize: 28,
+        fontSize: 24,
     },
     mainActionText: {
         fontSize: 18,
@@ -89,17 +89,22 @@ const styles = StyleSheet.create({
     },
     actionCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.85)",
         borderWidth: 1,
-        borderColor: "#e0e0e0",
+        borderColor: "rgba(255, 255, 255, 0.5)",
         borderRadius: 16,
         paddingVertical: 16,
         paddingHorizontal: 8,
         alignItems: "center",
         gap: 8,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
     },
     actionIcon: {
-        fontSize: 28,
+        fontSize: 22,
     },
     actionLabel: {
         fontSize: 10,
