@@ -15,6 +15,18 @@ export default function TabsLayout() {
             <Tabs.Screen name="status" />
             <Tabs.Screen name="daily-report" />
             <Tabs.Screen name="profile" />
+            <Tabs.Screen
+                name="admin"
+                options={{
+                    href: null, // Hide from tab bar
+                }}
+            />
+            <Tabs.Screen
+                name="reports"
+                options={{
+                    href: null, // Hide from tab bar
+                }}
+            />
         </Tabs>
     );
 }

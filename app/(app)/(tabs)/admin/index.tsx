@@ -246,7 +246,10 @@ export default function AdminDashboard() {
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.actionBtn}
-                        onPress={() => router.push("/(app)/(tabs)/admin/reports")}
+                        onPress={() => {
+                            // Navigate to the new location in tabs
+                            router.push("/(app)/(tabs)/reports");
+                        }}
                     >
                         <Text style={styles.actionIcon}>📊</Text>
                         <Text style={styles.actionLabel}>Reports</Text>
@@ -260,7 +263,7 @@ export default function AdminDashboard() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
