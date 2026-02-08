@@ -190,7 +190,7 @@ Berikut saya lampirkan arus kas harian
 RINCIAN KAS
 ═══════════════════════
 Kas Awal: ${formatCurrencyText(kasAwalHariIni)}
-Kas Masuk: ${formatCurrencyText(kasMasukHariIni)}
+Kas Masuk: ${formatCurrencyText(totalKasMasukHariIni)}
 Kas Keluar: ${formatCurrencyText(kasKeluarHariIni)}
 
 ═══════════════════════
