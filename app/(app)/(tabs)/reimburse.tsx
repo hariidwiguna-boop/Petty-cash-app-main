@@ -389,8 +389,8 @@ export default function ReimburseScreen() {
         setIsLoading(true);
 
         try {
-            const startStr = startDate.toISOString().split('T')[0];
-            const endStr = endDate.toISOString().split('T')[0];
+            const startStr = formatDateToISO(startDate);
+            const endStr = formatDateToISO(endDate);
             const finalAmount = Number(manualTotalAmount.replace(/[^0-9]/g, "")) || 0;
 
             const { data: reimburseData, error: reimbError } = await supabase

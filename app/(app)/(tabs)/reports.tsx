@@ -17,6 +17,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as XLSX from "xlsx";
 import { supabase } from "../../../lib/supabase";
+import { formatDateToISO } from "../../../lib/dateUtils";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import MessageModal from "../../../components/MessageModal";
 import GlassButton from "../../../src/design-system/components/glass/GlassButton";
@@ -27,8 +28,8 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function ReportsScreen() {
     const router = useRouter();
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [startDate, setStartDate] = useState(formatDateToISO(new Date()));
+    const [endDate, setEndDate] = useState(formatDateToISO(new Date()));
     const [outletId, setOutletId] = useState("");
     const [report, setReport] = useState<any[]>([]);
     const [totals, setTotals] = useState({ masuk: 0, keluar: 0, saldo: 0 });
@@ -361,13 +362,34 @@ export default function ReportsScreen() {
             const fileName = `Laporan_Lengkap_${startDate}_sd_${endDate}.xlsx`;
 
             if (Platform.OS === 'web') {
-                const uri = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + wbout;
+                // Determine content type safely
+                const contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+                // Convert base64 to Blob
+                const byteCharacters = atob(wbout);
+                const byteArrays = [];
+                for (let i = 0; i < byteCharacters.length; i += 512) {
+                    const slice = byteCharacters.slice(i, i + 512);
+                    const byteNumbers = new Array(slice.length);
+                    for (let n = 0; n < slice.length; n++) {
+                        byteNumbers[n] = slice.charCodeAt(n);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    byteArrays.push(byteArray);
+                }
+                const blob = new Blob(byteArrays, { type: contentType });
+
+                // Use URL.createObjectURL
+                const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
-                link.href = uri;
+                link.href = url;
                 link.download = fileName;
                 document.body.appendChild(link);
                 link.click();
+
+                // Cleanup
                 document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
             } else {
                 const fileUri = `${FileSystem.cacheDirectory}${fileName}`;
                 await FileSystem.writeAsStringAsync(fileUri, wbout, { encoding: FileSystem.EncodingType.Base64 });

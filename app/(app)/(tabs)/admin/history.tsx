@@ -6,6 +6,7 @@ import { supabase } from "../../../../lib/supabase";
 import AdminLayout from "../../../../components/admin/AdminLayout";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from "../../../../stores/authStore";
+import { formatDateToISO } from "../../../../lib/dateUtils";
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function AdminHistory() {
@@ -52,7 +53,7 @@ export default function AdminHistory() {
             // Adjust based on need: exact day, or range. User asked for "filter tanggal".
             // Typically "history" implies looking at past. Default is Today? Or All Time?
             // Let's assume Filter by Day since we have a single date picker.
-            const dateStr = selectedDate.toISOString().split('T')[0];
+            const dateStr = formatDateToISO(selectedDate);
             query = query.eq("tanggal", dateStr);
 
             // Outlet Filter

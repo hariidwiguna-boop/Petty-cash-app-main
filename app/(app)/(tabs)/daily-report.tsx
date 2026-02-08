@@ -18,6 +18,7 @@ import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import MessageModal from "../../../components/MessageModal";
+import { formatDateToISO } from "../../../lib/dateUtils";
 
 interface DailySummary {
     kasAwal: number;
@@ -61,7 +62,8 @@ export default function DailyReportScreen() {
         if (!outlet) return;
 
         try {
-            const dateStr = selectedDate.toISOString().split("T")[0];
+            // Usage 1
+            const dateStr = formatDateToISO(selectedDate);
 
             // Fetch transactions for the selected date
             const { data: allTx } = await supabase

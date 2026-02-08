@@ -17,6 +17,7 @@ import MessageModal from "../../../../components/MessageModal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
+import { formatDateToISO, getTodayISO } from "../../../../lib/dateUtils";
 import AdminLayout from "../../../../components/admin/AdminLayout";
 
 interface Outlet {
@@ -417,7 +418,7 @@ export default function OutletsScreen() {
                                             onChange={(event, date) => {
                                                 setShowDatePicker(false);
                                                 if (date) {
-                                                    setFormData({ ...formData, saldo_date: date.toISOString().split('T')[0] });
+                                                    setFormData({ ...formData, saldo_date: formatDateToISO(date) });
                                                 }
                                             }}
                                         />

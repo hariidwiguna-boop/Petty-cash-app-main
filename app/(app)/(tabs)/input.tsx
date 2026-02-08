@@ -18,6 +18,7 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase } from "../../../lib/supabase";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
+import { formatDateToISO } from "../../../lib/dateUtils";
 import MessageModal from "../../../components/MessageModal";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -232,7 +233,7 @@ export default function InputScreen() {
         setIsLoading(true);
 
         try {
-            const formattedDate = tanggal.toISOString().split("T")[0];
+            const formattedDate = formatDateToISO(tanggal);
 
             const { data: transaction, error: txError } = await supabase
                 .from("transactions")
