@@ -68,9 +68,9 @@ export default function ReportsScreen() {
 
             // Combine data with proper mapping
             const allData = [
-                ...(kasMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: item.jumlah })),
-                ...(transactionsKeluarResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Keluar" })),
-                ...(transactionsMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk" }))
+                ...(kasMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: Number(item.jumlah || 0) })),
+                ...(transactionsKeluarResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Keluar", grand_total: Number(item.grand_total || 0) })),
+                ...(transactionsMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: Number(item.grand_total || 0) }))
             ].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
 
             setReport(allData);
@@ -78,7 +78,8 @@ export default function ReportsScreen() {
             // Calculate totals
             let m = 0, k = 0;
             allData?.forEach(tx => {
-                tx.tipe === "Kas Keluar" ? k += tx.grand_total : m += tx.grand_total;
+                const amount = Number(tx.grand_total || 0);
+                tx.tipe === "Kas Keluar" ? k += amount : m += amount;
             });
             setTotals({ masuk: m, keluar: k, saldo: m - k });
 
@@ -121,7 +122,7 @@ export default function ReportsScreen() {
             ]);
 
             const allTransactions = [
-                ...(kasMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: item.jumlah, is_kas_masuk: true })),
+                ...(kasMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk", grand_total: Number(item.jumlah || 0), is_kas_masuk: true })),
                 ...(transactionsKeluarResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Keluar" })),
                 ...(transactionsMasukResult.data || []).map((item: any) => ({ ...item, tipe: "Kas Masuk" }))
             ];
@@ -175,7 +176,7 @@ export default function ReportsScreen() {
                         };
                     }
 
-                    const amount = tx.grand_total;
+                    const amount = Number(tx.grand_total || 0);
                     if (tx.tipe === "Kas Masuk") {
                         dailyData[date].masuk += amount;
                         totalMasuk += amount;
@@ -216,7 +217,7 @@ export default function ReportsScreen() {
                                 tanggal: tx.tanggal,
                                 namaBarang: item.nama_barang,
                                 qty: item.qty || 1,
-                                total: item.total_harga || item.subtotal || 0,
+                                total: Number(item.total_harga || item.subtotal || 0),
                                 kategori: item.kategori || "-"
                             });
                         });
@@ -227,7 +228,7 @@ export default function ReportsScreen() {
                             tanggal: tx.tanggal,
                             namaBarang: tx.deskripsi || tx.tipe,
                             qty: 1,
-                            total: tx.grand_total,
+                            total: Number(tx.grand_total || 0),
                             kategori: tx.kategori || "-"
                         });
                     }
@@ -252,104 +253,70 @@ export default function ReportsScreen() {
                 // Row 4: Total Saldo Keluar
                 wsData.push(["Total Saldo Keluar", totalKeluar]);
 
-                // Row 5: Saldo Akhir
-                wsData.push(["Saldo Akhir", saldoAkhir]);
+                // Row 5: Total Sisa Saldo (Akhir)
+                wsData.push(["Total Sisa Saldo", saldoAkhir]);
 
-                // Row 6: Spacer
-                wsData.push([]);
+                wsData.push([]); // Empty row
+                wsData.push([]); // Empty row
 
-                // Row 7: Table Titles
-                // Left: Summary Transaksi (A7)
-                // Right: Detail Transaksi (I7) - Let's use column 8 (Index 8 -> I)
-                const titleRow = Array(15).fill(null);
-                titleRow[0] = "Summary Transaksi";
-                titleRow[2] = new Date(startDate).getFullYear().toString(); // Year selector visual
-                titleRow[8] = "Detail Transaksi";
-                wsData.push(titleRow);
 
-                // Row 8: Table Headers
-                // Left (7 cols): No, Tanggal, Saldo Awal, Saldo Masuk, Saldo Keluar, Saldo Akhir, Keterangan
-                // Spacer (1 col)
-                // Right (6 cols): No, Tanggal, Nama Barang, Qty Barang, Total Harga, Kategori Transaksi
-                const headerRow = [
-                    "No", "Tanggal", "Saldo Awal", "Saldo Masuk", "Saldo Keluar", "Saldo Akhir", "Keterangan",
-                    null, // Spacer H
-                    "No", "Tanggal", "Nama Barang", "Qty Barang", "Total Harga", "Kategori Transaksi"
-                ];
-                wsData.push(headerRow);
+                // Table Headers
+                // Left Table (Daily) + Right Table (Detail)
+                // A-D (Daily) | F-N (Detail)
+                // Note: Column E is Spacer
+                wsData.push([
+                    "NO", "TANGGAL", "KETERANGAN", "MASUK", "KELUAR", "SALDO", // Daily
+                    null, // Spacer
+                    "NO", "TANGGAL", "NAMA BARANG", "QTY", "TOTAL", "KATEGORI" // Detail
+                ]);
 
-                // Row 9+: Data
+                // Merge Logic later for headers? No need for simple array.
+                // Just filling data.
+
                 const maxRows = Math.max(sortedDates.length, detailRows.length);
 
                 for (let i = 0; i < maxRows; i++) {
-                    const row: any[] = [];
+                    const dailyDate = sortedDates[i];
+                    const daily = dailyData[dailyDate];
 
-                    // Left Data (Daily Summary)
-                    if (i < sortedDates.length) {
-                        const date = sortedDates[i];
-                        const d = dailyData[date];
-                        row.push(
-                            i + 1,
-                            d.date,
-                            d.saldoAwal,
-                            d.masuk,
-                            d.keluar,
-                            d.saldoAkhir,
-                            d.keterangan.join("; ")
-                        );
-                    } else {
-                        // Empty left cells
-                        row.push(null, null, null, null, null, null, null);
-                    }
+                    const detail = detailRows[i];
 
-                    // Spacer
-                    row.push(null);
-
-                    // Right Data (Detail)
-                    if (i < detailRows.length) {
-                        const d = detailRows[i];
-                        row.push(
-                            d.no,
-                            d.tanggal,
-                            d.namaBarang,
-                            d.qty,
-                            d.total,
-                            d.kategori
-                        );
-                    } else {
-                        row.push(null, null, null, null, null, null);
-                    }
-
+                    const row = [
+                        daily ? i + 1 : null,
+                        daily ? daily.date : null,
+                        daily ? daily.keterangan.join("; ") : null,
+                        daily ? daily.masuk : null,
+                        daily ? daily.keluar : null,
+                        daily ? daily.saldoAkhir : null,
+                        null, // Spacer
+                        detail ? detail.no : null,
+                        detail ? detail.tanggal : null,
+                        detail ? detail.namaBarang : null,
+                        detail ? detail.qty : null,
+                        detail ? detail.total : null,
+                        detail ? detail.kategori : null
+                    ];
                     wsData.push(row);
                 }
 
                 // Create Sheet
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-                // --- 3. STYLING & MERGES ---
-
-                ws['!merges'] = [
-                    { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }, // A1:B1 (Ringkasan Saldo)
-                    { s: { r: 0, c: 3 }, e: { r: 1, c: 4 } }, // D1:E2 (Input Transaksi)
-                    { s: { r: 6, c: 0 }, e: { r: 6, c: 1 } }, // A7:B7 (Summary Transaksi Title)
-                    { s: { r: 6, c: 8 }, e: { r: 6, c: 9 } }, // I7:J7 (Detail Transaksi Title)
-                ];
-
+                // Styling (Widths)
                 ws['!cols'] = [
                     { wch: 5 },  // A: No
-                    { wch: 15 }, // B: Tanggal
-                    { wch: 15 }, // C: Saldo Awal
+                    { wch: 12 }, // B: Tanggal
+                    { wch: 25 }, // C: Keterangan
                     { wch: 15 }, // D: Masuk
                     { wch: 15 }, // E: Keluar
-                    { wch: 15 }, // F: Akhir
-                    { wch: 25 }, // G: Keterangan
-                    { wch: 2 },  // H: Spacer
-                    { wch: 5 },  // I: No
-                    { wch: 15 }, // J: Tanggal
-                    { wch: 25 }, // K: Barang
-                    { wch: 8 },  // L: Qty
-                    { wch: 15 }, // M: Total
-                    { wch: 20 }, // N: Kategori
+                    { wch: 15 }, // F: Saldo
+                    { wch: 5 },  // G: Spacer
+                    { wch: 5 },  // H: No
+                    { wch: 12 }, // I: Tanggal
+                    { wch: 25 }, // J: Nama Barang
+                    { wch: 8 },  // K: Qty
+                    { wch: 15 }, // L: Total
+                    { wch: 20 }, // M: Kategori
                 ];
 
                 // Append sheet
@@ -494,14 +461,14 @@ export default function ReportsScreen() {
                             <PlatformDatePicker
                                 label="Dari"
                                 value={startDate ? new Date(startDate) : new Date()}
-                                onChange={(d) => setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)}
+                                onChange={(d) => setStartDate(formatDateToISO(d))}
                             />
                         </View>
                         <View style={styles.datePickerWrapper}>
                             <PlatformDatePicker
                                 label="Sampai"
                                 value={endDate ? new Date(endDate) : new Date()}
-                                onChange={(d) => setEndDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)}
+                                onChange={(d) => setEndDate(formatDateToISO(d))}
                             />
                         </View>
                     </View>
@@ -522,7 +489,7 @@ export default function ReportsScreen() {
                     <SummaryCard title="Kas Masuk" value={totals.masuk} icon="trending-up" color="#10b981" />
                     <SummaryCard title="Kas Keluar" value={totals.keluar} icon="trending-down" color="#ef4444" />
                     <SummaryCard title="Saldo Net" value={totals.saldo} icon="wallet" color={totals.saldo >= 0 ? "#10b981" : "#ef4444"} />
-                    <SummaryCard title="Total Transaksi" value={report.length} icon="file-text" color="#3b82f6" />
+                    <SummaryCard title="Total Transaksi" value={report.length} icon="file-text" color="#000000" />
                 </View>
 
                 {/* Data Table */}
