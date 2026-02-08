@@ -655,12 +655,12 @@ const styles = StyleSheet.create({
     rowDate: {
         fontSize: 12,
         fontWeight: '600',
-        color: 'rgba(255, 255, 255, 0.9)',
+        color: '#000000',
         marginBottom: 2,
     },
     rowOutlet: {
         fontSize: 10,
-        color: 'rgba(255, 255, 255, 0.6)',
+        color: '#4B5563',
     },
     rowAmount: {
         fontSize: 13,

@@ -78,68 +78,78 @@ export default function DailyReportScreen() {
 
             let totalKeluar = 0;
             let kasKeluarHariIni = 0;
+            // New: Track Kas Masuk from transactions table
+            let kasMasukTxHariIni = 0;
             const todayTx: any[] = [];
 
             // Calculate totals up to selected date
             (allTx || []).forEach((tx) => {
                 const amount = Number(tx.grand_total) || 0;
+
+                // CASE 1: Kas Keluar
                 if (tx.tipe === "Kas Keluar") {
-                    // Historical calculation logic for Kas Awal
                     if (tx.tanggal < dateStr) {
-                        totalKeluar += amount;
+                        // Historical Outflow
+                        // Handled in separate loop for clarity or keep here? 
+                        // Let's rely on the separate re-loop below for "past" to be consistent.
                     } else if (tx.tanggal === dateStr) {
-                        // Include in today's expenses BUT also need to count towards totalKeluar if we want "Saldo Akhir" right? 
-                        // Wait, Saldo Akhir = Saldo Awal + Total Masuk - Total Keluar. 
-                        // So yes, all history + today.
-                        totalKeluar += amount;
                         kasKeluarHariIni += amount;
                         todayTx.push(tx);
-                    } else {
-                        // Future transactions (if any) shouldn't affect "Saldo Awal" of the selected day,
-                        // nor "Saldo Akhir" of the selected day.
-                        // So if tx.tanggal > dateStr, ignore.
+                    }
+                }
+                // CASE 2: Kas Masuk (Sales/Refunds etc in transactions table)
+                else if (tx.tipe === "Kas Masuk") {
+                    if (tx.tanggal === dateStr) {
+                        kasMasukTxHariIni += amount;
+                        // Note: We don't push Kas Masuk tx to `todayTx` if that list is strictly for "Pengeluaran" (Expenses).
+                        // The UI says "RINCIAN PENGELUARAN HARI INI", so we exclude it from the list but count it for the total.
                     }
                 }
             });
 
-            let totalMasuk = 0;
-            let kasMasukHariIni = 0;
+            // Kas Masuk from kas_masuk table (Top Up / Capital)
+            let kasMasukTableHariIni = 0;
             (kasMasukData || []).forEach((km) => {
                 const amount = Number(km.jumlah) || 0;
-
-                if (km.tanggal < dateStr) {
-                    totalMasuk += amount;
-                } else if (km.tanggal === dateStr) {
-                    totalMasuk += amount;
-                    kasMasukHariIni += amount;
+                if (km.tanggal === dateStr) {
+                    kasMasukTableHariIni += amount;
                 }
             });
 
             // Recalculate Logic to be precise for "Viewed Date"
             // Saldo Awal Hari Ini = (Seed + Past Inflows) - (Past Outflows)
-            // Past = < dateStr
 
-            // Re-loop for precision
             let pastIn = 0;
             let pastOut = 0;
 
+            // 1. Past Inflows from kas_masuk table
             (kasMasukData || []).forEach(km => {
                 if (km.tanggal < dateStr) pastIn += (Number(km.jumlah) || 0);
             });
 
+            // 2. Process transactions table for Past Inflows AND Past Outflows
             (allTx || []).forEach(tx => {
-                if (tx.tipe === "Kas Keluar" && tx.tanggal < dateStr) {
-                    pastOut += (Number(tx.grand_total) || 0);
+                const amount = Number(tx.grand_total) || 0;
+                if (tx.tanggal < dateStr) {
+                    if (tx.tipe === "Kas Keluar") {
+                        pastOut += amount;
+                    } else if (tx.tipe === "Kas Masuk") {
+                        pastIn += amount; // Add Past Sales/Income
+                    }
                 }
             });
 
             const dbSaldoAwal = outlet.saldo_awal || 0;
             const kasAwalHariIni = dbSaldoAwal + pastIn - pastOut;
-            const saldoSekarang = kasAwalHariIni + kasMasukHariIni - kasKeluarHariIni;
+
+            // Total Kas Masuk Hari Ini = Table Kas Masuk + Transaction Kas Masuk
+            const totalKasMasukHariIni = kasMasukTableHariIni + kasMasukTxHariIni;
+
+            const saldoSekarang = kasAwalHariIni + totalKasMasukHariIni - kasKeluarHariIni;
 
             setSummary({
                 kasAwal: kasAwalHariIni,
-                kasMasuk: kasMasukHariIni,
+                kasMasuk: totalKasMasukHariIni,
                 kasKeluar: kasKeluarHariIni,
                 saldoAkhir: saldoSekarang,
                 transactions: todayTx,
