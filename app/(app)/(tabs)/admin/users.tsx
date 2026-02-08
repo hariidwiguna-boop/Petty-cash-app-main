@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from "../../../../lib/supabase";
+import AdminLayout from "../../../../components/admin/AdminLayout";
 
 interface User {
     id: string;
@@ -291,7 +292,11 @@ export default function UsersScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
+        <AdminLayout
+            title="👥 Users"
+            subtitle="Kelola pengguna"
+            showBackButton={true}
+        >
             {/* Message Modal */}
             <MessageModal
                 visible={msgModalVisible}
@@ -306,16 +311,6 @@ export default function UsersScreen() {
             />
 
             <View style={styles.modalCard}>
-                {/* Header */}
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>👥 Users</Text>
-                        <Text style={styles.modalSubtitle}>Kelola pengguna</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
 
                 {/* Search & Add */}
                 <View style={styles.toolbar}>
@@ -381,15 +376,6 @@ export default function UsersScreen() {
                     ))}
                 </ScrollView>
 
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={styles.btnSecondary}
-                        onPress={() => router.back()}
-                    >
-                        <Text style={styles.btnSecondaryText}>Kembali</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             {/* User Form Modal */}
@@ -528,7 +514,7 @@ export default function UsersScreen() {
                 </View>
             </Modal>
 
-        </SafeAreaView>
+        </AdminLayout>
     );
 }
 
@@ -536,10 +522,17 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#f0f4d0" },
     modalCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
         margin: 16,
         borderRadius: 20,
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.4)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 8,
     },
     modalHeader: {
         flexDirection: "row",

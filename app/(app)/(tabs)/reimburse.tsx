@@ -17,6 +17,7 @@ import { supabase } from "../../../lib/supabase";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import * as Clipboard from "expo-clipboard";
 import MessageModal from "../../../components/MessageModal";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ReimburseScreen() {
     const { profile, outlet } = useAuthStore();
@@ -200,31 +201,31 @@ export default function ReimburseScreen() {
         else if (hour >= 15 && hour < 19) greeting = "Selamat Sore";
 
         // Header
-        let header = `🏛️ *PENGAJUAN REIMBURSE KAS/MODAL*
+        let header = `*PENGAJUAN REIMBURSE KAS/MODAL*
 *${greeting} Pak/Bu, berikut pengajuan Reimburse uang kas/modal*
 
 
-📍 Outlet : ${outlet.nama_outlet}
-💰 Total Pengajuan : ${formatCurrency(requestAmount)}
-📅 Tanggal Request : ${formatDateFull(new Date())}
-🏦 Rekening : ${outlet.nama_bank || "BCA"} (${outlet.no_rekening || "-"})
-👤 Atas Nama : ${outlet.atas_nama || "-"}
+ - Outlet : ${outlet.nama_outlet}
+ - Total Pengajuan : ${formatCurrency(requestAmount)}
+ - Tanggal Request : ${formatDateFull(new Date())}
+ - Rekening : ${outlet.nama_bank || "BCA"} (${outlet.no_rekening || "-"})
+ - Atas Nama : ${outlet.atas_nama || "-"}
 
-━━━━━━━━━━━━━━━━━━━
-📥 *${isSaldoAwal ? "SALDO AWAL (RESET)" : "SALDO MASUK SEBELUMNYA"}*
-━━━━━━━━━━━━━━━━━━━
-🗓️ Tanggal : ${previousDate}
-💵 Nominal : ${formatCurrency(previousAmount)}
+-------------------
+*${isSaldoAwal ? "SALDO AWAL (RESET)" : "SALDO MASUK SEBELUMNYA"}*
+-------------------
+ - Tanggal : ${previousDate}
+ - Nominal : ${formatCurrency(previousAmount)}
 
-━━━━━━━━━━━━━━━━━━━
-🪙 *SISA SALDO SEBELUMNYA*
-━━━━━━━━━━━━━━━━━━━
-🗓️ Tanggal : ${formatDateFull(startDate)}
-💵 Nominal : ${formatCurrency(residual)}
+-------------------
+*SISA SALDO SEBELUMNYA*
+-------------------
+ - Tanggal : ${formatDateFull(startDate)}
+ - Nominal : ${formatCurrency(residual)}
 
-━━━━━━━━━━━━━━━━━━━
-📝 *RINCIAN HARIAN*
-━━━━━━━━━━━━━━━━━━━
+-------------------
+*RINCIAN HARIAN*
+-------------------
 `;
 
         // Daily Breakdown with Running Balance
@@ -276,31 +277,31 @@ export default function ReimburseScreen() {
 
             if (dayTxs.length > 0 || dayInflowTotal > 0) {
                 dailyText += ` *${dayName}*\n`;
-                dailyText += ` Kas Awal : ${formatCurrency(dayStart)}\n`;
+                dailyText += ` - Kas Awal : ${formatCurrency(dayStart)}\n`;
                 if (dayInflowTotal > 0) {
-                    dailyText += ` Kas Masuk : ${formatCurrency(dayInflowTotal)}\n`;
+                    dailyText += ` - Kas Masuk : ${formatCurrency(dayInflowTotal)}\n`;
                 }
-                dailyText += ` Kas Keluar : ${formatCurrency(dayExpense)}\n`;
-                dailyText += ` Kas Akhir : ${formatCurrency(dayEnd)}\n`;
+                dailyText += ` - Kas Keluar : ${formatCurrency(dayExpense)}\n`;
+                dailyText += ` - Kas Akhir : ${formatCurrency(dayEnd)}\n`;
 
                 if (dayInflows.length > 0) {
                     dailyText += ` *Detail Masuk:*\n`;
                     dayInflows.forEach(inf => {
-                        dailyText += `▫ ${inf.keterangan || "Tambahan Modal"} : ${formatCurrency(Number(inf.jumlah))}\n`;
+                        dailyText += ` • ${inf.keterangan || "Tambahan Modal"} : ${formatCurrency(Number(inf.jumlah))}\n`;
                     });
                 }
 
                 if (dayTxs.length > 0) {
-                    dailyText += `🔻 *Item:*\n`;
+                    dailyText += ` *Item:*\n`;
                     dayTxs.forEach(tx => {
                         const items = tx.transaction_items || [];
                         if (items.length > 0) {
                             items.forEach((item: any) => {
                                 const qtyStr = item.qty ? `(${item.qty} ${item.satuan || ''})` : '';
-                                dailyText += `▫ ${item.deskripsi} ${qtyStr} : ${formatCurrency(Number(item.total_harga))}\n`;
+                                dailyText += ` • ${item.deskripsi} ${qtyStr} : ${formatCurrency(Number(item.total_harga))}\n`;
                             });
                         } else {
-                            dailyText += `▫ ${tx.deskripsi || "Pengeluaran"} : ${formatCurrency(Number(tx.grand_total))}\n`;
+                            dailyText += ` • ${tx.deskripsi || "Pengeluaran"} : ${formatCurrency(Number(tx.grand_total))}\n`;
                         }
                     });
                 }
@@ -313,14 +314,14 @@ export default function ReimburseScreen() {
         const combinedSaldoAwal = residual + totalInflowPeriod;
 
         const summaryParts = [
-            `━━━━━━━━━━━━━━━━━━━`,
-            `📊 *RINGKASAN AKHIR*`,
-            `━━━━━━━━━━━━━━━━━━━`,
-            `🟢 Total Saldo Awal : ${formatCurrency(combinedSaldoAwal)}`,
-            `🔴 Total Pengeluaran : ${formatCurrency(totalRealExpense)}`,
-            `🔵 *Sisa Saldo Fisik : ${formatCurrency(currentBalance)}*`,
-            ``,
-            `🙏 Mohon dicek dan diproses. Terima kasih.`,
+            `-------------------`,
+            `*RINGKASAN AKHIR*`,
+            `-------------------`,
+            ` - Total Saldo Awal : ${formatCurrency(combinedSaldoAwal)}`,
+            ` - Total Pengeluaran : ${formatCurrency(totalRealExpense)}`,
+            ` *Sisa Saldo Fisik : ${formatCurrency(currentBalance)}*`,
+            ``, // Separator
+            `🙏 Mohon dicek dan diproses. Terima kasih.`
         ];
 
         const summary = summaryParts.join('\n');
@@ -447,154 +448,168 @@ export default function ReimburseScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.modalCard}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>Request Reimburse</Text>
-                        <Text style={styles.modalSubtitle}>Pengajuan ke Finance Pusat</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-                    {/* Date Range */}
-                    <View style={styles.formGroup}>
-                        <Text style={styles.itemLabel}>Periode Transaksi</Text>
-                        <View style={styles.dateRow}>
-                            <View style={styles.dateField}>
-                                <PlatformDatePicker
-                                    label="Dari"
-                                    value={startDate}
-                                    onChange={(d) => { setStartDate(d); setIsCalculated(false); }}
-                                    maximumDate={new Date()}
-                                />
-                            </View>
-                            <View style={styles.dateField}>
-                                <PlatformDatePicker
-                                    label="Sampai"
-                                    value={endDate}
-                                    onChange={(d) => { setEndDate(d); setIsCalculated(false); }}
-                                    maximumDate={new Date()}
-                                />
-                            </View>
+        <LinearGradient
+            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+            locations={[0, 0.3, 0.8, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <View style={styles.glassCard}>
+                    {/* Modal Header */}
+                    <View style={styles.modalHeader}>
+                        <View>
+                            <Text style={styles.modalTitle}>Request Reimburse</Text>
+                            <Text style={styles.modalSubtitle}>Pengajuan ke Finance Pusat</Text>
                         </View>
-                        <TouchableOpacity
-                            style={styles.calculateBtn}
-                            onPress={calculateTotal}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <ActivityIndicator color="#4338ca" />
-                            ) : (
-                                <>
-                                    <Text style={styles.calculateIcon}>🧮</Text>
-                                    <Text style={styles.calculateText}>Hitung Total</Text>
-                                </>
-                            )}
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Text style={styles.closeBtnText}>✕</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Manual Total Amount & Residual */}
-                    {isCalculated && (
-                        <View>
-                            <View style={[styles.totalCard, { backgroundColor: '#f0f9ff' }]}>
-                                <Text style={[styles.totalLabel, { color: '#0369a1' }]}>Sisa Saldo Sebelumnya (Otomatis)</Text>
-                                <Text style={{ fontSize: 18, fontWeight: '800', color: '#0369a1' }}>
-                                    {formatCurrency(automatedResidual)}
-                                </Text>
-                                <Text style={styles.totalHint}>
-                                    Dihitung dari sisa uang fisik sebelum kas masuk terakhir.
-                                </Text>
-                            </View>
-
-                            <View style={[styles.totalCard, { backgroundColor: '#dcfce7' }]}>
-                                <Text style={[styles.totalLabel, { color: '#166534' }]}>Total Pengajuan (Bisa Diedit)</Text>
-                                <View style={[styles.manualInputContainer, { borderColor: '#86efac' }]}>
-                                    <Text style={[styles.prefix, { color: '#15803d' }]}>Rp</Text>
-                                    <TextInput
-                                        style={[styles.manualInput, { color: '#15803d' }]}
-                                        value={manualTotalAmount ? Number(manualTotalAmount).toLocaleString('id-ID') : "0"}
-                                        onChangeText={handleManualChange}
-                                        keyboardType="numeric"
+                    <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                        {/* Date Range */}
+                        <View style={styles.formGroup}>
+                            <Text style={styles.itemLabel}>Periode Transaksi</Text>
+                            <View style={styles.dateRow}>
+                                <View style={styles.dateField}>
+                                    <PlatformDatePicker
+                                        label="Dari"
+                                        value={startDate}
+                                        onChange={(d) => { setStartDate(d); setIsCalculated(false); }}
+                                        maximumDate={new Date()}
+                                    />
+                                </View>
+                                <View style={styles.dateField}>
+                                    <PlatformDatePicker
+                                        label="Sampai"
+                                        value={endDate}
+                                        onChange={(d) => { setEndDate(d); setIsCalculated(false); }}
+                                        maximumDate={new Date()}
                                     />
                                 </View>
                             </View>
-                        </View>
-                    )}
-
-                    {/* Preview */}
-                    <View style={styles.formGroup}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                            <Text style={[styles.itemLabel, { marginBottom: 0 }]}>Preview Pesan WhatsApp</Text>
-                            <TouchableOpacity onPress={copyToClipboard} style={{ backgroundColor: '#e0e7ff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                                <Text style={{ fontSize: 12 }}>📋</Text>
-                                <Text style={{ color: '#4338ca', fontSize: 11, fontWeight: '700' }}>Salin Text</Text>
+                            <TouchableOpacity
+                                style={styles.calculateBtn}
+                                onPress={calculateTotal}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <ActivityIndicator color="#4338ca" />
+                                ) : (
+                                    <>
+                                        <Text style={styles.calculateIcon}>🧮</Text>
+                                        <Text style={styles.calculateText}>Hitung Total</Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
                         </View>
-                        <View style={styles.previewCard}>
-                            <TextInput
-                                style={[styles.previewText, { minHeight: 150 }]}
-                                value={previewText}
-                                multiline
-                                editable={false} // User edits via fields, not text directly for now to keep format
-                            />
+
+                        {/* Manual Total Amount & Residual */}
+                        {isCalculated && (
+                            <View>
+                                <View style={[styles.totalCard, { backgroundColor: '#f0f9ff' }]}>
+                                    <Text style={[styles.totalLabel, { color: '#0369a1' }]}>Sisa Saldo Sebelumnya (Otomatis)</Text>
+                                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#0369a1' }}>
+                                        {formatCurrency(automatedResidual)}
+                                    </Text>
+                                    <Text style={styles.totalHint}>
+                                        Dihitung dari sisa uang fisik sebelum kas masuk terakhir.
+                                    </Text>
+                                </View>
+
+                                <View style={[styles.totalCard, { backgroundColor: '#dcfce7' }]}>
+                                    <Text style={[styles.totalLabel, { color: '#166534' }]}>Total Pengajuan (Bisa Diedit)</Text>
+                                    <View style={[styles.manualInputContainer, { borderColor: '#86efac' }]}>
+                                        <Text style={[styles.prefix, { color: '#15803d' }]}>Rp</Text>
+                                        <TextInput
+                                            style={[styles.manualInput, { color: '#15803d' }]}
+                                            value={manualTotalAmount ? Number(manualTotalAmount).toLocaleString('id-ID') : "0"}
+                                            onChangeText={handleManualChange}
+                                            keyboardType="numeric"
+                                        />
+                                    </View>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Preview */}
+                        <View style={styles.formGroup}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <Text style={[styles.itemLabel, { marginBottom: 0 }]}>Preview Pesan WhatsApp</Text>
+                                <TouchableOpacity onPress={copyToClipboard} style={{ backgroundColor: '#e0e7ff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                    <Text style={{ fontSize: 12 }}>📋</Text>
+                                    <Text style={{ color: '#4338ca', fontSize: 11, fontWeight: '700' }}>Salin Text</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.previewCard}>
+                                <TextInput
+                                    style={[styles.previewText, { minHeight: 150 }]}
+                                    value={previewText}
+                                    multiline
+                                    editable={false} // User edits via fields, not text directly for now to keep format
+                                />
+                            </View>
                         </View>
+                    </ScrollView>
+
+                    {/* Footer */}
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity
+                            style={[
+                                styles.btnPrimary,
+                                (!isCalculated || manualTotalAmount === "") && styles.btnDisabled,
+                            ]}
+                            onPress={submitReimburse}
+                            disabled={isLoading || !isCalculated || manualTotalAmount === ""}
+                        >
+                            {isLoading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Ajukan Request</Text>}
+                        </TouchableOpacity>
                     </View>
-                </ScrollView>
-
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={[
-                            styles.btnPrimary,
-                            (!isCalculated || manualTotalAmount === "") && styles.btnDisabled,
-                        ]}
-                        onPress={submitReimburse}
-                        disabled={isLoading || !isCalculated || manualTotalAmount === ""}
-                    >
-                        {isLoading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Ajukan Request</Text>}
-                    </TouchableOpacity>
                 </View>
-            </View>
 
-            {/* Message Modal */}
-            <MessageModal
-                visible={modalVisible}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onClose={() => {
-                    setModalVisible(false);
-                    // If success, go back
-                    if (modalConfig.type === "success") {
-                        handleSuccessClose();
-                    }
-                }}
-            />
-        </SafeAreaView>
+                {/* Message Modal */}
+                <MessageModal
+                    visible={modalVisible}
+                    title={modalConfig.title}
+                    message={modalConfig.message}
+                    type={modalConfig.type}
+                    onClose={() => {
+                        setModalVisible(false);
+                        // Only go back if it's a successful Submission (Title is "Berhasil!")
+                        if (modalConfig.type === "success" && modalConfig.title === "Berhasil!") {
+                            handleSuccessClose();
+                        }
+                    }}
+                />
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
+        // backgroundColor: "#f0f4d0", // Removed for glass
     },
-    modalCard: {
+    glassCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.55)", // Glass Transparency
         margin: 16,
-        borderRadius: 20,
+        borderRadius: 24,
         overflow: "hidden",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 40,
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
         elevation: 10,
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.6)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     // Modal Header
     modalHeader: {
@@ -603,25 +618,27 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: "800",
-        color: "#1a1a1a",
+        color: "#1E293B", // Dark Slate
     },
     modalSubtitle: {
         fontSize: 13,
-        color: "#666",
+        color: "#475569",
         marginTop: 2,
     },
     closeBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.5)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     closeBtnText: {
         fontSize: 16,

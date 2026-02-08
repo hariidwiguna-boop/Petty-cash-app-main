@@ -34,11 +34,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     initialize: async () => {
         try {
             const { data: session } = await authService.getSession();
-            set({ session, isLoading: false, isInitialized: true });
 
             if (session) {
+                set({ session });
                 await get().fetchProfile();
             }
+
+            set({ session, isLoading: false, isInitialized: true });
 
             // Keep strict listener for auth state changes
             supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
@@ -65,8 +67,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             return { error };
         }
 
-        set({ session, isLoading: false });
+        set({ session });
         await get().fetchProfile();
+        set({ isLoading: false });
+
         return { error: null };
     },
 

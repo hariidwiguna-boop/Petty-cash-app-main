@@ -7,6 +7,7 @@ import {
     Platform,
     ActivityIndicator,
     Dimensions,
+    TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -393,30 +394,19 @@ export default function ReportsScreen() {
 
     const formatCurrency = (a: number) => "Rp " + a.toLocaleString("id-ID");
 
-    const AnimatedSummaryCard = ({ title, value, icon, color, trend }: {
-        title: string; value: number; icon: string; color: string; trend?: string;
+    const SummaryCard = ({ title, value, icon, color }: {
+        title: string; value: number; icon: string; color: string;
     }) => {
         return (
-            <GlassCard
-                floating={true}
-                elevation="heavy"
-                style={styles.summaryCard}
-            >
-                <View style={styles.cardHeader}>
-                    <Feather name={icon as any} size={24} color={color} />
-                    {trend && (
-                        <Text style={[styles.trendText, { color }]}>
-                            {trend}
-                        </Text>
-                    )}
+            <View style={styles.summaryCard}>
+                <View style={styles.cardLeft}>
+                    <Feather name={icon as any} size={20} color={color} />
+                    <Text style={styles.cardTitle}>{title}</Text>
                 </View>
                 <Text style={[styles.cardValue, { color }]}>
                     {formatCurrency(value)}
                 </Text>
-                <Text style={styles.cardTitle}>
-                    {title}
-                </Text>
-            </GlassCard>
+            </View>
         );
     };
 
@@ -453,12 +443,13 @@ export default function ReportsScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Background Gradient */}
+            {/* Background Gradient - Red to White */}
             <LinearGradient
-                colors={['#1e293b', '#0f172a']}
+                colors={['#991B1B', '#DC2626', '#FEE2E2', '#FFFFFF']}
+                locations={[0, 0.15, 0.4, 1]}
                 style={StyleSheet.absoluteFillObject}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                end={{ x: 0, y: 1 }}
             />
 
             <ScrollView
@@ -466,103 +457,54 @@ export default function ReportsScreen() {
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Header Section */}
-                <GlassCard elevation="extreme" style={styles.headerCard}>
-                    <View style={styles.headerContent}>
-                        <Text style={styles.headerTitle}>
-                            📊 Premium Reports
-                        </Text>
-                        <View style={styles.datePickerContainer}>
-                            <View style={styles.datePickerWrapper}>
-                                <PlatformDatePicker
-                                    label="Dari"
-                                    value={startDate ? new Date(startDate) : new Date()}
-                                    onChange={(d) => setStartDate(d.toISOString().split('T')[0])}
-                                />
-                            </View>
-                            <View style={styles.datePickerWrapper}>
-                                <PlatformDatePicker
-                                    label="Sampai"
-                                    value={endDate ? new Date(endDate) : new Date()}
-                                    onChange={(d) => setEndDate(d.toISOString().split('T')[0])}
-                                />
-                            </View>
-                        </View>
+                {/* Header Section - Simplified */}
+                <View style={styles.headerCard}>
+                    {/* Back Button + Title Row */}
+                    <View style={styles.headerRow}>
+                        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+                            <Text style={styles.backBtnText}>←</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.headerTitle}>📊 Laporan Transaksi</Text>
+                    </View>
 
-                        {/* Action Buttons */}
-                        <View style={styles.actionContainer}>
-                            <GlassButton
-                                variant="primary"
-                                onPress={generateReport}
-                                loading={isLoading}
-                                particles={true}
-                                particleTrigger="onPress"
-                                fullWidth
-                                style={{ marginBottom: 12 }}
-                                leftIcon={<Text style={{ fontSize: 18 }}>📊</Text>}
-                            >
-                                {isLoading ? 'Loading...' : 'Generate View'}
-                            </GlassButton>
-                            <GlassButton
-                                variant="secondary"
-                                onPress={generateExcelReport}
-                                loading={isExporting}
-                                particles={true}
-                                particleTrigger="onPress"
-                                fullWidth
-                                leftIcon={<Text style={{ fontSize: 18 }}>📥</Text>}
-                            >
-                                {isExporting ? 'Loading...' : 'Export Excel'}
-                            </GlassButton>
+                    <View style={styles.datePickerContainer}>
+                        <View style={styles.datePickerWrapper}>
+                            <PlatformDatePicker
+                                label="Dari"
+                                value={startDate ? new Date(startDate) : new Date()}
+                                onChange={(d) => setStartDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)}
+                            />
+                        </View>
+                        <View style={styles.datePickerWrapper}>
+                            <PlatformDatePicker
+                                label="Sampai"
+                                value={endDate ? new Date(endDate) : new Date()}
+                                onChange={(d) => setEndDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`)}
+                            />
                         </View>
                     </View>
-                </GlassCard>
 
-                {/* Summary Cards */}
+                    {/* Simple Text Buttons */}
+                    <View style={styles.actionContainer}>
+                        <TouchableOpacity style={styles.textButton} onPress={generateReport} disabled={isLoading}>
+                            <Text style={styles.textButtonLabel}>📊 {isLoading ? 'Loading...' : 'Generate View'}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.textButton} onPress={generateExcelReport} disabled={isExporting}>
+                            <Text style={styles.textButtonLabel}>📥 {isExporting ? 'Loading...' : 'Export Excel'}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Summary Cards - Vertical Stack */}
                 <View style={styles.summaryContainer}>
-                    <AnimatedSummaryCard
-                        title="Kas Masuk"
-                        value={totals.masuk}
-                        icon="trending-up"
-                        color="#10b981"
-                        trend="+12.5%"
-                    />
-                    <AnimatedSummaryCard
-                        title="Kas Keluar"
-                        value={totals.keluar}
-                        icon="trending-down"
-                        color="#ef4444"
-                        trend="-8.3%"
-                    />
-                    <AnimatedSummaryCard
-                        title="Saldo Net"
-                        value={totals.saldo}
-                        icon="wallet"
-                        color={totals.saldo >= 0 ? "#10b981" : "#ef4444"}
-                        trend="+5.7%"
-                    />
-                    <AnimatedSummaryCard
-                        title="Total Transaksi"
-                        value={report.length}
-                        icon="receipt"
-                        color="#3b82f6"
-                        trend="+15"
-                    />
+                    <SummaryCard title="Kas Masuk" value={totals.masuk} icon="trending-up" color="#10b981" />
+                    <SummaryCard title="Kas Keluar" value={totals.keluar} icon="trending-down" color="#ef4444" />
+                    <SummaryCard title="Saldo Net" value={totals.saldo} icon="wallet" color={totals.saldo >= 0 ? "#10b981" : "#ef4444"} />
+                    <SummaryCard title="Total Transaksi" value={report.length} icon="file-text" color="#3b82f6" />
                 </View>
 
                 {/* Data Table */}
                 <GlassDataTable />
-
-                {/* Action Back - Moved inside ScrollView */}
-                <View style={styles.bottomActions}>
-                    <GlassButton
-                        variant="secondary"
-                        onPress={() => router.back()}
-                        style={styles.backButton}
-                    >
-                        ← Kembali
-                    </GlassButton>
-                </View>
             </ScrollView>
 
             {/* Message Modal */}
@@ -590,46 +532,75 @@ const styles = StyleSheet.create({
     },
     headerCard: {
         marginHorizontal: 16,
-        marginTop: 20,
-        marginBottom: 20,
+        marginTop: 12,
+        marginBottom: 12,
     },
     headerContent: {
         alignItems: 'center',
-        padding: 24,
+        padding: 16,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    backBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    backBtnText: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#fff',
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: '800',
         color: 'rgba(255, 255, 255, 0.95)',
-        marginBottom: 24,
-        textAlign: 'center',
     },
     datePickerContainer: {
         width: '100%',
-        gap: 12,
-        marginBottom: 24,
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 12,
     },
     datePickerWrapper: {
-        width: '100%',
+        flex: 1,
     },
     actionContainer: {
         width: '100%',
-        gap: 12,
+        flexDirection: 'row',
+        gap: 8,
     },
     summaryContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        paddingHorizontal: 8,
-        marginBottom: 20,
-        gap: 12,
-        justifyContent: 'center',
+        paddingHorizontal: 16,
+        marginBottom: 12,
+        gap: 8,
     },
     summaryCard: {
-        width: screenWidth > 600 ? '23%' : '44%',
-        marginHorizontal: 0,
-        marginVertical: 4,
-        padding: 16,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.35)',
+        borderRadius: 14,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    cardLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -643,55 +614,67 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     cardValue: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '800',
-        marginBottom: 4,
-        textAlign: 'center',
+        color: '#1f2937',
     },
     cardTitle: {
-        fontSize: 11,
-        color: 'rgba(255, 255, 255, 0.7)',
-        textAlign: 'center',
+        fontSize: 13,
+        color: '#374151',
+        fontWeight: '600',
+    },
+    textButton: {
+        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    textButtonLabel: {
+        color: 'white',
+        fontSize: 13,
+        fontWeight: '700',
     },
     tableContainer: {
         marginHorizontal: 16,
-        padding: 20,
-        marginBottom: 20,
+        padding: 12,
+        marginBottom: 12,
     },
     emptyContainer: {
         marginHorizontal: 16,
-        padding: 40,
+        padding: 24,
         alignItems: 'center',
     },
     emptyText: {
         textAlign: 'center',
         color: 'rgba(255, 255, 255, 0.6)',
-        fontSize: 16,
+        fontSize: 14,
     },
     tableRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 16,
+        padding: 12,
         backgroundColor: glassmorphism.surface.light,
-        borderRadius: 12,
-        marginBottom: 8,
+        borderRadius: 10,
+        marginBottom: 6,
         alignItems: 'center',
     },
     rowLeft: {
         flex: 1,
     },
     rowDate: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '600',
         color: 'rgba(255, 255, 255, 0.9)',
-        marginBottom: 4,
+        marginBottom: 2,
     },
     rowOutlet: {
-        fontSize: 12,
+        fontSize: 10,
         color: 'rgba(255, 255, 255, 0.6)',
     },
     rowAmount: {
-        fontSize: 16,
+        fontSize: 13,
         fontWeight: '800',
     },
     bottomActions: {

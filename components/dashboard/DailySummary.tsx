@@ -3,7 +3,7 @@
 // ============================================
 
 import * as React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Transaction, TransactionItem } from '../../lib/supabase';
 
 interface DailySummaryProps {
@@ -85,18 +85,19 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
 
 const styles = StyleSheet.create({
     dailySummaryCard: {
-        backgroundColor: "rgba(255, 255, 255, 0.9)",
-        borderRadius: 16,
-        padding: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
+        borderRadius: 24,
+        padding: 20,
         marginHorizontal: 20,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.6)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 4,
+        marginBottom: 20,
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.8)", // Crisper border
+        shadowColor: "#1E293B",
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
+        elevation: 8,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     dailyHeader: {
         flexDirection: "row",
@@ -108,13 +109,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     dailyTitle: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: "#1a1a1a",
+        fontSize: 16,
+        fontWeight: "800",
+        color: "#0F172A", // Sharper dark
+        letterSpacing: 0.5,
     },
     dailyDate: {
         fontSize: 12,
-        color: "#666",
+        color: "#334155", // Darker gray
         marginBottom: 12,
         paddingBottom: 12,
         borderBottomWidth: 1,
@@ -127,7 +129,8 @@ const styles = StyleSheet.create({
     },
     dailyStatText: {
         fontSize: 13,
-        color: "#444",
+        color: "#334155", // Sharper text
+        fontWeight: "600",
     },
     progressContainer: {
         backgroundColor: "#f9fafb",
@@ -141,12 +144,13 @@ const styles = StyleSheet.create({
     },
     progressLabelText: {
         fontSize: 12,
-        color: "#666",
+        color: "#475569", // Darker slate
+        fontWeight: "600",
     },
     progressPercent: {
         fontSize: 12,
-        fontWeight: "700",
-        color: "#1a1a1a",
+        fontWeight: "800",
+        color: "#0F172A",
     },
     progressBar: {
         height: 8,

@@ -9,6 +9,7 @@ import {
     Alert,
     Modal,
     StyleSheet,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -17,6 +18,7 @@ import { supabase, Transaction, TransactionItem } from "../../../lib/supabase";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import MessageModal from "../../../components/MessageModal";
 import { PaginationService, PaginatedResult, usePagination } from "../../../lib/pagination";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface TransactionWithItems extends Transaction {
     items: TransactionItem[];
@@ -262,306 +264,319 @@ export default function HistoryScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.modalCard}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>📜 Riwayat Transaksi</Text>
-                        <Text style={styles.modalSubtitle}>Semua pengeluaran kas Anda</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Filter Section */}
-                <View style={styles.filterSection}>
-                    <View style={{ flex: 1 }}>
-                        <PlatformDatePicker
-                            value={startDate ? new Date(startDate) : new Date()}
-                            onChange={(d) => setStartDate(d.toISOString().split('T')[0])}
-                            label="Dari"
-                        />
-                    </View>
-                    <View style={{ width: 10 }} />
-                    <View style={{ flex: 1 }}>
-                        <PlatformDatePicker
-                            value={endDate ? new Date(endDate) : new Date()}
-                            onChange={(d) => setEndDate(d.toISOString().split('T')[0])}
-                            label="Sampai"
-                        />
-                    </View>
-                    <TouchableOpacity style={styles.filterBtn} onPress={() => paginationState.fetchData(1)}>
-                        <Text style={styles.filterBtnIcon}>🔍</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Content */}
-                <ScrollView
-                    style={styles.modalContent}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                >
-{paginationState.data.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyIcon}>📭</Text>
-                            <Text style={styles.emptyText}>Belum ada transaksi</Text>
+        <LinearGradient
+            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+            locations={[0, 0.3, 0.8, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <View style={styles.glassCard}>
+                    {/* Modal Header */}
+                    <View style={styles.modalHeader}>
+                        <View>
+                            <Text style={styles.modalTitle}>📜 Riwayat Transaksi</Text>
+                            <Text style={styles.modalSubtitle}>Semua pengeluaran kas Anda</Text>
                         </View>
-                    ) : (
-                        paginationState.data.map((tx) => (
-                            <View key={tx.id} style={styles.txItem}>
-                                {/* Transaction Header */}
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Text style={styles.closeBtnText}>✕</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Filter Section */}
+                    <View style={styles.filterSection}>
+                        <View style={{ flex: 1 }}>
+                            <PlatformDatePicker
+                                value={startDate ? new Date(startDate) : new Date()}
+                                onChange={(d) => setStartDate(d.toISOString().split('T')[0])}
+                                label="Dari"
+                            />
+                        </View>
+                        <View style={{ width: 10 }} />
+                        <View style={{ flex: 1 }}>
+                            <PlatformDatePicker
+                                value={endDate ? new Date(endDate) : new Date()}
+                                onChange={(d) => setEndDate(d.toISOString().split('T')[0])}
+                                label="Sampai"
+                            />
+                        </View>
+                        <TouchableOpacity style={styles.filterBtn} onPress={() => paginationState.fetchData(1)}>
+                            <Text style={styles.filterBtnIcon}>🔍</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Content */}
+                    <ScrollView
+                        style={styles.modalContent}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
+                    >
+                        {paginationState.data.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Text style={styles.emptyIcon}>📭</Text>
+                                <Text style={styles.emptyText}>Belum ada transaksi</Text>
+                            </View>
+                        ) : (
+                            paginationState.data.map((tx) => (
+                                <View key={tx.id} style={styles.txItem}>
+                                    {/* Transaction Header */}
+                                    <TouchableOpacity
+                                        style={styles.txHeader}
+                                        onPress={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <View style={styles.txInfo}>
+                                            <View
+                                                style={[
+                                                    styles.txIcon,
+                                                    tx.tipe === "Kas Keluar"
+                                                        ? styles.txIconOut
+                                                        : styles.txIconIn,
+                                                ]}
+                                            >
+                                                <Text>{tx.tipe === "Kas Keluar" ? "📤" : "📥"}</Text>
+                                            </View>
+                                            <View style={styles.txDetails}>
+                                                <Text style={styles.txType}>{tx.tipe}</Text>
+                                                <Text style={styles.txDate}>{formatDate(tx.tanggal)}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.txRight}>
+                                            <Text
+                                                style={[
+                                                    styles.txAmount,
+                                                    tx.tipe === "Kas Keluar"
+                                                        ? styles.txAmountOut
+                                                        : styles.txAmountIn,
+                                                ]}
+                                            >
+                                                {tx.tipe === "Kas Keluar" ? "-" : "+"}
+                                                {formatCurrency(tx.grand_total)}
+                                            </Text>
+                                            <View
+                                                style={[
+                                                    styles.statusBadge,
+                                                    tx.status_reimburse === "Disetujui" && styles.statusApproved,
+                                                    tx.status_reimburse === "Diajukan" && styles.statusPending,
+                                                ]}
+                                            >
+                                                <Text style={styles.statusText}>{tx.status_reimburse}</Text>
+                                            </View>
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    {/* Expanded Items */}
+                                    {expandedId === tx.id && (
+                                        <View style={styles.txExpanded}>
+                                            <Text style={styles.txExpandedTitle}>Detail Item:</Text>
+                                            {tx.items.map((item: TransactionItem, idx: number) => (
+                                                <View key={item.id || idx} style={styles.txExpandedItem}>
+                                                    <Text style={styles.txExpandedDesc}>{item.deskripsi}</Text>
+                                                    <Text style={styles.txExpandedQty}>
+                                                        {item.qty} {item.satuan}
+                                                    </Text>
+                                                    <Text style={styles.txExpandedAmount}>
+                                                        {formatCurrency(item.total_harga)}
+                                                    </Text>
+                                                </View>
+                                            ))}
+
+                                            {/* Action Buttons */}
+                                            <View style={styles.txActions}>
+                                                <TouchableOpacity
+                                                    style={styles.editBtn}
+                                                    onPress={() => openEditModal(tx)}
+                                                >
+                                                    <Text style={styles.editBtnText}>✏️ Edit</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    style={styles.deleteBtn}
+                                                    onPress={() => handleDeletePress(tx.id)}
+                                                >
+                                                    <Text style={styles.deleteBtnText}>🗑️ Hapus</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+                                </View>
+                            ))
+                        )}
+
+                        {/* Pagination Controls */}
+                        {paginationState.pagination.totalPages > 1 && (
+                            <View style={styles.paginationContainer}>
                                 <TouchableOpacity
-                                    style={styles.txHeader}
-                                    onPress={() => setExpandedId(expandedId === tx.id ? null : tx.id)}
-                                    activeOpacity={0.7}
+                                    style={[
+                                        styles.paginationBtn,
+                                        !paginationState.pagination.hasPreviousPage && styles.paginationBtnDisabled
+                                    ]}
+                                    onPress={paginationState.previousPage}
+                                    disabled={!paginationState.pagination.hasPreviousPage}
                                 >
-                                    <View style={styles.txInfo}>
-                                        <View
-                                            style={[
-                                                styles.txIcon,
-                                                tx.tipe === "Kas Keluar"
-                                                    ? styles.txIconOut
-                                                    : styles.txIconIn,
-                                            ]}
-                                        >
-                                            <Text>{tx.tipe === "Kas Keluar" ? "📤" : "📥"}</Text>
-                                        </View>
-                                        <View style={styles.txDetails}>
-                                            <Text style={styles.txType}>{tx.tipe}</Text>
-                                            <Text style={styles.txDate}>{formatDate(tx.tanggal)}</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.txRight}>
-                                        <Text
-                                            style={[
-                                                styles.txAmount,
-                                                tx.tipe === "Kas Keluar"
-                                                    ? styles.txAmountOut
-                                                    : styles.txAmountIn,
-                                            ]}
-                                        >
-                                            {tx.tipe === "Kas Keluar" ? "-" : "+"}
-                                            {formatCurrency(tx.grand_total)}
-                                        </Text>
-                                        <View
-                                            style={[
-                                                styles.statusBadge,
-                                                tx.status_reimburse === "Disetujui" && styles.statusApproved,
-                                                tx.status_reimburse === "Diajukan" && styles.statusPending,
-                                            ]}
-                                        >
-                                            <Text style={styles.statusText}>{tx.status_reimburse}</Text>
-                                        </View>
-                                    </View>
+                                    <Text style={styles.paginationBtnText}>← Sebelumnya</Text>
                                 </TouchableOpacity>
 
-                                {/* Expanded Items */}
-                                {expandedId === tx.id && (
-                                    <View style={styles.txExpanded}>
-                                        <Text style={styles.txExpandedTitle}>Detail Item:</Text>
-                                        {tx.items.map((item: TransactionItem, idx: number) => (
-                                            <View key={item.id || idx} style={styles.txExpandedItem}>
-                                                <Text style={styles.txExpandedDesc}>{item.deskripsi}</Text>
-                                                <Text style={styles.txExpandedQty}>
-                                                    {item.qty} {item.satuan}
-                                                </Text>
-                                                <Text style={styles.txExpandedAmount}>
-                                                    {formatCurrency(item.total_harga)}
-                                                </Text>
-                                            </View>
-                                        ))}
-
-                                        {/* Action Buttons */}
-                                        <View style={styles.txActions}>
-                                            <TouchableOpacity
-                                                style={styles.editBtn}
-                                                onPress={() => openEditModal(tx)}
-                                            >
-                                                <Text style={styles.editBtnText}>✏️ Edit</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                style={styles.deleteBtn}
-                                                onPress={() => handleDeletePress(tx.id)}
-                                            >
-                                                <Text style={styles.deleteBtnText}>🗑️ Hapus</Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-                                )}
-                            </View>
-                        ))
-                    )}
-
-                    {/* Pagination Controls */}
-                    {paginationState.pagination.totalPages > 1 && (
-                        <View style={styles.paginationContainer}>
-                            <TouchableOpacity
-                                style={[
-                                    styles.paginationBtn,
-                                    !paginationState.pagination.hasPreviousPage && styles.paginationBtnDisabled
-                                ]}
-                                onPress={paginationState.previousPage}
-                                disabled={!paginationState.pagination.hasPreviousPage}
-                            >
-                                <Text style={styles.paginationBtnText}>← Sebelumnya</Text>
-                            </TouchableOpacity>
-
-                            <View style={styles.paginationInfo}>
-                                <Text style={styles.paginationText}>
-                                    Halaman {paginationState.pagination.currentPage} dari {paginationState.pagination.totalPages}
-                                </Text>
-                                <Text style={styles.paginationSubText}>
-                                    Total {paginationState.pagination.totalCount} transaksi
-                                </Text>
-                            </View>
-
-                            <TouchableOpacity
-                                style={[
-                                    styles.paginationBtn,
-                                    !paginationState.pagination.hasNextPage && styles.paginationBtnDisabled
-                                ]}
-                                onPress={paginationState.nextPage}
-                                disabled={!paginationState.pagination.hasNextPage}
-                            >
-                                <Text style={styles.paginationBtnText}>Selanjutnya →</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </ScrollView>
-
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={styles.btnSecondary}
-                        onPress={() => router.back()}
-                    >
-                        <Text style={styles.btnSecondaryText}>Tutup</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            {/* Edit Modal */}
-            <Modal visible={editModalVisible} animationType="slide" transparent>
-                <View style={styles.editModalOverlay}>
-                    <View style={styles.editModalCard}>
-                        <View style={styles.editModalHeader}>
-                            <Text style={styles.editModalTitle}>Edit Transaksi</Text>
-                            <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                                <Text style={styles.editModalClose}>✕</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <ScrollView style={styles.editModalContent}>
-                            <PlatformDatePicker
-                                label="Tanggal"
-                                value={editDate ? new Date(editDate) : new Date()}
-                                onChange={(d) => setEditDate(d.toISOString().split('T')[0])}
-                                maximumDate={new Date()}
-                            />
-
-                            {editItems.map((item, index) => (
-                                <View key={index} style={styles.editItemCard}>
-                                    <View style={styles.editItemHeader}>
-                                        <Text style={styles.editItemNumber}>Item {index + 1}</Text>
-                                        {editItems.length > 1 && (
-                                            <TouchableOpacity onPress={() => removeEditItem(index)}>
-                                                <Text>🗑️</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-                                    <TextInput
-                                        style={styles.editInput}
-                                        placeholder="Deskripsi"
-                                        value={item.deskripsi}
-                                        onChangeText={(v) => updateEditItem(index, "deskripsi", v)}
-                                    />
-                                    <View style={styles.editItemRow}>
-                                        <TextInput
-                                            style={[styles.editInput, { flex: 1 }]}
-                                            placeholder="Qty"
-                                            keyboardType="numeric"
-                                            value={item.qty}
-                                            onChangeText={(v) => updateEditItem(index, "qty", v)}
-                                        />
-                                        <TextInput
-                                            style={[styles.editInput, { flex: 1 }]}
-                                            placeholder="Satuan"
-                                            value={item.satuan}
-                                            onChangeText={(v) => updateEditItem(index, "satuan", v)}
-                                        />
-                                        <TextInput
-                                            style={[styles.editInput, { flex: 1 }]}
-                                            placeholder="Harga"
-                                            keyboardType="numeric"
-                                            value={item.harga}
-                                            onChangeText={(v) => updateEditItem(index, "harga", v)}
-                                        />
-                                    </View>
+                                <View style={styles.paginationInfo}>
+                                    <Text style={styles.paginationText}>
+                                        Halaman {paginationState.pagination.currentPage} dari {paginationState.pagination.totalPages}
+                                    </Text>
+                                    <Text style={styles.paginationSubText}>
+                                        Total {paginationState.pagination.totalCount} transaksi
+                                    </Text>
                                 </View>
-                            ))}
 
-                            <TouchableOpacity style={styles.addItemBtn} onPress={addEditItem}>
-                                <Text style={styles.addItemText}>➕ Tambah Item</Text>
-                            </TouchableOpacity>
-
-                            <View style={styles.editTotalCard}>
-                                <Text style={styles.editTotalLabel}>TOTAL</Text>
-                                <Text style={styles.editTotalValue}>{formatCurrency(calculateEditTotal())}</Text>
+                                <TouchableOpacity
+                                    style={[
+                                        styles.paginationBtn,
+                                        !paginationState.pagination.hasNextPage && styles.paginationBtnDisabled
+                                    ]}
+                                    onPress={paginationState.nextPage}
+                                    disabled={!paginationState.pagination.hasNextPage}
+                                >
+                                    <Text style={styles.paginationBtnText}>Selanjutnya →</Text>
+                                </TouchableOpacity>
                             </View>
-                        </ScrollView>
+                        )}
+                    </ScrollView>
 
-                        <View style={styles.editModalFooter}>
-                            <TouchableOpacity
-                                style={styles.editCancelBtn}
-                                onPress={() => setEditModalVisible(false)}
-                            >
-                                <Text style={styles.editCancelText}>Batal</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.editSaveBtn} onPress={saveEdit}>
-                                <Text style={styles.editSaveText}>Simpan</Text>
-                            </TouchableOpacity>
-                        </View>
+                    {/* Footer */}
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity
+                            style={styles.btnSecondary}
+                            onPress={() => router.back()}
+                        >
+                            <Text style={styles.btnSecondaryText}>Tutup</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+
+                {/* Edit Modal */}
+                <Modal visible={editModalVisible} animationType="slide" transparent>
+                    <View style={styles.editModalOverlay}>
+                        <View style={styles.editModalCard}>
+                            <View style={styles.editModalHeader}>
+                                <Text style={styles.editModalTitle}>Edit Transaksi</Text>
+                                <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                                    <Text style={styles.editModalClose}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <ScrollView style={styles.editModalContent}>
+                                <PlatformDatePicker
+                                    label="Tanggal"
+                                    value={editDate ? new Date(editDate) : new Date()}
+                                    onChange={(d) => setEditDate(d.toISOString().split('T')[0])}
+                                    maximumDate={new Date()}
+                                />
+
+                                {editItems.map((item, index) => (
+                                    <View key={index} style={styles.editItemCard}>
+                                        <View style={styles.editItemHeader}>
+                                            <Text style={styles.editItemNumber}>Item {index + 1}</Text>
+                                            {editItems.length > 1 && (
+                                                <TouchableOpacity onPress={() => removeEditItem(index)}>
+                                                    <Text>🗑️</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                        <TextInput
+                                            style={styles.editInput}
+                                            placeholder="Deskripsi"
+                                            value={item.deskripsi}
+                                            onChangeText={(v) => updateEditItem(index, "deskripsi", v)}
+                                        />
+                                        <View style={styles.editItemRow}>
+                                            <TextInput
+                                                style={[styles.editInput, { flex: 1 }]}
+                                                placeholder="Qty"
+                                                keyboardType="numeric"
+                                                value={item.qty}
+                                                onChangeText={(v) => updateEditItem(index, "qty", v)}
+                                            />
+                                            <TextInput
+                                                style={[styles.editInput, { flex: 1 }]}
+                                                placeholder="Satuan"
+                                                value={item.satuan}
+                                                onChangeText={(v) => updateEditItem(index, "satuan", v)}
+                                            />
+                                            <TextInput
+                                                style={[styles.editInput, { flex: 1 }]}
+                                                placeholder="Harga"
+                                                keyboardType="numeric"
+                                                value={item.harga}
+                                                onChangeText={(v) => updateEditItem(index, "harga", v)}
+                                            />
+                                        </View>
+                                    </View>
+                                ))}
+
+                                <TouchableOpacity style={styles.addItemBtn} onPress={addEditItem}>
+                                    <Text style={styles.addItemText}>➕ Tambah Item</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.editTotalCard}>
+                                    <Text style={styles.editTotalLabel}>TOTAL</Text>
+                                    <Text style={styles.editTotalValue}>{formatCurrency(calculateEditTotal())}</Text>
+                                </View>
+                            </ScrollView>
+
+                            <View style={styles.editModalFooter}>
+                                <TouchableOpacity
+                                    style={styles.editCancelBtn}
+                                    onPress={() => setEditModalVisible(false)}
+                                >
+                                    <Text style={styles.editCancelText}>Batal</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.editSaveBtn} onPress={saveEdit}>
+                                    <Text style={styles.editSaveText}>Simpan</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
 
 
 
-            {/* Message Modal */}
-            <MessageModal
-                visible={modalVisible}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onConfirm={() => {
-                    if (modalConfig.onConfirm) modalConfig.onConfirm();
-                    setModalVisible(false);
-                }}
-                onClose={() => setModalVisible(false)}
-            />
-        </SafeAreaView >
+                {/* Message Modal */}
+                <MessageModal
+                    visible={modalVisible}
+                    title={modalConfig.title}
+                    message={modalConfig.message}
+                    type={modalConfig.type}
+                    onConfirm={() => {
+                        if (modalConfig.onConfirm) modalConfig.onConfirm();
+                        setModalVisible(false);
+                    }}
+                    onClose={() => setModalVisible(false)}
+                />
+            </SafeAreaView >
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
     },
-    modalCard: {
+    glassCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.55)", // Transparent White
         margin: 16,
-        borderRadius: 20,
+        borderRadius: 24,
         overflow: "hidden",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 40,
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
         elevation: 10,
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.6)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     modalHeader: {
         flexDirection: "row",
@@ -569,25 +584,27 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: "800",
-        color: "#1a1a1a",
+        color: "#1E293B",
     },
     modalSubtitle: {
         fontSize: 13,
-        color: "#666",
+        color: "#475569",
         marginTop: 2,
     },
     closeBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.5)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     closeBtnText: {
         fontSize: 16,
@@ -600,14 +617,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        borderBottomColor: "rgba(0,0,0,0.05)",
         gap: 8,
     },
     filterInput: {
         flex: 1,
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(255,255,255,0.6)",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(0,0,0,0.1)",
         borderRadius: 8,
         paddingHorizontal: 10,
         paddingVertical: 8,
@@ -619,13 +636,14 @@ const styles = StyleSheet.create({
     filterBtn: {
         width: 40,
         height: 40,
-        backgroundColor: "#3b82f6",
+        backgroundColor: "#2563EB",
         borderRadius: 10,
         alignItems: "center",
         justifyContent: "center",
     },
     filterBtnIcon: {
         fontSize: 18,
+        color: 'white',
     },
     // Content
     modalContent: {
@@ -642,16 +660,21 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 14,
-        color: "#999",
+        color: "#64748b",
     },
     // Transaction Item
     txItem: {
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.8)", // Semi transparent
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(255,255,255,0.9)",
         borderRadius: 14,
         marginBottom: 12,
         overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
     txHeader: {
         flexDirection: "row",
@@ -682,11 +705,11 @@ const styles = StyleSheet.create({
     txType: {
         fontSize: 14,
         fontWeight: "700",
-        color: "#1a1a1a",
+        color: "#1E293B",
     },
     txDate: {
         fontSize: 12,
-        color: "#666",
+        color: "#64748b",
     },
     txRight: {
         alignItems: "flex-end",
@@ -717,13 +740,13 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 10,
         fontWeight: "600",
-        color: "#666",
+        color: "#64748b",
     },
     // Expanded
     txExpanded: {
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(249, 250, 251, 0.6)",
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.05)",
         padding: 14,
     },
     txExpandedTitle: {
@@ -760,7 +783,7 @@ const styles = StyleSheet.create({
         marginTop: 12,
         paddingTop: 12,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.05)",
     },
     editBtn: {
         flex: 1,
@@ -790,13 +813,15 @@ const styles = StyleSheet.create({
     modalFooter: {
         padding: 20,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.05)",
     },
     btnSecondary: {
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.6)",
         borderRadius: 12,
         paddingVertical: 14,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     btnSecondaryText: {
         fontSize: 15,
@@ -811,9 +836,14 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     editModalCard: {
-        backgroundColor: "white",
-        borderRadius: 20,
+        backgroundColor: "rgba(255, 255, 255, 0.95)", // High opacity for form readability
+        borderRadius: 24,
         maxHeight: "80%",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 10,
     },
     editModalHeader: {
         flexDirection: "row",
@@ -821,11 +851,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
     editModalTitle: {
         fontSize: 18,
         fontWeight: "800",
+        color: "#1E293B",
     },
     editModalClose: {
         fontSize: 20,
@@ -837,24 +868,27 @@ const styles = StyleSheet.create({
     editLabel: {
         fontSize: 13,
         fontWeight: "600",
-        color: "#374151",
+        color: "#475569",
         marginBottom: 6,
     },
     editInput: {
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(255,255,255,0.6)",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(0,0,0,0.1)",
         borderRadius: 10,
         paddingHorizontal: 12,
         paddingVertical: 10,
         fontSize: 14,
         marginBottom: 10,
+        color: "#1E293B",
     },
     editItemCard: {
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(241, 245, 249, 0.5)",
         borderRadius: 12,
         padding: 12,
         marginBottom: 10,
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     editItemHeader: {
         flexDirection: "row",
@@ -864,7 +898,7 @@ const styles = StyleSheet.create({
     editItemNumber: {
         fontSize: 12,
         fontWeight: "700",
-        color: "#6b7280",
+        color: "#64748b",
     },
     editItemRow: {
         flexDirection: "row",
@@ -903,7 +937,7 @@ const styles = StyleSheet.create({
         padding: 20,
         gap: 12,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.05)",
     },
     editCancelBtn: {
         flex: 1,
@@ -919,7 +953,7 @@ const styles = StyleSheet.create({
     },
     editSaveBtn: {
         flex: 1,
-        backgroundColor: "#C94C4C",
+        backgroundColor: "#DC2626",
         paddingVertical: 12,
         borderRadius: 10,
         alignItems: "center",
@@ -938,12 +972,17 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     deleteModalCard: {
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderRadius: 24,
         padding: 32,
         alignItems: "center",
         width: "100%",
         maxWidth: 340,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+        elevation: 10,
     },
     deleteModalIcon: {
         fontSize: 48,
@@ -953,10 +992,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "800",
         marginBottom: 8,
+        color: "#1E293B",
     },
     deleteModalText: {
         fontSize: 14,
-        color: "#666",
+        color: "#64748b",
         textAlign: "center",
         marginBottom: 24,
     },
@@ -996,11 +1036,11 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         padding: 16,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
-        backgroundColor: "#f9fafb",
+        borderTopColor: "rgba(0,0,0,0.05)",
+        backgroundColor: "rgba(255,255,255,0.4)",
     },
     paginationBtn: {
-        backgroundColor: "#3b82f6",
+        backgroundColor: "#2563EB",
         paddingHorizontal: 16,
         paddingVertical: 10,
         borderRadius: 8,
@@ -1008,7 +1048,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     paginationBtnDisabled: {
-        backgroundColor: "#d1d5db",
+        backgroundColor: "#cbd5e1",
     },
     paginationBtnText: {
         fontSize: 12,
@@ -1022,12 +1062,12 @@ const styles = StyleSheet.create({
     paginationText: {
         fontSize: 13,
         fontWeight: "600",
-        color: "#374151",
+        color: "#1E293B",
         textAlign: "center",
     },
     paginationSubText: {
         fontSize: 11,
-        color: "#6b7280",
+        color: "#64748b",
         textAlign: "center",
         marginTop: 2,
     },

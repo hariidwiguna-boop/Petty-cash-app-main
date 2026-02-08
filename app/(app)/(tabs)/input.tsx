@@ -19,6 +19,7 @@ import { useAuthStore } from "../../../stores/authStore";
 import { supabase } from "../../../lib/supabase";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import MessageModal from "../../../components/MessageModal";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface ItemRow {
     id: string;
@@ -295,203 +296,231 @@ export default function InputScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-                style={styles.keyboardView}
-            >
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                    <View style={styles.modalHeaderLeft}>
-                        <Text style={styles.modalTitle}>Catat Transaksi</Text>
-                        <Text style={styles.modalSubtitle}>Input pengeluaran kas kecil</Text>
-                    </View>
-                    <View style={styles.totalBadge}>
-                        <Text style={styles.totalLabel}>TOTAL</Text>
-                        <Text style={styles.totalValue}>{formatCurrency(calculateTotal())}</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-                    {/* Date Input */}
-                    <PlatformDatePicker
-                        label="Tanggal Transaksi"
-                        value={tanggal}
-                        onChange={setTanggal}
-                        maximumDate={new Date()}
-                    />
-
-                    {/* Items */}
-                    {items.map((item, index) => (
-                        <View key={item.id} style={styles.itemCard}>
-                            <View style={styles.itemCardHeader}>
-                                <Text style={styles.itemNumber}>Item {index + 1}</Text>
-                                {items.length > 1 && (
-                                    <TouchableOpacity onPress={() => removeItem(item.id)}>
-                                        <Text style={styles.removeBtn}>🗑️</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-
-                            {/* Smart Input for Deskripsi */}
-                            <TouchableOpacity
-                                style={[styles.formInput, styles.dropdownBtn]}
-                                onPress={() => openItemSelector(item.id, item.deskripsi)}
-                            >
-                                <Text style={item.deskripsi ? styles.inputText : styles.placeholderText}>
-                                    {item.deskripsi || "Cari / Ketik Nama Item..."}
-                                </Text>
-                                <Text>🔍</Text>
-                            </TouchableOpacity>
-
-                            <View style={styles.itemRow}>
-                                <View style={styles.itemRowField}>
-                                    <Text style={styles.itemFieldLabel}>Qty</Text>
-                                    <TextInput
-                                        style={styles.formInputSmall}
-                                        placeholder=""
-                                        keyboardType="default" // Changed to default to allow '/'
-                                        value={item.qty}
-                                        onChangeText={(v) => updateItem(item.id, "qty", v)}
-                                    />
-                                </View>
-                                <View style={styles.itemRowField}>
-                                    <Text style={styles.itemFieldLabel}>Satuan</Text>
-                                    <TextInput
-                                        style={styles.formInputSmall}
-                                        placeholder="Pcs"
-                                        value={item.satuan}
-                                        onChangeText={(v) => updateItem(item.id, "satuan", v)}
-                                    />
-                                </View>
-                                <View style={[styles.itemRowField, { flex: 1.5 }]}>
-                                    <Text style={styles.itemFieldLabel}>Total Harga</Text>
-                                    <TextInput
-                                        style={styles.formInputSmall}
-                                        placeholder="0"
-                                        keyboardType="numeric"
-                                        value={formatCurrencyInput(item.harga)}
-                                        onChangeText={(v) => handlePriceChange(item.id, v)}
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Optional: Show calculated unit price if qty exists */}
-                            {item.qty && item.harga && parseQty(item.qty) > 0 && (
-                                <Text style={styles.itemSubtotal}>
-                                    (@ {formatCurrency(parseFloat(item.harga) / parseQty(item.qty))})
-                                </Text>
-                            )}
-                        </View>
-                    ))}
-
-                    {/* Add Item Button */}
-                    <TouchableOpacity style={styles.addItemBtn} onPress={addItem}>
-                        <Text style={styles.addItemIcon}>➕</Text>
-                        <Text style={styles.addItemText}>Tambah Item</Text>
-                    </TouchableOpacity>
-
-                    {/* Bottom Padding for Scroll */}
-                    <View style={{ height: 40 }} />
-                </ScrollView>
-
-                {/* Modal Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={styles.btnSecondary}
-                        onPress={() => router.back()}
-                    >
-                        <Text style={styles.btnSecondaryText}>Batal</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.btnPrimary, isLoading && styles.btnDisabled]}
-                        onPress={handleSubmit}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text style={styles.btnPrimaryText}>Simpan</Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {/* Smart Selection Modal */}
-                <Modal
-                    visible={isItemModalVisible}
-                    animationType="slide"
-                    transparent={true}
-                    onRequestClose={() => setIsItemModalVisible(false)}
+        <LinearGradient
+            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+            locations={[0, 0.3, 0.8, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    style={styles.glassCard} // Changed to glassCard
                 >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.pickerModal}>
-                            <View style={styles.pickerHeader}>
-                                <Text style={styles.pickerTitle}>Cari Barang</Text>
-                                <TouchableOpacity onPress={() => setIsItemModalVisible(false)}>
-                                    <Text style={styles.closeBtnText}>Tutup</Text>
+                    {/* Modal Header */}
+                    <View style={styles.modalHeader}>
+                        <View style={styles.modalHeaderLeft}>
+                            <Text style={styles.modalTitle}>Catat Transaksi</Text>
+                            <Text style={styles.modalSubtitle}>Input pengeluaran kas kecil</Text>
+                        </View>
+                        <View style={styles.totalBadge}>
+                            <Text style={styles.totalLabel}>TOTAL</Text>
+                            <Text style={styles.totalValue}>{formatCurrency(calculateTotal())}</Text>
+                        </View>
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Text style={styles.closeBtnText}>✕</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                        {/* Date Input */}
+                        <PlatformDatePicker
+                            label="Tanggal Transaksi"
+                            value={tanggal}
+                            onChange={setTanggal}
+                            maximumDate={new Date()}
+                        />
+
+                        {/* Items */}
+                        {items.map((item, index) => (
+                            <View key={item.id} style={styles.itemCard}>
+                                <View style={styles.itemCardHeader}>
+                                    <Text style={styles.itemNumber}>Item {index + 1}</Text>
+                                    {items.length > 1 && (
+                                        <TouchableOpacity onPress={() => removeItem(item.id)}>
+                                            <Text style={styles.removeBtn}>🗑️</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+
+                                {/* Smart Input for Deskripsi */}
+                                <TouchableOpacity
+                                    style={[styles.formInput, styles.dropdownBtn]}
+                                    onPress={() => openItemSelector(item.id, item.deskripsi)}
+                                >
+                                    <Text style={item.deskripsi ? styles.inputText : styles.placeholderText}>
+                                        {item.deskripsi || "Cari / Ketik Nama Item..."}
+                                    </Text>
+                                    <Text>🔍</Text>
                                 </TouchableOpacity>
-                            </View>
 
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder="Ketik nama barang..."
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                                autoFocus
-                            />
+                                <View style={styles.itemRow}>
+                                    <View style={styles.itemRowField}>
+                                        <Text style={styles.itemFieldLabel}>Qty</Text>
+                                        <TextInput
+                                            style={styles.formInputSmall}
+                                            placeholder=""
+                                            keyboardType="default" // Changed to default to allow '/'
+                                            value={item.qty}
+                                            onChangeText={(v) => updateItem(item.id, "qty", v)}
+                                        />
+                                    </View>
+                                    <View style={styles.itemRowField}>
+                                        <Text style={styles.itemFieldLabel}>Satuan</Text>
+                                        <TextInput
+                                            style={styles.formInputSmall}
+                                            placeholder="Pcs"
+                                            value={item.satuan}
+                                            onChangeText={(v) => updateItem(item.id, "satuan", v)}
+                                        />
+                                    </View>
+                                    <View style={[styles.itemRowField, { flex: 1.5 }]}>
+                                        <Text style={styles.itemFieldLabel}>Total Harga</Text>
+                                        <TextInput
+                                            style={styles.formInputSmall}
+                                            placeholder="0"
+                                            keyboardType="numeric"
+                                            value={formatCurrencyInput(item.harga)}
+                                            onChangeText={(v) => handlePriceChange(item.id, v)}
+                                        />
+                                    </View>
+                                </View>
 
-                            <View style={{ flex: 1 }}>
-                                {/* Manual Input Option - Always First */}
-                                {searchQuery.length > 0 && (
-                                    <TouchableOpacity
-                                        style={styles.manualInputOption}
-                                        onPress={() => selectItem(searchQuery)}
-                                    >
-                                        <Text style={styles.manualInputLabel}>Gunakan input manual:</Text>
-                                        <Text style={styles.manualInputValue}>"{searchQuery}"</Text>
-                                        <Text style={styles.manualInputHint}>→ Klik untuk pilih ini</Text>
-                                    </TouchableOpacity>
+                                {/* Optional: Show calculated unit price if qty exists */}
+                                {item.qty && item.harga && parseQty(item.qty) > 0 && (
+                                    <Text style={styles.itemSubtotal}>
+                                        (@ {formatCurrency(parseFloat(item.harga) / parseQty(item.qty))})
+                                    </Text>
                                 )}
+                            </View>
+                        ))}
 
-                                <Text style={styles.sectionTitleSmall}>Rekomendasi Item:</Text>
+                        {/* Add Item Button */}
+                        <TouchableOpacity style={styles.addItemBtn} onPress={addItem}>
+                            <Text style={styles.addItemIcon}>➕</Text>
+                            <Text style={styles.addItemText}>Tambah Item</Text>
+                        </TouchableOpacity>
 
-                                <FlatList
-                                    data={filteredMasterItems}
-                                    keyExtractor={(item) => item.id}
-                                    renderItem={renderPickerItem}
-                                    ListEmptyComponent={
-                                        <Text style={styles.emptyList}>
-                                            {searchQuery ? "Tidak ada item master yang cocok." : "Ketik untuk mencari..."}
-                                        </Text>
-                                    }
+                        {/* Bottom Padding for Scroll */}
+                        <View style={{ height: 40 }} />
+                    </ScrollView>
+
+                    {/* Modal Footer */}
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity
+                            style={styles.btnSecondary}
+                            onPress={() => router.back()}
+                        >
+                            <Text style={styles.btnSecondaryText}>Batal</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.btnPrimary, isLoading && styles.btnDisabled]}
+                            onPress={handleSubmit}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text style={styles.btnPrimaryText}>Simpan</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Smart Selection Modal */}
+                    <Modal
+                        visible={isItemModalVisible}
+                        animationType="slide"
+                        transparent={true}
+                        onRequestClose={() => setIsItemModalVisible(false)}
+                    >
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.pickerModal}>
+                                <View style={styles.pickerHeader}>
+                                    <Text style={styles.pickerTitle}>Cari Barang</Text>
+                                    <TouchableOpacity onPress={() => setIsItemModalVisible(false)}>
+                                        <Text style={styles.closeBtnText}>Tutup</Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TextInput
+                                    style={styles.searchInput}
+                                    placeholder="Ketik nama barang..."
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                    autoFocus
                                 />
+
+                                <View style={{ flex: 1 }}>
+                                    {/* Manual Input Option - Always First */}
+                                    {searchQuery.length > 0 && (
+                                        <TouchableOpacity
+                                            style={styles.manualInputOption}
+                                            onPress={() => selectItem(searchQuery)}
+                                        >
+                                            <Text style={styles.manualInputLabel}>Gunakan input manual:</Text>
+                                            <Text style={styles.manualInputValue}>"{searchQuery}"</Text>
+                                            <Text style={styles.manualInputHint}>→ Klik untuk pilih ini</Text>
+                                        </TouchableOpacity>
+                                    )}
+
+                                    <Text style={styles.sectionTitleSmall}>Rekomendasi Item:</Text>
+
+                                    <FlatList
+                                        data={filteredMasterItems}
+                                        keyExtractor={(item) => item.id}
+                                        renderItem={renderPickerItem}
+                                        ListEmptyComponent={
+                                            <Text style={styles.emptyList}>
+                                                {searchQuery ? "Tidak ada item master yang cocok." : "Ketik untuk mencari..."}
+                                            </Text>
+                                        }
+                                    />
+                                </View>
                             </View>
                         </View>
-                    </View>
-                </Modal>
-            </KeyboardAvoidingView>
+                    </Modal>
+                </KeyboardAvoidingView>
 
-            {/* Message Modal */}
-            <MessageModal
-                visible={modalVisible}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onClose={handleModalClose}
-            />
-        </SafeAreaView >
+                {/* Message Modal */}
+                <MessageModal
+                    visible={modalVisible}
+                    title={modalConfig.title}
+                    message={modalConfig.message}
+                    type={modalConfig.type}
+                    onClose={handleModalClose}
+                />
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
+        // backgroundColor: "#f0f4d0", // Removed
+    },
+    // Glass Card Replaces KeyboardView style
+    glassCard: {
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.55)", // Transparent White
+        margin: 16,
+        borderRadius: 24,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.6)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     keyboardView: {
+        // Redundant now, but kept if referenced elsewhere, though replaced in usage
         flex: 1,
         backgroundColor: "white",
         margin: 16,
@@ -509,7 +538,7 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
         gap: 12,
     },
     modalHeaderLeft: {
@@ -518,19 +547,21 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: "800",
-        color: "#1a1a1a",
+        color: "#1E293B",
     },
     modalSubtitle: {
         fontSize: 13,
-        color: "#666",
+        color: "#475569",
         marginTop: 2,
     },
     totalBadge: {
-        backgroundColor: "#dbeafe",
+        backgroundColor: "rgba(255,255,255,0.6)", // Glassy
         borderRadius: 12,
         paddingHorizontal: 12,
         paddingVertical: 8,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.8)",
     },
     totalLabel: {
         fontSize: 10,
@@ -546,9 +577,11 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.5)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     closeBtnText: {
         fontSize: 16,

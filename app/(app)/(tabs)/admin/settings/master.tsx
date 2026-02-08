@@ -8,6 +8,10 @@ import MessageModal from "../../../../../components/MessageModal";
 
 type Tab = "items" | "categories";
 
+import AdminLayout from "../../../../../components/admin/AdminLayout";
+
+// ... imports
+
 export default function MasterDataScreen() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<Tab>("items");
@@ -130,14 +134,12 @@ export default function MasterDataScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Text style={styles.backText}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>📦 Master Data</Text>
-            </View>
-
+        <AdminLayout
+            title="📦 Master Data"
+            subtitle="Kelola item barang & kategori"
+            showBackButton={true}
+            scrollable={false}
+        >
             {/* Tabs */}
             <View style={styles.tabs}>
                 <TouchableOpacity style={[styles.tab, activeTab === "items" && styles.activeTab]} onPress={() => setActiveTab("items")}>
@@ -231,29 +233,11 @@ export default function MasterDataScreen() {
                     if (msgConfig.onConfirm) msgConfig.onConfirm();
                 }}
             />
-        </SafeAreaView>
+        </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        backgroundColor: "white",
-        gap: 16
-    },
-    backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center"
-    },
-    backText: { fontSize: 18, color: "#64748b" },
-    headerTitle: { fontSize: 18, fontWeight: "800", color: "#1a1a1a" },
     tabs: { flexDirection: "row", backgroundColor: "white", paddingHorizontal: 20 },
     tab: { paddingVertical: 12, marginRight: 24, borderBottomWidth: 2, borderBottomColor: "transparent" },
     activeTab: { borderBottomColor: "#C94C4C" },

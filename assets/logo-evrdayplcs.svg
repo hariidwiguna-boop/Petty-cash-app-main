@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 65 42" width="65" height="42">
+  <!-- 3 Black horizontal bars (left) - total height 42 with gaps -->
+  <rect x="0" y="0" width="28" height="10" fill="#0A0A0A" rx="1"/>
+  <rect x="0" y="16" width="28" height="10" fill="#0A0A0A" rx="1"/>
+  <rect x="0" y="32" width="28" height="10" fill="#0A0A0A" rx="1"/>
+  
+  <!-- White vertical bar with black outline (center) - same height as 3 bars -->
+  <rect x="32" y="0" width="10" height="42" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="2" rx="1"/>
+  
+  <!-- Red circle (right) -->
+  <circle cx="55" cy="12" r="9" fill="#DC2626"/>
+</svg>

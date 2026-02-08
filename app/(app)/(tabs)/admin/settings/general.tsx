@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Switch, TextInput, Alert, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../../lib/supabase";
 import MessageModal from "../../../../../components/MessageModal";
+import AdminLayout from "../../../../../components/admin/AdminLayout";
 
 export default function GeneralSettingsScreen() {
     const router = useRouter();
@@ -88,14 +88,11 @@ export default function GeneralSettingsScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Text style={styles.backText}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>⚙️ Pengaturan Umum</Text>
-            </View>
-
+        <AdminLayout
+            title="⚙️ Pengaturan Umum"
+            subtitle="Limit saldo, aplikasi, dll"
+            showBackButton={true}
+        >
             {isLoading ? (
                 <View style={styles.loading}>
                     <ActivityIndicator size="large" color="#C94C4C" />
@@ -166,31 +163,11 @@ export default function GeneralSettingsScreen() {
                 type={modalInfo.type}
                 onClose={() => setModalVisible(false)}
             />
-        </SafeAreaView>
+        </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        backgroundColor: "white",
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-        gap: 16
-    },
-    backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center"
-    },
-    backText: { fontSize: 18, color: "#64748b" },
-    headerTitle: { fontSize: 18, fontWeight: "800", color: "#1a1a1a" },
     loading: { flex: 1, justifyContent: "center", alignItems: "center" },
     content: { padding: 20, gap: 16 },
     card: {

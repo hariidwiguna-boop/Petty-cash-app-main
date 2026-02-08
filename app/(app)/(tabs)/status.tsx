@@ -6,11 +6,13 @@ import {
     RefreshControl,
     TouchableOpacity,
     StyleSheet,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase } from "../../../lib/supabase";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface ReimburseRequest {
     id: string;
@@ -93,111 +95,124 @@ export default function StatusScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.modalCard}>
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>📊 Status Reimburse</Text>
-                        <Text style={styles.modalSubtitle}>
-                            Tracking pengajuan reimburse
-                        </Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Content */}
-                <ScrollView
-                    style={styles.modalContent}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                >
-                    {requests.length === 0 ? (
-                        <View style={styles.emptyState}>
-                            <Text style={styles.emptyIcon}>📭</Text>
-                            <Text style={styles.emptyText}>Belum ada pengajuan reimburse</Text>
+        <LinearGradient
+            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+            locations={[0, 0.3, 0.8, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <View style={styles.glassCard}>
+                    {/* Modal Header */}
+                    <View style={styles.modalHeader}>
+                        <View>
+                            <Text style={styles.modalTitle}>📊 Status Reimburse</Text>
+                            <Text style={styles.modalSubtitle}>
+                                Tracking pengajuan reimburse
+                            </Text>
                         </View>
-                    ) : (
-                        requests.map((req) => {
-                            const statusStyle = getStatusStyle(req.status);
-                            return (
-                                <View key={req.id} style={styles.requestCard}>
-                                    <View style={styles.requestHeader}>
-                                        <View style={styles.requestInfo}>
-                                            <Text style={styles.requestPeriod}>
-                                                {formatDate(req.start_date)} - {formatDate(req.end_date)}
-                                            </Text>
-                                            <Text style={styles.requestDate}>
-                                                Diajukan: {formatDate(req.created_at)}
-                                            </Text>
-                                            {(req.status === "Approved" || req.status === "Disetujui") && req.approved_at && (
-                                                <Text style={[styles.requestDate, { color: "#16a34a", fontWeight: "600" }]}>
-                                                    Disetujui: {formatDate(req.approved_at)}
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Text style={styles.closeBtnText}>✕</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Content */}
+                    <ScrollView
+                        style={styles.modalContent}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
+                    >
+                        {requests.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Text style={styles.emptyIcon}>📭</Text>
+                                <Text style={styles.emptyText}>Belum ada pengajuan reimburse</Text>
+                            </View>
+                        ) : (
+                            requests.map((req) => {
+                                const statusStyle = getStatusStyle(req.status);
+                                return (
+                                    <View key={req.id} style={styles.requestCard}>
+                                        <View style={styles.requestHeader}>
+                                            <View style={styles.requestInfo}>
+                                                <Text style={styles.requestPeriod}>
+                                                    {formatDate(req.start_date)} - {formatDate(req.end_date)}
                                                 </Text>
+                                                <Text style={styles.requestDate}>
+                                                    Diajukan: {formatDate(req.created_at)}
+                                                </Text>
+                                                {(req.status === "Approved" || req.status === "Disetujui") && req.approved_at && (
+                                                    <Text style={[styles.requestDate, { color: "#16a34a", fontWeight: "600" }]}>
+                                                        Disetujui: {formatDate(req.approved_at)}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                            <View
+                                                style={[
+                                                    styles.statusBadge,
+                                                    { backgroundColor: statusStyle.bg },
+                                                ]}
+                                            >
+                                                <Text style={styles.statusIcon}>{statusStyle.icon}</Text>
+                                                <Text style={[styles.statusText, { color: statusStyle.text }]}>
+                                                    {statusStyle.label}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <View style={styles.requestBody}>
+                                            <Text style={styles.requestAmount}>
+                                                {formatCurrency(req.total_amount)}
+                                            </Text>
+                                            {req.notes && (
+                                                <View style={styles.catatanBox}>
+                                                    <Text style={styles.catatanLabel}>Catatan:</Text>
+                                                    <Text style={styles.catatanText}>{req.notes}</Text>
+                                                </View>
                                             )}
                                         </View>
-                                        <View
-                                            style={[
-                                                styles.statusBadge,
-                                                { backgroundColor: statusStyle.bg },
-                                            ]}
-                                        >
-                                            <Text style={styles.statusIcon}>{statusStyle.icon}</Text>
-                                            <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                                                {statusStyle.label}
-                                            </Text>
-                                        </View>
                                     </View>
-                                    <View style={styles.requestBody}>
-                                        <Text style={styles.requestAmount}>
-                                            {formatCurrency(req.total_amount)}
-                                        </Text>
-                                        {req.notes && (
-                                            <View style={styles.catatanBox}>
-                                                <Text style={styles.catatanLabel}>Catatan:</Text>
-                                                <Text style={styles.catatanText}>{req.notes}</Text>
-                                            </View>
-                                        )}
-                                    </View>
-                                </View>
-                            );
-                        })
-                    )}
-                </ScrollView>
+                                );
+                            })
+                        )}
+                    </ScrollView>
 
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={styles.btnSecondary}
-                        onPress={() => router.back()}
-                    >
-                        <Text style={styles.btnSecondaryText}>Tutup</Text>
-                    </TouchableOpacity>
+                    {/* Footer */}
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity
+                            style={styles.btnSecondary}
+                            onPress={() => router.back()}
+                        >
+                            <Text style={styles.btnSecondaryText}>Tutup</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        flex: 1,
+    },
     container: {
         flex: 1,
-        backgroundColor: "#f0f4d0",
     },
-    modalCard: {
+    glassCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.55)", // Transparent White
         margin: 16,
-        borderRadius: 20,
+        borderRadius: 24,
         overflow: "hidden",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 40,
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
         elevation: 10,
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.6)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     modalHeader: {
         flexDirection: "row",
@@ -205,25 +220,27 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
     modalTitle: {
         fontSize: 20,
         fontWeight: "800",
-        color: "#1a1a1a",
+        color: "#1E293B",
     },
     modalSubtitle: {
         fontSize: 13,
-        color: "#666",
+        color: "#475569",
         marginTop: 2,
     },
     closeBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.5)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     closeBtnText: {
         fontSize: 16,
@@ -243,35 +260,40 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 14,
-        color: "#999",
+        color: "#64748b",
     },
     // Request Card
     requestCard: {
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent
         borderWidth: 1,
-        borderColor: "#e5e7eb",
+        borderColor: "rgba(255,255,255,0.9)",
         borderRadius: 14,
         marginBottom: 12,
         overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
     },
     requestHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "flex-start",
         padding: 14,
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(249, 250, 251, 0.5)", // Transparent gray
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
     requestInfo: {},
     requestPeriod: {
         fontSize: 14,
         fontWeight: "700",
-        color: "#1a1a1a",
+        color: "#1E293B",
     },
     requestDate: {
         fontSize: 11,
-        color: "#666",
+        color: "#64748b",
         marginTop: 2,
     },
     statusBadge: {
@@ -317,13 +339,15 @@ const styles = StyleSheet.create({
     modalFooter: {
         padding: 20,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.05)",
     },
     btnSecondary: {
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.6)",
         borderRadius: 12,
         paddingVertical: 14,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
     btnSecondaryText: {
         fontSize: 15,

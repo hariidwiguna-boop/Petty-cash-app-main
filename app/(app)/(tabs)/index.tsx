@@ -10,28 +10,43 @@ import {
     Modal,
     FlatList,
     Alert,
+    Platform, // Import Platform
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase, Transaction } from "../../../lib/supabase";
 import { DashboardHeader, KpiCards, DailySummary, ActionButtons, RecentTransactions } from "../../../components/dashboard";
 import { theme } from "../../../src/design-system/theme";
 import { LinearGradient } from "expo-linear-gradient";
+import { useCallback } from "react";
 
 export default function DashboardScreen() {
     const { profile, outlet, isAdmin, adminSelectedOutlet, setAdminSelectedOutlet } = useAuthStore();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
 
+    // Redirect Admin to Admin Dashboard
+    useFocusEffect(
+        useCallback(() => {
+            if (isAdmin) {
+                router.replace("/(app)/(tabs)/admin");
+            }
+        }, [isAdmin])
+    );
+
+    // If admin, don't render anything while redirecting
+    if (isAdmin) return null;
+
     // Admin Outlet Filter State
     // Default to adminSelectedOutlet, fallback to user's outlet
-    const selectedOutlet = isAdmin ? (adminSelectedOutlet || outlet) : outlet;
+    const selectedOutlet = outlet;
 
     const [outletsList, setOutletsList] = useState<any[]>([]);
     const [showOutletModal, setShowOutletModal] = useState(false);
     const [showAdminMenu, setShowAdminMenu] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // Custom Logout Modal State
+    const [isLowBalanceDismissed, setIsLowBalanceDismissed] = useState(false); // Custom Low Balance Popup State
 
     const [dashboardData, setDashboardData] = useState({
         saldoSekarang: 0,
@@ -48,14 +63,10 @@ export default function DashboardScreen() {
     });
 
     useEffect(() => {
-        // If admin and no selected outlet, try to select own outlet
-        if (isAdmin && !adminSelectedOutlet && outlet) {
-            setAdminSelectedOutlet(outlet);
-        }
-        if (isAdmin) {
-            fetchOutlets();
-        }
-    }, [outlet, isAdmin, adminSelectedOutlet, setAdminSelectedOutlet]);
+        // Fetch logic only for non-admin (since admin is redirected)
+        // ... existing logic but since we return null above, this effect might not be needed for admin
+        // keeping specific dependency logic safe
+    }, [outlet]);
 
     const fetchOutlets = async () => {
         try {
@@ -209,13 +220,14 @@ export default function DashboardScreen() {
 
     return (
         <LinearGradient
-            colors={[theme.colors.background.start, theme.colors.background.end]}
+            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+            locations={[0, 0.3, 0.8, 1]}
             start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: 0, y: 1 }}
             style={{ flex: 1 }}
         >
             <SafeAreaView style={styles.container} edges={["top"]}>
-                {/* Header Component */}
+                {/* Fixed Header Component */}
                 <DashboardHeader
                     onSettingsPress={openSettings}
                     onAdminMenuPress={() => setShowAdminMenu(true)}
@@ -229,6 +241,7 @@ export default function DashboardScreen() {
                         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
                 >
+
                     {/* KPI Cards Component */}
                     <KpiCards data={{
                         saldoSekarang: dashboardData.saldoSekarang,
@@ -247,31 +260,60 @@ export default function DashboardScreen() {
                         today={today}
                     />
 
-                    {/* Alert Banner */}
-                    {isLowBalance && (
-                        <View style={styles.alertBanner}>
-                            <Text style={styles.alertIcon}>⚠️</Text>
-                            <Text style={styles.alertText}>
-                                Saldo hampir habis! Segera ajukan reimbursement.
-                            </Text>
-                        </View>
-                    )}
-
-                    {/* Action Buttons Component */}
-                    <ActionButtons />
-
-                    {/* Recent Transactions Component */}
-                    <RecentTransactions transactions={dashboardData.recentTransactions} />
-
-                    {/* Footer */}
-                    <View style={styles.footer}>
-                        <View style={styles.footerUser}>
-                            <Text style={styles.footerUserIcon}>👤</Text>
-                            <Text style={styles.footerUserName}>{profile?.nama || "User"}</Text>
-
-                        </View>
-                    </View>
+                    {/* Spacing for bottom scrolling to clear fixed footer */}
+                    <View style={{ height: 100 }} />
                 </ScrollView>
+
+                {/* Custom Big Box Low Balance Popup */}
+                {isLowBalance && !isLowBalanceDismissed && (
+                    <View style={styles.bigPopupOverlay}>
+                        {/* Dimmed Background */}
+                        <View style={styles.bigPopupBackdrop} />
+
+                        {/* Popup Content */}
+                        <LinearGradient
+                            colors={['#FFFFFF', '#F8FAFC']}
+                            style={styles.bigPopupCard}
+                        >
+                            <TouchableOpacity
+                                style={styles.bigPopupCloseBtn}
+                                onPress={() => setIsLowBalanceDismissed(true)}
+                            >
+                                <Text style={styles.bigPopupCloseText}>✕</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.bigPopupIconContainer}>
+                                <Text style={styles.bigPopupIcon}>⚠️</Text>
+                            </View>
+
+                            <Text style={styles.bigPopupTitle}>Saldo Menipis!</Text>
+                            <Text style={styles.bigPopupMessage}>
+                                Saldo Anda saat ini tersisa <Text style={{ fontWeight: 'bold' }}>{formatCurrency(dashboardData.saldoSekarang)}</Text>.{'\n'}
+                                Segera ajukan reimbursement agar operasional tidak terganggu.
+                            </Text>
+
+                            <TouchableOpacity
+                                style={styles.bigPopupActionBtn}
+                                onPress={() => {
+                                    setIsLowBalanceDismissed(true);
+                                    router.push("/(app)/(tabs)/reimburse");
+                                }}
+                            >
+                                <LinearGradient
+                                    colors={['#DC2626', '#B91C1C']}
+                                    style={styles.bigPopupActionGradient}
+                                >
+                                    <Text style={styles.bigPopupActionText}>Ajukan Reimbursement</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    </View>
+                )}
+
+
+
+                {/* Fixed Bottom Navigation */}
+                <ActionButtons />
 
                 {/* Admin Menu Modal - Fullscreen */}
                 <Modal
@@ -437,7 +479,7 @@ export default function DashboardScreen() {
                     </TouchableOpacity>
                 </Modal>
             </SafeAreaView>
-        </LinearGradient>
+        </LinearGradient >
     );
 }
 
@@ -664,11 +706,17 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "rgba(249, 250, 251, 0.6)",
-        borderWidth: 1,
-        borderColor: "rgba(229, 231, 235, 0.5)",
+        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.8)",
         padding: 16,
-        borderRadius: 16,
+        borderRadius: 20,
+        shadowColor: "#1E293B",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+        elevation: 6,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(16px)' } : {}),
     },
     outletSelectionLabel: {
         fontSize: 12,
@@ -691,18 +739,19 @@ const styles = StyleSheet.create({
     },
     adminGridItem: {
         width: "48%",
-        backgroundColor: "rgba(255, 255, 255, 0.7)",
-        borderWidth: 1,
-        borderColor: "rgba(229, 231, 235, 0.5)",
-        borderRadius: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.8)",
+        borderRadius: 20,
         padding: 16,
         alignItems: "center",
         gap: 8,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowColor: "#1E293B",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+        elevation: 6,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(16px)' } : {}),
     },
     adminGridIconBg: {
         width: 48,
@@ -798,8 +847,106 @@ const styles = StyleSheet.create({
     progressLabel: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 8,
     },
+    // Big Box Custom Popup Styles
+    bigPopupOverlay: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 100,
+        paddingHorizontal: 30,
+    },
+    bigPopupBackdrop: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dimmed background
+    },
+    bigPopupCard: {
+        width: '100%',
+        maxWidth: 340,
+        backgroundColor: 'white',
+        borderRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    bigPopupCloseBtn: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#f1f5f9',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10,
+    },
+    bigPopupCloseText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#94a3b8',
+    },
+    bigPopupIconContainer: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
+        backgroundColor: '#fee2e2',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 16,
+        borderWidth: 4,
+        borderColor: '#fef2f2',
+    },
+    bigPopupIcon: {
+        fontSize: 32,
+    },
+    bigPopupTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: '#dc2626',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    bigPopupMessage: {
+        fontSize: 14,
+        color: '#475569',
+        textAlign: 'center',
+        lineHeight: 20,
+        marginBottom: 24,
+    },
+    bigPopupActionBtn: {
+        width: '100%',
+        borderRadius: 16,
+        overflow: 'hidden',
+        shadowColor: '#dc2626',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    bigPopupActionGradient: {
+        paddingVertical: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    bigPopupActionText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'white',
+    },
+
     progressLabelText: {
         fontSize: 12,
         color: "#666",
@@ -1002,10 +1149,18 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     modalContent: {
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 20,
+        backgroundColor: "rgba(255, 255, 255, 0.85)", // High opacity glass for readablity
+        borderRadius: 24,
+        padding: 24,
         maxHeight: "80%",
+        borderWidth: 1.5,
+        borderColor: "rgba(255, 255, 255, 0.8)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.2,
+        shadowRadius: 24,
+        elevation: 10,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(24px)' } : {}),
     },
     modalHeader: {
         flexDirection: "row",

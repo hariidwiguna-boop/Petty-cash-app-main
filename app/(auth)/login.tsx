@@ -104,9 +104,10 @@ export default function LoginScreen() {
             style={styles.container}
         >
             <LinearGradient
-                colors={[theme.colors.background.start, theme.colors.background.end]}
+                colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
+                locations={[0, 0.3, 0.8, 1]}
                 start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                end={{ x: 0, y: 1 }}
                 style={styles.gradientBackground}
             >
                 <MessageModal
@@ -206,7 +207,7 @@ export default function LoginScreen() {
                                 activeOpacity={0.8}
                             >
                                 <LinearGradient
-                                    colors={[theme.colors.primary[500], theme.colors.primary[600]]}
+                                    colors={['#DC2626', '#B91C1C']}
                                     start={{ x: 0, y: 0 }}
                                     end={{ x: 1, y: 1 }}
                                     style={styles.submitBtnGradient}
@@ -237,8 +238,17 @@ const styles = StyleSheet.create({
         padding: theme.spacing.xl,
     },
     loginCard: {
-        ...theme.components.card.base,
-        padding: theme.spacing['3xl'],
+        backgroundColor: 'rgba(255, 255, 255, 0.55)', // More transparent
+        borderRadius: 24,
+        padding: 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.2, // Slightly stronger shadow for contrast
+        shadowRadius: 32,
+        elevation: 10,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.6)', // Crisper border
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(24px)' } : {}), // Stronger blur
     },
     headerWrapper: {
         flexDirection: 'row',
@@ -254,33 +264,34 @@ const styles = StyleSheet.create({
     },
     logoLeft: {
         flexDirection: 'column',
-        gap: 4,
+        gap: 5,
+        justifyContent: 'space-between',
     },
     logoBar: {
         width: 28,
-        height: 8,
-        backgroundColor: theme.colors.primary[500],
+        height: 10,
+        backgroundColor: '#0A0A0A',
         borderRadius: 2,
     },
     logoRight: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        gap: 4,
-        height: 32,
+        gap: 5,
+        height: 40,
     },
     logoRectangle: {
-        width: 8,
-        height: 32,
+        width: 10,
+        height: 40,
         borderWidth: 2,
-        borderColor: theme.colors.primary[500],
+        borderColor: '#0A0A0A',
         borderRadius: 2,
-        backgroundColor: 'transparent',
+        backgroundColor: '#FFFFFF',
     },
     logoCircle: {
-        width: 10,
-        height: 10,
-        backgroundColor: theme.colors.warning.main,
-        borderRadius: 5,
+        width: 18,
+        height: 18,
+        backgroundColor: '#DC2626',
+        borderRadius: 9,
         marginTop: 0,
     },
     loginHeader: {
@@ -291,7 +302,7 @@ const styles = StyleSheet.create({
     },
     brandName: {
         fontSize: theme.typography.fontSize.sm,
-        color: theme.colors.primary[500],
+        color: '#DC2626',
         marginTop: 2,
         fontWeight: theme.typography.fontWeight.semibold,
     },
@@ -333,7 +344,7 @@ const styles = StyleSheet.create({
     passwordToggleText: {
         fontSize: theme.typography.fontSize.sm,
         fontWeight: theme.typography.fontWeight.semibold,
-        color: theme.colors.primary[500],
+        color: '#DC2626',
     },
     loginOptions: {
         flexDirection: 'row',
@@ -356,8 +367,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     checkboxActive: {
-        backgroundColor: theme.colors.primary[500],
-        borderColor: theme.colors.primary[500],
+        backgroundColor: '#DC2626',
+        borderColor: '#DC2626',
     },
     checkmark: {
         color: theme.colors.text.inverse,
@@ -370,7 +381,7 @@ const styles = StyleSheet.create({
     },
     forgotLink: {
         fontSize: theme.typography.fontSize.sm,
-        color: theme.colors.text.link,
+        color: '#DC2626',
         fontWeight: theme.typography.fontWeight.semibold,
     },
     submitBtn: {

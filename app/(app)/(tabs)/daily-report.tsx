@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
     View,
@@ -14,6 +15,7 @@ import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase } from "../../../lib/supabase";
 import * as Clipboard from "expo-clipboard";
+import { LinearGradient } from "expo-linear-gradient";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import MessageModal from "../../../components/MessageModal";
 
@@ -157,34 +159,34 @@ export default function DailyReportScreen() {
                 if (tx.transaction_items && tx.transaction_items.length > 0) {
                     tx.transaction_items.forEach((item: any) => {
                         const total = Number(item.total_harga);
-                        expenseDetails += `- ${item.deskripsi} ${item.qty} ${item.satuan} = ${formatCurrencyText(total)}\n`;
+                        expenseDetails += `- ${item.deskripsi} ${item.qty} ${item.satuan} = ${formatCurrencyText(total)} \n`;
                     });
                 } else {
-                    expenseDetails += `- ${tx.deskripsi || "Pengeluaran"} = ${formatCurrencyText(Number(tx.grand_total))}\n`;
+                    expenseDetails += `- ${tx.deskripsi || "Pengeluaran"} = ${formatCurrencyText(Number(tx.grand_total))} \n`;
                 }
             });
 
             if (!expenseDetails) expenseDetails = "- Tidak ada pengeluaran hari ini\n";
 
-            const preview = `Selamat Malam Pak/Ibu
+            const preview = `Selamat Malam Pak / Ibu
 Berikut saya lampirkan arus kas harian
 
-🏪 Outlet : ${outlet.nama_outlet}
-📅 Hari/Tanggal : ${formattedDate}
+🏪 Outlet: ${outlet.nama_outlet}
+📅 Hari / Tanggal : ${formattedDate}
 
 ═══════════════════════
 RINCIAN KAS
 ═══════════════════════
-Kas Awal : ${formatCurrencyText(kasAwalHariIni)}
-Kas Masuk : ${formatCurrencyText(kasMasukHariIni)}
-Kas Keluar : ${formatCurrencyText(kasKeluarHariIni)}
+Kas Awal: ${formatCurrencyText(kasAwalHariIni)}
+Kas Masuk: ${formatCurrencyText(kasMasukHariIni)}
+Kas Keluar: ${formatCurrencyText(kasKeluarHariIni)}
 
 ═══════════════════════
 RINCIAN PENGELUARAN HARI INI
 ═══════════════════════
 ${expenseDetails}
 ═══════════════════════
-Saldo Akhir : ${formatCurrencyText(saldoSekarang)}
+Saldo Akhir: ${formatCurrencyText(saldoSekarang)}
 ═══════════════════════`;
 
             setPreviewText(preview);
@@ -225,188 +227,188 @@ Saldo Akhir : ${formatCurrencyText(saldoSekarang)}
     });
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.modalCard}>
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>Laporan Harian</Text>
-                        <Text style={styles.modalSubtitle}>Ringkasan arus kas per hari</Text>
+        <LinearGradient
+            colors={['#DC2626', '#DC2626', '#F8FAFC']}
+            locations={[0, 0.35, 1]}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <View style={styles.glassCard}>
+                    <View style={styles.modalHeader}>
+                        <View>
+                            <Text style={styles.modalTitle}>Laporan Harian</Text>
+                            <Text style={styles.modalSubtitle}>Ringkasan arus kas per hari</Text>
+                        </View>
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Text style={styles.closeBtnText}>X</Text>
+                        </TouchableOpacity>
                     </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>X</Text>
-                    </TouchableOpacity>
+
+                    <ScrollView style={styles.modalContent}>
+                        {/* Date Filter */}
+                        <View style={{ marginBottom: 20 }}>
+                            <Text style={styles.itemLabel}>Pilih Tanggal</Text>
+                            <PlatformDatePicker
+                                label="Tanggal Laporan"
+                                value={selectedDate}
+                                onChange={(d) => setSelectedDate(d)}
+                                maximumDate={new Date()}
+                            />
+                        </View>
+
+                        <Text style={styles.dateHeader}>{displayDate}</Text>
+
+                        <View style={styles.summaryGrid}>
+                            <View style={[styles.summaryCard, { backgroundColor: "rgba(240, 253, 244, 0.7)" }]}>
+                                <Text style={[styles.summaryLabel, { color: "#166534" }]}>Kas Awal</Text>
+                                <Text style={[styles.summaryValue, { color: "#166534" }]}>
+                                    {formatCurrency(summary.kasAwal)}
+                                </Text>
+                            </View>
+                            <View style={[styles.summaryCard, { backgroundColor: "rgba(239, 246, 255, 0.7)" }]}>
+                                <Text style={[styles.summaryLabel, { color: "#1e40af" }]}>Kas Masuk</Text>
+                                <Text style={[styles.summaryValue, { color: "#1e40af" }]}>
+                                    {formatCurrency(summary.kasMasuk)}
+                                </Text>
+                            </View>
+                            <View style={[styles.summaryCard, { backgroundColor: "rgba(254, 242, 242, 0.7)" }]}>
+                                <Text style={[styles.summaryLabel, { color: "#991b1b" }]}>Kas Keluar</Text>
+                                <Text style={[styles.summaryValue, { color: "#991b1b" }]}>
+                                    {formatCurrency(summary.kasKeluar)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.saldoAkhirCard}>
+                            <Text style={styles.saldoAkhirLabel}>Saldo Akhir</Text>
+                            <Text style={styles.saldoAkhirValue}>
+                                {formatCurrency(summary.saldoAkhir)}
+                            </Text>
+                        </View>
+
+                        <View style={styles.formGroup}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <Text style={[styles.itemLabel, { marginBottom: 0 }]}>Preview Laporan</Text>
+                                <TouchableOpacity onPress={copyText} style={{ backgroundColor: '#e0e7ff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                    <Text style={{ fontSize: 12 }}>📋</Text>
+                                    <Text style={{ color: '#4338ca', fontSize: 11, fontWeight: '700' }}>Salin Teks</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={styles.previewCard}>
+                                <Text style={styles.previewText}>{previewText}</Text>
+                            </View>
+                        </View>
+                    </ScrollView>
                 </View>
 
-                <ScrollView style={styles.modalContent}>
-                    {/* Date Filter */}
-                    <View style={{ marginBottom: 20 }}>
-                        <Text style={styles.itemLabel}>Pilih Tanggal</Text>
-                        <PlatformDatePicker
-                            label="Tanggal Laporan"
-                            value={selectedDate}
-                            onChange={(d) => setSelectedDate(d)}
-                            maximumDate={new Date()}
-                        />
-                    </View>
-
-                    <Text style={styles.dateHeader}>{displayDate}</Text>
-
-                    <View style={styles.summaryGrid}>
-                        <View style={[styles.summaryCard, { backgroundColor: "#f0fdf4" }]}>
-                            <Text style={[styles.summaryLabel, { color: "#166534" }]}>Kas Awal</Text>
-                            <Text style={[styles.summaryValue, { color: "#166534" }]}>
-                                {formatCurrency(summary.kasAwal)}
-                            </Text>
-                        </View>
-                        <View style={[styles.summaryCard, { backgroundColor: "#eff6ff" }]}>
-                            <Text style={[styles.summaryLabel, { color: "#1e40af" }]}>Kas Masuk</Text>
-                            <Text style={[styles.summaryValue, { color: "#1e40af" }]}>
-                                {formatCurrency(summary.kasMasuk)}
-                            </Text>
-                        </View>
-                        <View style={[styles.summaryCard, { backgroundColor: "#fef2f2" }]}>
-                            <Text style={[styles.summaryLabel, { color: "#991b1b" }]}>Kas Keluar</Text>
-                            <Text style={[styles.summaryValue, { color: "#991b1b" }]}>
-                                {formatCurrency(summary.kasKeluar)}
-                            </Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.saldoAkhirCard}>
-                        <Text style={styles.saldoAkhirLabel}>Saldo Akhir</Text>
-                        <Text style={styles.saldoAkhirValue}>
-                            {formatCurrency(summary.saldoAkhir)}
-                        </Text>
-                    </View>
-
-                    <View style={styles.formGroup}>
-                        <Text style={styles.itemLabel}>Preview Laporan</Text>
-                        <View style={styles.previewCard}>
-                            <Text style={styles.previewText}>{previewText}</Text>
-                        </View>
-                    </View>
-                </ScrollView>
-
-                <View style={styles.modalFooter}>
-                    <View style={styles.footerRow}>
-                        <TouchableOpacity style={styles.btnWhatsApp} onPress={sendToWhatsApp}>
-                            <Text style={styles.btnWhatsAppText}>WhatsApp</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.footerRow}>
-                        <TouchableOpacity style={styles.btnSecondary} onPress={() => router.back()}>
-                            <Text style={styles.btnSecondaryText}>Tutup</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.btnCopy} onPress={copyText}>
-                            <Text style={styles.btnCopyText}>Salin Teks</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </View>
-
-            {/* Message Modal */}
-            <MessageModal
-                visible={modalVisible}
-                title={modalConfig.title}
-                message={modalConfig.message}
-                type={modalConfig.type}
-                onClose={() => setModalVisible(false)}
-            />
-        </SafeAreaView>
+                {/* Message Modal */}
+                <MessageModal
+                    visible={modalVisible}
+                    title={modalConfig.title}
+                    message={modalConfig.message}
+                    type={modalConfig.type}
+                    onClose={() => setModalVisible(false)}
+                />
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    modalCard: {
+    gradientBackground: {
         flex: 1,
-        backgroundColor: "white",
+    },
+    container: { flex: 1 },
+    glassCard: {
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.55)",
         margin: 16,
-        borderRadius: 20,
+        borderRadius: 24,
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.4)",
+        ...Platform.select({
+            web: {
+                backdropFilter: "blur(12px)",
+            },
+        }),
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
     },
     modalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "flex-start",
         padding: 20,
+        backgroundColor: "rgba(255,255,255,0.3)",
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.05)",
     },
-    modalTitle: { fontSize: 20, fontWeight: "800", color: "#1a1a1a" },
-    modalSubtitle: { fontSize: 13, color: "#666", marginTop: 2 },
+    modalTitle: { fontSize: 20, fontWeight: "800", color: "#1E293B" },
+    modalSubtitle: { fontSize: 13, color: "#64748b", marginTop: 2 },
     closeBtn: {
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        backgroundColor: "rgba(255,255,255,0.5)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
     },
-    closeBtnText: { fontSize: 16, color: "#64748b" },
+    closeBtnText: { fontSize: 16, color: "#64748b", fontWeight: "700" },
     modalContent: { flex: 1, padding: 20 },
     dateHeader: {
         fontSize: 14,
         fontWeight: "600",
-        color: "#666",
+        color: "#475569",
         textAlign: "center",
         marginBottom: 16,
     },
     summaryGrid: { flexDirection: "row", gap: 8, marginBottom: 16 },
-    summaryCard: { flex: 1, padding: 12, borderRadius: 10, alignItems: "center" },
-    summaryLabel: { fontSize: 11, fontWeight: "600" },
-    summaryValue: { fontSize: 14, fontWeight: "700", marginTop: 4 },
+    summaryCard: {
+        flex: 1,
+        padding: 12,
+        borderRadius: 16,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.05)",
+    },
+    summaryLabel: { fontSize: 11, fontWeight: "700", marginBottom: 4 },
+    summaryValue: { fontSize: 13, fontWeight: "700" },
     saldoAkhirCard: {
-        backgroundColor: "#dbeafe",
-        borderRadius: 14,
+        backgroundColor: "rgba(219, 234, 254, 0.7)", // light blue glass
+        borderRadius: 16,
         padding: 16,
         alignItems: "center",
         marginBottom: 20,
-    },
-    saldoAkhirLabel: { fontSize: 12, color: "#3b82f6", fontWeight: "600" },
-    saldoAkhirValue: { fontSize: 24, fontWeight: "900", color: "#1d4ed8", marginTop: 4 },
-    formGroup: { marginTop: 8 },
-    itemLabel: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 8 },
-    previewCard: {
-        backgroundColor: "#f9fafb",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 12,
-        padding: 14,
-        maxHeight: 220,
+        borderColor: "rgba(59, 130, 246, 0.2)",
+    },
+    saldoAkhirLabel: { fontSize: 12, color: "#2563EB", fontWeight: "700" },
+    saldoAkhirValue: { fontSize: 24, fontWeight: "900", color: "#1e3a8a", marginTop: 4 },
+    formGroup: { marginTop: 8 },
+    itemLabel: { fontSize: 13, fontWeight: "700", color: "#334155", marginBottom: 8 },
+    previewCard: {
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        borderWidth: 1,
+        borderColor: "rgba(226, 232, 240, 0.8)",
+        borderRadius: 16,
+        padding: 16,
+        // maxHeight: 280, // Removed to allow dynamic height (Responsive)
+        shadowColor: "#64748b",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
     },
     previewText: {
-        fontSize: 12,
-        color: "#374151",
-        lineHeight: 18,
+        fontSize: 13,
+        color: "#1e293b", // Darker slate
+        lineHeight: 20,
         fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
     },
-    modalFooter: { padding: 16, borderTopWidth: 1, borderTopColor: "#e5e7eb", gap: 8 },
-    footerRow: { flexDirection: "row", gap: 8 },
-    btnWhatsApp: {
-        flex: 1,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#25D366",
-        borderRadius: 10,
-        paddingVertical: 12,
-    },
-    btnWhatsAppText: { fontSize: 13, fontWeight: "700", color: "white" },
-    btnSecondary: {
-        flex: 1,
-        backgroundColor: "#f1f5f9",
-        borderRadius: 10,
-        paddingVertical: 10,
-        alignItems: "center",
-    },
-    btnSecondaryText: { fontSize: 13, fontWeight: "600", color: "#64748b" },
-    btnCopy: {
-        flex: 1,
-        backgroundColor: "#6366f1",
-        borderRadius: 10,
-        paddingVertical: 10,
-        alignItems: "center",
-    },
-    btnCopyText: { fontSize: 13, fontWeight: "600", color: "white" },
 });

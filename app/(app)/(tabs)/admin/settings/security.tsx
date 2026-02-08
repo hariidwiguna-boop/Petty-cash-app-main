@@ -9,6 +9,10 @@ import * as Sharing from "expo-sharing";
 import MessageModal from "../../../../../components/MessageModal"; // Import Custom Modal
 import CustomLoading from "../../../../../components/CustomLoading";
 
+import AdminLayout from "../../../../../components/admin/AdminLayout";
+
+// ... imports
+
 export default function SecurityScreen() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -150,8 +154,11 @@ export default function SecurityScreen() {
         }
     };
 
-    const renderLog = ({ item }: { item: any }) => (
-        <View style={styles.logItem}>
+
+
+    // Changed renderLog to be used in map
+    const renderLog = (item: any) => (
+        <View key={item.id} style={styles.logItem}>
             <View style={styles.logHeader}>
                 <Text style={styles.logAction}>{item.action}</Text>
                 <Text style={styles.logDate}>
@@ -168,14 +175,12 @@ export default function SecurityScreen() {
     );
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
+        <AdminLayout
+            title="🛡️ Security & Logs"
+            subtitle="Audit trail & Backup data"
+            showBackButton={true}
+        >
             <CustomLoading visible={isLoading} text="Memproses Data..." />
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Text style={styles.backText}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>🛡️ Security & Logs</Text>
-            </View>
 
             <MessageModal
                 visible={modalVisible}
@@ -201,18 +206,13 @@ export default function SecurityScreen() {
                 <View style={styles.logListContainer}>
                     {isLoading && logs.length === 0 ? (
                         <ActivityIndicator color="#C94C4C" />
+                    ) : logs.length === 0 ? (
+                        <View style={styles.empty}>
+                            <Text style={styles.emptyText}>Tidak ada log aktivitas.</Text>
+                            <Text style={styles.emptySub}>Aktivitas penting akan muncul di sini.</Text>
+                        </View>
                     ) : (
-                        <FlatList
-                            data={logs}
-                            keyExtractor={i => i.id}
-                            renderItem={renderLog}
-                            ListEmptyComponent={
-                                <View style={styles.empty}>
-                                    <Text style={styles.emptyText}>Tidak ada log aktivitas.</Text>
-                                    <Text style={styles.emptySub}>Aktivitas penting akan muncul di sini.</Text>
-                                </View>
-                            }
-                        />
+                        logs.map((item) => renderLog(item))
                     )}
                 </View>
 
@@ -246,31 +246,11 @@ export default function SecurityScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </SafeAreaView >
+        </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        backgroundColor: "white",
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-        gap: 16
-    },
-    backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center"
-    },
-    backText: { fontSize: 18, color: "#64748b" },
-    headerTitle: { fontSize: 18, fontWeight: "800", color: "#1a1a1a" },
     content: { flex: 1, padding: 20, gap: 20 },
     sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     sectionTitle: { fontSize: 16, fontWeight: "800", color: "#1a1a1a" },

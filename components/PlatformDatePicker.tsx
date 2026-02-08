@@ -35,17 +35,29 @@ export default function PlatformDatePicker({
                 <View style={styles.webWrapper}>
                     {createElement('input', {
                         type: 'date',
-                        value: value instanceof Date && !isNaN(value.getTime()) ? value.toISOString().split('T')[0] : '',
+                        value: value instanceof Date && !isNaN(value.getTime())
+                            ? `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`
+                            : '',
                         onChange: (e: any) => {
                             if (e.target.value) {
-                                const d = new Date(e.target.value);
+                                // Parse date string as local time (not UTC)
+                                const parts = e.target.value.split('-');
+                                const d = new Date(
+                                    parseInt(parts[0]),
+                                    parseInt(parts[1]) - 1,
+                                    parseInt(parts[2])
+                                );
                                 if (!isNaN(d.getTime())) {
                                     onChange(d);
                                 }
                             }
                         },
-                        min: minimumDate ? minimumDate.toISOString().split('T')[0] : undefined,
-                        max: maximumDate ? maximumDate.toISOString().split('T')[0] : undefined,
+                        min: minimumDate
+                            ? `${minimumDate.getFullYear()}-${String(minimumDate.getMonth() + 1).padStart(2, '0')}-${String(minimumDate.getDate()).padStart(2, '0')}`
+                            : undefined,
+                        max: maximumDate
+                            ? `${maximumDate.getFullYear()}-${String(maximumDate.getMonth() + 1).padStart(2, '0')}-${String(maximumDate.getDate()).padStart(2, '0')}`
+                            : undefined,
                         style: {
                             padding: '12px',
                             borderRadius: '12px',

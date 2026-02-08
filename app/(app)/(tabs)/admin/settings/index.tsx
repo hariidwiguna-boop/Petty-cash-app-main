@@ -1,10 +1,28 @@
 
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import AdminLayout from "../../../../../components/admin/AdminLayout";
 
 // Settings Menu Data
 const SETTINGS_MENU = [
+    {
+        id: "users",
+        title: "Manajemen Users",
+        description: "Kelola akun pengguna & hak akses",
+        icon: "👥",
+        route: "/(app)/(tabs)/admin/users",
+        color: "#eff6ff",
+        iconColor: "#2563eb"
+    },
+    {
+        id: "outlets",
+        title: "Manajemen Outlets",
+        description: "Kelola daftar outlet & saldo",
+        icon: "🏪",
+        route: "/(app)/(tabs)/admin/outlets",
+        color: "#fff7ed",
+        iconColor: "#ea580c"
+    },
     {
         id: "master_data",
         title: "Master Data",
@@ -47,85 +65,46 @@ export default function SettingsDashboard() {
     const router = useRouter();
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-                    <Text style={styles.backText}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Pengaturan Admin</Text>
+        <AdminLayout
+            title="⚙️ Pengaturan"
+            subtitle="Konfigurasi sistem admin"
+            showBackButton={true}
+        >
+            <View style={styles.banner}>
+                <Text style={styles.bannerIcon}>🛠️</Text>
+                <View>
+                    <Text style={styles.bannerTitle}>Pusat Kontrol</Text>
+                    <Text style={styles.bannerDesc}>Atur semua konfigurasi aplikasi di sini.</Text>
+                </View>
             </View>
 
-            <ScrollView style={styles.content}>
-                <View style={styles.banner}>
-                    <Text style={styles.bannerIcon}>🛠️</Text>
-                    <View>
-                        <Text style={styles.bannerTitle}>Pusat Kontrol</Text>
-                        <Text style={styles.bannerDesc}>Atur semua konfigurasi aplikasi di sini.</Text>
-                    </View>
-                </View>
+            <View style={styles.grid}>
+                {SETTINGS_MENU.map((item) => (
+                    <TouchableOpacity
+                        key={item.id}
+                        style={styles.card}
+                        onPress={() => router.push(item.route as any)}
+                    >
+                        <View style={[styles.iconBox, { backgroundColor: item.color }]}>
+                            <Text style={styles.icon}>{item.icon}</Text>
+                        </View>
+                        <View style={styles.cardContent}>
+                            <Text style={styles.cardTitle}>{item.title}</Text>
+                            <Text style={styles.cardDesc}>{item.description}</Text>
+                        </View>
+                        <Text style={styles.arrow}>›</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
 
-                <View style={styles.grid}>
-                    {SETTINGS_MENU.map((item) => (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={styles.card}
-                            onPress={() => router.push(item.route as any)}
-                        >
-                            <View style={[styles.iconBox, { backgroundColor: item.color }]}>
-                                <Text style={styles.icon}>{item.icon}</Text>
-                            </View>
-                            <View style={styles.cardContent}>
-                                <Text style={styles.cardTitle}>{item.title}</Text>
-                                <Text style={styles.cardDesc}>{item.description}</Text>
-                            </View>
-                            <Text style={styles.arrow}>›</Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>Petty Cash Management v1.1.0</Text>
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>Petty Cash Management v1.1.0</Text>
+            </View>
+        </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f0f4d0",
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 20,
-        backgroundColor: "white",
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-        gap: 16
-    },
-    backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center"
-    },
-    backText: {
-        fontSize: 18,
-        color: "#64748b"
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: "800",
-        color: "#1a1a1a"
-    },
-    content: {
-        flex: 1,
-        padding: 20
-    },
     banner: {
         flexDirection: "row",
         alignItems: "center",

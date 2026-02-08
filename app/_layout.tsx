@@ -35,7 +35,7 @@ const queryClient = new QueryClient({
 // AUTH GUARD
 // ============================================
 function AuthGuard({ children }: { children: React.ReactNode }) {
-    const { session, isLoading, isInitialized, initialize } = useAuthStore();
+    const { session, isLoading, isInitialized, initialize, profile } = useAuthStore();
     const segments = useSegments();
     const router = useRouter();
 
@@ -54,10 +54,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
             // Redirect to login if not authenticated
             router.replace("/(auth)/login");
         } else if (session && inAuthGroup) {
-            // Redirect to main app if authenticated
-            router.replace("/(app)/(tabs)");
+            // Redirect based on role
+            if (profile?.role === 'Admin') {
+                router.replace("/(app)/(tabs)/admin");
+            } else {
+                router.replace("/(app)/(tabs)");
+            }
         }
-    }, [session, isInitialized, isLoading, segments]);
+    }, [session, isInitialized, isLoading, segments, profile]);
 
     if (!isInitialized || isLoading) {
         return (

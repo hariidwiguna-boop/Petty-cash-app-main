@@ -15,6 +15,7 @@ import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import { useAuthStore } from "../../../../stores/authStore";
 import MessageModal from "../../../../components/MessageModal";
+import AdminLayout from "../../../../components/admin/AdminLayout";
 
 interface ReimburseRequest {
     id: string;
@@ -193,19 +194,12 @@ export default function ApprovalScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
+        <AdminLayout
+            title="✅ Approval"
+            subtitle="Kelola pengajuan reimburse"
+            showBackButton={true}
+        >
             <View style={styles.modalCard}>
-                {/* Header */}
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>✅ Approval</Text>
-                        <Text style={styles.modalSubtitle}>Kelola pengajuan reimburse</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>✕</Text>
-                    </TouchableOpacity>
-                </View>
-
                 {/* Filters */}
                 <View style={styles.filterBar}>
                     <TouchableOpacity
@@ -310,15 +304,6 @@ export default function ApprovalScreen() {
                     )}
                 </ScrollView>
 
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                        style={styles.btnSecondary}
-                        onPress={() => router.back()}
-                    >
-                        <Text style={styles.btnSecondaryText}>Kembali</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             {/* Action Modal */}
@@ -368,7 +353,7 @@ export default function ApprovalScreen() {
                 type={modalConfig.type}
                 onClose={() => setModalVisible(false)}
             />
-        </SafeAreaView>
+        </AdminLayout>
     );
 }
 
@@ -376,10 +361,17 @@ const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#f0f4d0" },
     modalCard: {
         flex: 1,
-        backgroundColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
         margin: 16,
         borderRadius: 20,
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.4)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 8,
     },
     modalHeader: {
         flexDirection: "row",
@@ -414,7 +406,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         backgroundColor: "#f3f4f6",
     },
-    filterChipActive: { backgroundColor: "#C94C4C" },
+    filterChipActive: { backgroundColor: "#DC2626" },
     filterChipText: { fontSize: 12, fontWeight: "600", color: "#666" },
     filterChipTextActive: { color: "white" },
     refreshBtn: {

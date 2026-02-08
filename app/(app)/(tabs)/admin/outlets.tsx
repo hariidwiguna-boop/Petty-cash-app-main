@@ -17,6 +17,7 @@ import MessageModal from "../../../../components/MessageModal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
+import AdminLayout from "../../../../components/admin/AdminLayout";
 
 interface Outlet {
     id: string;
@@ -285,7 +286,11 @@ export default function OutletsScreen() {
     };
 
     return (
-        <SafeAreaView style={s.c} edges={["top"]}>
+        <AdminLayout
+            title="🏪 Outlets"
+            subtitle="Kelola data outlet"
+            showBackButton={true}
+        >
             {/* Message Modal */}
             <MessageModal
                 visible={msgModalVisible}
@@ -299,14 +304,7 @@ export default function OutletsScreen() {
                 onClose={() => setMsgModalVisible(false)}
             />
 
-
             <View style={s.card}>
-                <View style={s.hdr}>
-                    <Text style={s.t}>🏪 Outlets</Text>
-                    <TouchableOpacity style={s.x} onPress={() => router.back()}>
-                        <Text style={s.xT}>✕</Text>
-                    </TouchableOpacity>
-                </View>
                 <View style={s.tb}>
                     <TextInput style={s.si} placeholder="Cari..." value={search} onChangeText={setSearch} />
                     <TouchableOpacity style={s.add} onPress={openAddModal}>
@@ -343,11 +341,6 @@ export default function OutletsScreen() {
                         ))
                     )}
                 </ScrollView>
-                <View style={s.ft}>
-                    <TouchableOpacity style={s.btn} onPress={() => router.back()}>
-                        <Text style={s.btnT}>← Kembali</Text>
-                    </TouchableOpacity>
-                </View>
             </View>
 
             {/* Modal Form */}
@@ -476,13 +469,26 @@ export default function OutletsScreen() {
                 </View>
             </Modal>
 
-        </SafeAreaView>
+        </AdminLayout>
     );
 }
 
 const s = StyleSheet.create({
     c: { flex: 1, backgroundColor: "#f0f4d0" },
-    card: { flex: 1, backgroundColor: "#fff", margin: 16, borderRadius: 20, overflow: "hidden" },
+    card: {
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
+        margin: 16,
+        borderRadius: 20,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.4)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 8,
+    },
     hdr: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
     t: { fontSize: 20, fontWeight: "800" },
     x: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" },
@@ -496,7 +502,19 @@ const s = StyleSheet.create({
     emptyIcon: { fontSize: 48, marginBottom: 12 },
     emptyText: { fontSize: 16, fontWeight: "700", color: "#374151" },
     emptyHint: { fontSize: 13, color: "#9ca3af", marginTop: 4 },
-    oc: { backgroundColor: "#fff", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 14, padding: 14, marginBottom: 12 },
+    oc: {
+        backgroundColor: "rgba(255, 255, 255, 0.4)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.5)",
+        borderRadius: 14,
+        padding: 14,
+        marginBottom: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+    },
     oH: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
     oN: { fontSize: 16, fontWeight: "800", color: "#1a1a1a" },
     oA: { flexDirection: "row", gap: 8 },

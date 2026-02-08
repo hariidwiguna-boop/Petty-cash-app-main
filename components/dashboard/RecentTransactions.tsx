@@ -3,7 +3,7 @@
 // ============================================
 
 import * as React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Transaction } from '../../lib/supabase';
 
 interface RecentTransactionsProps {

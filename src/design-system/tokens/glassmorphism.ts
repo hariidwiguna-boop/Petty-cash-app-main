@@ -13,7 +13,7 @@ export const glassmorphism = {
     active: 'rgba(255, 255, 255, 0.28)',       // Active state
     solid: 'rgba(255, 255, 255, 0.95)',        // Solid background
   },
-  
+
   // Maximum blur effects
   backdropBlur: {
     light: 'blur(12px)',
@@ -23,7 +23,7 @@ export const glassmorphism = {
     intense: 'blur(64px)',
     extreme: 'blur(80px)',
   },
-  
+
   // Premium glass borders
   border: {
     subtle: 'rgba(255, 255, 255, 0.15)',
@@ -32,7 +32,7 @@ export const glassmorphism = {
     intense: 'rgba(255, 255, 255, 0.45)',
     glow: 'rgba(255, 255, 255, 0.2)',
   },
-  
+
   // Premium shadows
   shadow: {
     light: {
@@ -64,7 +64,7 @@ export const glassmorphism = {
       elevation: 32,
     },
   },
-  
+
   // Premium reflections
   reflection: {
     intensity: 0.9,
@@ -73,8 +73,8 @@ export const glassmorphism = {
     opacity: 0.7,
     gradient: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 50%, rgba(255,255,255,0.6) 100%)',
   },
-  
-    // Semantic colors with transparency
+
+  // Semantic colors with transparency - evrdayplcs. brand
   semantic: {
     success: {
       background: 'rgba(16, 185, 129, 0.15)',
@@ -83,10 +83,10 @@ export const glassmorphism = {
       glow: 'rgba(16, 185, 129, 0.2)',
     },
     error: {
-      background: 'rgba(239, 68, 68, 0.15)',
-      border: 'rgba(239, 68, 68, 0.3)',
-      text: 'rgba(239, 68, 68, 0.9)',
-      glow: 'rgba(239, 68, 68, 0.2)',
+      background: 'rgba(220, 38, 38, 0.15)',
+      border: 'rgba(220, 38, 38, 0.3)',
+      text: 'rgba(220, 38, 38, 0.9)',
+      glow: 'rgba(220, 38, 38, 0.2)',
     },
     warning: {
       background: 'rgba(245, 158, 11, 0.15)',
@@ -99,6 +99,13 @@ export const glassmorphism = {
       border: 'rgba(59, 130, 246, 0.3)',
       text: 'rgba(59, 130, 246, 0.9)',
       glow: 'rgba(59, 130, 246, 0.2)',
+    },
+    // Brand red accent glass
+    accent: {
+      background: 'rgba(220, 38, 38, 0.12)',
+      border: 'rgba(220, 38, 38, 0.35)',
+      text: '#DC2626',
+      glow: 'rgba(220, 38, 38, 0.25)',
     },
   },
 
