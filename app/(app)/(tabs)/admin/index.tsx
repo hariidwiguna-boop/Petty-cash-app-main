@@ -44,9 +44,32 @@ export default function AdminControlCenter() {
     const [selectedTx, setSelectedTx] = useState<any>(null);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
 
-    const openTransactionDetail = (tx: any) => {
+    const openTransactionDetail = async (tx: any) => {
+        // Reset and set current tx
         setSelectedTx(tx);
         setDetailModalVisible(true);
+
+        // Fetch items on-demand with explicit relationship name if possible
+        try {
+            console.log("Fetching items for ID:", tx.id);
+            const { data, error } = await supabase
+                .from("transaction_items")
+                .select("*")
+                .eq("transaction_id", tx.id);
+
+            if (error) throw error;
+
+            if (data) {
+                console.log("Items fetched count:", data.length);
+                setSelectedTx((prev: any) => ({
+                    ...prev,
+                    items: data,
+                    _debugItemsCount: data.length // Add debug flag
+                }));
+            }
+        } catch (error: any) {
+            console.error("Error fetching items for detail:", error.message);
+        }
     };
 
     const fetchDashboardData = async () => {
@@ -56,7 +79,7 @@ export default function AdminControlCenter() {
             const { data: outletsData } = await supabase.from("outlets").select("*");
             const outletList = outletsData || [];
 
-            // 2. Fetch All Transactions (Optimized: only needed fields)
+            // 2. Fetch All Transactions (Optimized)
             const { data: allTx } = await supabase
                 .from("transactions")
                 .select("outlet_id, tipe, grand_total, status_reimburse");
@@ -72,22 +95,17 @@ export default function AdminControlCenter() {
                 .select("*", { count: 'exact', head: true })
                 .eq("status", "Pending");
 
-            // 5. Fetch Recent Activity (With Items)
-            const { data: recentTxData } = await supabase
+            // 5. Fetch Recent Activity (Minimalist - items fetched on demand)
+            const { data: recentTx } = await supabase
                 .from("transactions")
                 .select(`
                     *,
-                    transaction_items(*),
                     outlets(nama_outlet)
                 `)
                 .order('created_at', { ascending: false })
                 .limit(5);
 
-            // Transform items (following history.tsx pattern)
-            const recentTx = (recentTxData || []).map((tx: any) => ({
-                ...tx,
-                items: tx.transaction_items || []
-            }));
+
 
             let totalBal = 0;
             let criticalCount = 0;
@@ -115,7 +133,7 @@ export default function AdminControlCenter() {
                 criticalOutlets: criticalCount,
                 pendingApprovals: pendingTxs || 0,
                 totalOutlets: outletList.length,
-                recentActivity: recentTx
+                recentActivity: recentTx || []
             });
             setOutlets(updatedOutlets);
 
@@ -275,7 +293,7 @@ export default function AdminControlCenter() {
                                                     {tx.outlets?.nama_outlet || 'Unknown'}
                                                 </Text>
                                                 <Text style={styles.activityTime}>
-                                                    {formatTime(tx.created_at)} • {tx.items?.[0]?.deskripsi || tx.kategori || 'Transaksi'} {tx.items?.length > 1 ? `+${tx.items.length - 1} lainnya` : ''}
+                                                    {formatTime(tx.created_at)} • {tx.kategori || 'Transaksi'} {tx.grand_total > 1000000 ? '(Penting)' : ''}
                                                 </Text>
                                             </View>
                                         </View>
@@ -438,15 +456,32 @@ export default function AdminControlCenter() {
                             </View>
 
                             <Text style={styles.itemsTitle}>Rincian Item:</Text>
-                            {selectedTx?.items?.map((item: any, idx: number) => (
-                                <View key={idx} style={styles.itemRow}>
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.itemName}>{item.deskripsi}</Text>
-                                        <Text style={styles.itemSub}>{item.qty} {item.satuan} x {formatCurrency(item.total_harga / item.qty)}</Text>
+                            {selectedTx?.items && selectedTx.items.length > 0 ? (
+                                selectedTx.items.map((item: any, idx: number) => {
+                                    const qty = parseFloat(item.qty) || 0;
+                                    const unitPrice = qty > 0 ? (item.total_harga / qty) : item.total_harga;
+                                    return (
+                                        <View key={idx} style={styles.itemRow}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={styles.itemName}>{item.deskripsi}</Text>
+                                                <Text style={styles.itemSub}>
+                                                    {item.qty} {item.satuan} x {formatCurrency(unitPrice)}
+                                                </Text>
+                                            </View>
+                                            <Text style={styles.itemTotal}>{formatCurrency(item.total_harga)}</Text>
+                                        </View>
+                                    );
+                                })
+                            ) : (
+                                <View style={{ paddingVertical: 10 }}>
+                                    <Text style={{ color: "#94a3b8", fontSize: 13, fontStyle: 'italic' }}>
+                                        {selectedTx?._debugItemsCount === 0 ? "Tidak ada rincian item untuk transaksi ini." : "Sedang mengambil data item..."}
+                                    </Text>
+                                    <View style={{ marginTop: 20, padding: 8, backgroundColor: '#f1f5f9', borderRadius: 8 }}>
+                                        <Text style={{ fontSize: 9, color: '#94a3b8' }}>ID: {selectedTx?.id}</Text>
                                     </View>
-                                    <Text style={styles.itemTotal}>{formatCurrency(item.total_harga)}</Text>
                                 </View>
-                            ))}
+                            )}
 
                             <View style={styles.divider} />
 
