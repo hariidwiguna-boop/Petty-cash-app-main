@@ -40,6 +40,15 @@ export default function AdminControlCenter() {
         setShowOutletModal(false);
     };
 
+    // Transaction Detail Modal State
+    const [selectedTx, setSelectedTx] = useState<any>(null);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
+
+    const openTransactionDetail = (tx: any) => {
+        setSelectedTx(tx);
+        setDetailModalVisible(true);
+    };
+
     const fetchDashboardData = async () => {
         setIsLoadingStats(true);
         try {
@@ -63,15 +72,12 @@ export default function AdminControlCenter() {
                 .select("*", { count: 'exact', head: true })
                 .eq("status", "Pending");
 
-            // 5. Fetch Recent Activity (New)
+            // 5. Fetch Recent Activity (With Items)
             const { data: recentTx } = await supabase
-                .from("transactions")
+                .from("transactions") // Fixed table name
                 .select(`
-                    id, 
-                    created_at, 
-                    grand_total, 
-                    tipe, 
-                    deskripsi:transaction_items(deskripsi),
+                    *,
+                    items:transaction_items(*),
                     outlets(nama_outlet)
                 `)
                 .order('created_at', { ascending: false })
@@ -244,10 +250,14 @@ export default function AdminControlCenter() {
                         <AdminGlassCard style={styles.recentActivityCard}>
                             {dashboardStats.recentActivity.length > 0 ? (
                                 dashboardStats.recentActivity.map((tx, index) => (
-                                    <View key={tx.id} style={[
-                                        styles.activityItem,
-                                        index === dashboardStats.recentActivity.length - 1 && styles.lastActivityItem
-                                    ]}>
+                                    <TouchableOpacity
+                                        key={tx.id}
+                                        style={[
+                                            styles.activityItem,
+                                            index === dashboardStats.recentActivity.length - 1 && styles.lastActivityItem
+                                        ]}
+                                        onPress={() => openTransactionDetail(tx)}
+                                    >
                                         <View style={styles.activityLeft}>
                                             <View style={styles.activityIconBg}>
                                                 <Text style={{ fontSize: 16 }}>
@@ -259,18 +269,21 @@ export default function AdminControlCenter() {
                                                     {tx.outlets?.nama_outlet || 'Unknown'}
                                                 </Text>
                                                 <Text style={styles.activityTime}>
-                                                    {formatTime(tx.created_at)} • {tx.deskripsi?.[0]?.deskripsi || 'Transaksi'}
+                                                    {formatTime(tx.created_at)} • {tx.items?.[0]?.deskripsi || 'Transaksi'} {tx.items?.length > 1 ? `+${tx.items.length - 1} lainnya` : ''}
                                                 </Text>
                                             </View>
                                         </View>
-                                        <Text style={[
-                                            styles.activityAmount,
-                                            tx.tipe === 'Kas Keluar' ? styles.textRed : styles.textGreen
-                                        ]}>
-                                            {tx.tipe === 'Kas Keluar' ? '-' : '+'}
-                                            {formatCurrency(tx.grand_total)}
-                                        </Text>
-                                    </View>
+                                        <View style={{ alignItems: 'flex-end' }}>
+                                            <Text style={[
+                                                styles.activityAmount,
+                                                tx.tipe === 'Kas Keluar' ? styles.textRed : styles.textGreen
+                                            ]}>
+                                                {tx.tipe === 'Kas Keluar' ? '-' : '+'}
+                                                {formatCurrency(tx.grand_total)}
+                                            </Text>
+                                            <Text style={{ fontSize: 10, color: '#3b82f6', marginTop: 2 }}>Lihat Detail ›</Text>
+                                        </View>
+                                    </TouchableOpacity>
                                 ))
                             ) : (
                                 <View style={styles.emptyActivity}>
@@ -379,6 +392,62 @@ export default function AdminControlCenter() {
                                     {adminSelectedOutlet?.id === outlet.id && <Text style={styles.checkIcon}>✓</Text>}
                                 </TouchableOpacity>
                             ))}
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Transaction Detail Modal */}
+            <Modal visible={detailModalVisible} transparent animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.detailModalCard}>
+                        <View style={styles.detailModalHeader}>
+                            <View>
+                                <Text style={styles.detailModalTitle}>Detail Transaksi</Text>
+                                <Text style={styles.detailModalSub}>{selectedTx?.outlets?.nama_outlet}</Text>
+                            </View>
+                            <TouchableOpacity onPress={() => setDetailModalVisible(false)} style={styles.closeBtn}>
+                                <Text style={styles.closeBtnText}>✕</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView style={styles.detailList}>
+                            <View style={styles.detailInfo}>
+                                <Text style={styles.detailLabel}>Tanggal</Text>
+                                <Text style={styles.detailValue}>
+                                    {selectedTx?.created_at ? new Date(selectedTx.created_at).toLocaleString('id-ID') : '-'}
+                                </Text>
+                            </View>
+                            <View style={styles.detailInfo}>
+                                <Text style={styles.detailLabel}>Tipe</Text>
+                                <Text style={[
+                                    styles.detailValue,
+                                    { color: selectedTx?.tipe === 'Kas Keluar' ? '#dc2626' : '#16a34a', fontWeight: 'bold' }
+                                ]}>
+                                    {selectedTx?.tipe}
+                                </Text>
+                            </View>
+                            <View style={styles.detailInfo}>
+                                <Text style={styles.detailLabel}>Kategori</Text>
+                                <Text style={styles.detailValue}>{selectedTx?.kategori || '-'}</Text>
+                            </View>
+
+                            <Text style={styles.itemsTitle}>Rincian Item:</Text>
+                            {selectedTx?.items?.map((item: any, idx: number) => (
+                                <View key={idx} style={styles.itemRow}>
+                                    <View style={{ flex: 1 }}>
+                                        <Text style={styles.itemName}>{item.deskripsi}</Text>
+                                        <Text style={styles.itemSub}>{item.qty} {item.satuan} x {formatCurrency(item.total_harga / item.qty)}</Text>
+                                    </View>
+                                    <Text style={styles.itemTotal}>{formatCurrency(item.total_harga)}</Text>
+                                </View>
+                            ))}
+
+                            <View style={styles.divider} />
+
+                            <View style={styles.totalRow}>
+                                <Text style={styles.totalLabel}>Grand Total</Text>
+                                <Text style={styles.totalValue}>{formatCurrency(selectedTx?.grand_total || 0)}</Text>
+                            </View>
                         </ScrollView>
                     </View>
                 </View>
@@ -804,6 +873,99 @@ const styles = StyleSheet.create({
         color: '#9ca3af',
         fontStyle: 'italic',
         fontSize: 13,
-    }
+    },
+    // Detail Modal Styles
+    detailModalCard: {
+        backgroundColor: "white",
+        borderRadius: 20,
+        width: "100%",
+        maxWidth: 340,
+        maxHeight: "80%",
+        overflow: "hidden",
+    },
+    detailModalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f3f4f6",
+    },
+    detailModalTitle: {
+        fontSize: 16,
+        fontWeight: "700",
+        color: "#1f2937",
+    },
+    detailModalSub: {
+        fontSize: 12,
+        color: "#6b7280",
+    },
+    detailList: {
+        padding: 16,
+    },
+    detailInfo: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 8,
+    },
+    detailLabel: {
+        fontSize: 13,
+        color: "#6b7280",
+    },
+    detailValue: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#1f2937",
+    },
+    itemsTitle: {
+        marginTop: 12,
+        marginBottom: 8,
+        fontSize: 13,
+        fontWeight: "700",
+        color: "#374151",
+    },
+    itemRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        marginBottom: 8,
+        paddingBottom: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f9fafb",
+    },
+    itemName: {
+        fontSize: 13,
+        color: "#1f2937",
+    },
+    itemSub: {
+        fontSize: 11,
+        color: "#9ca3af",
+    },
+    itemTotal: {
+        fontSize: 13,
+        fontWeight: "600",
+        color: "#1f2937",
+    },
+    divider: {
+        height: 1,
+        backgroundColor: "#e5e7eb",
+        marginVertical: 12,
+    },
+    totalRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 20
+    },
+    totalLabel: {
+        fontSize: 14,
+        fontWeight: "700",
+        color: "#374151",
+    },
+    totalValue: {
+        fontSize: 18,
+        fontWeight: "800",
+        color: "#111827",
+    },
 });
 
