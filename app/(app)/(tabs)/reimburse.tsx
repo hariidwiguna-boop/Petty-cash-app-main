@@ -259,7 +259,7 @@ export default function ReimburseScreen() {
         });
 
         dateRange.forEach(d => {
-            const dStr = d.toISOString().split('T')[0];
+            const dStr = formatDateToISO(d);
             const dayTxs = groupedOut[dStr] || [];
             const dayInflows = groupedIn[dStr] || [];
             const dayName = formatDateFull(d);
