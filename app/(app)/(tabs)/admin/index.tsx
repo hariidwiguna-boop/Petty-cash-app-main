@@ -73,15 +73,21 @@ export default function AdminControlCenter() {
                 .eq("status", "Pending");
 
             // 5. Fetch Recent Activity (With Items)
-            const { data: recentTx } = await supabase
-                .from("transactions") // Fixed table name
+            const { data: recentTxData } = await supabase
+                .from("transactions")
                 .select(`
                     *,
-                    items:transaction_items(*),
+                    transaction_items(*),
                     outlets(nama_outlet)
                 `)
                 .order('created_at', { ascending: false })
                 .limit(5);
+
+            // Transform items (following history.tsx pattern)
+            const recentTx = (recentTxData || []).map((tx: any) => ({
+                ...tx,
+                items: tx.transaction_items || []
+            }));
 
             let totalBal = 0;
             let criticalCount = 0;
@@ -109,7 +115,7 @@ export default function AdminControlCenter() {
                 criticalOutlets: criticalCount,
                 pendingApprovals: pendingTxs || 0,
                 totalOutlets: outletList.length,
-                recentActivity: recentTx || []
+                recentActivity: recentTx
             });
             setOutlets(updatedOutlets);
 
@@ -269,7 +275,7 @@ export default function AdminControlCenter() {
                                                     {tx.outlets?.nama_outlet || 'Unknown'}
                                                 </Text>
                                                 <Text style={styles.activityTime}>
-                                                    {formatTime(tx.created_at)} • {tx.items?.[0]?.deskripsi || 'Transaksi'} {tx.items?.length > 1 ? `+${tx.items.length - 1} lainnya` : ''}
+                                                    {formatTime(tx.created_at)} • {tx.items?.[0]?.deskripsi || tx.kategori || 'Transaksi'} {tx.items?.length > 1 ? `+${tx.items.length - 1} lainnya` : ''}
                                                 </Text>
                                             </View>
                                         </View>
