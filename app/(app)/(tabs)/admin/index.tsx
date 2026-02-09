@@ -26,7 +26,8 @@ export default function AdminControlCenter() {
         totalBalance: 0,
         criticalOutlets: 0,
         pendingApprovals: 0,
-        totalOutlets: 0
+        totalOutlets: 0,
+        recentActivity: [] as any[]
     });
     const [isLoadingStats, setIsLoadingStats] = useState(true);
 
@@ -42,35 +43,69 @@ export default function AdminControlCenter() {
     const fetchDashboardData = async () => {
         setIsLoadingStats(true);
         try {
-            // 1. Fetch Outlets for Balance & Critical Count
+            // 1. Fetch Outlets
             const { data: outletsData } = await supabase.from("outlets").select("*");
-
-            let totalBal = 0;
-            let criticalCount = 0;
             const outletList = outletsData || [];
 
-            outletList.forEach((o: any) => {
-                totalBal += (o.saldo || 0);
-                // Assumption: Critical if below 500k (or dynamic limit if we had one)
-                if ((o.saldo || 0) < 500000) criticalCount++;
-            });
+            // 2. Fetch All Transactions (Optimized: only needed fields)
+            const { data: allTx } = await supabase
+                .from("transactions")
+                .select("outlet_id, tipe, grand_total, status_reimburse");
 
-            // 2. Fetch Pending Approvals (Reimbursements)
+            // 3. Fetch All Kas Masuk (Capital)
+            const { data: allKasMasuk } = await supabase
+                .from("kas_masuk")
+                .select("outlet_id, jumlah");
+
+            // 4. Fetch Pending Approvals count (Reimbursements)
             const { count: pendingTxs } = await supabase
                 .from("reimbursements")
                 .select("*", { count: 'exact', head: true })
                 .eq("status", "Pending");
 
-            // If you have a separate reimbursements table or logic, add it here.
-            // For now assuming transactions covers requests.
+            // 5. Fetch Recent Activity (New)
+            const { data: recentTx } = await supabase
+                .from("transactions")
+                .select(`
+                    id, 
+                    created_at, 
+                    grand_total, 
+                    tipe, 
+                    deskripsi:transaction_items(deskripsi),
+                    outlets(nama_outlet)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            let totalBal = 0;
+            let criticalCount = 0;
+
+            // Calculate Balance per Outlet
+            const updatedOutlets = outletList.map((o: any) => {
+                const outletTx = allTx?.filter(tx => tx.outlet_id === o.id) || [];
+                const outletKas = allKasMasuk?.filter(k => k.outlet_id === o.id) || [];
+
+                const totalKasMasuk = outletKas.reduce((sum, item) => sum + (item.jumlah || 0), 0);
+                const totalTxKeluar = outletTx
+                    .filter(tx => tx.tipe === 'Kas Keluar')
+                    .reduce((sum, item) => sum + (item.grand_total || 0), 0);
+
+                const currentSaldo = (o.saldo_awal || 0) + totalKasMasuk - totalTxKeluar;
+
+                totalBal += currentSaldo;
+                if (currentSaldo < 500000) criticalCount++;
+
+                return { ...o, saldo: currentSaldo }; // Attach calculated saldo for display
+            });
 
             setDashboardStats({
                 totalBalance: totalBal,
                 criticalOutlets: criticalCount,
                 pendingApprovals: pendingTxs || 0,
-                totalOutlets: outletList.length
+                totalOutlets: outletList.length,
+                recentActivity: recentTx || []
             });
-            setOutlets(outletList); // Keep for outlet selector if needed elsewhere
+            setOutlets(updatedOutlets);
 
         } catch (error) {
             console.error("Error fetching dashboard stats:", error);
@@ -99,6 +134,12 @@ export default function AdminControlCenter() {
             currency: "IDR",
             minimumFractionDigits: 0
         }).format(amount);
+    };
+
+    // Format relative time (simple version)
+    const formatTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -197,11 +238,53 @@ export default function AdminControlCenter() {
                         </View>
                     </View>
 
+                    {/* 3. RECENT ACTIVITY (NEW) */}
+                    <View style={styles.sectionContainer}>
+                        <Text style={styles.sectionLabel}>⏱️ AKTIVITAS TERBARU</Text>
+                        <AdminGlassCard style={styles.recentActivityCard}>
+                            {dashboardStats.recentActivity.length > 0 ? (
+                                dashboardStats.recentActivity.map((tx, index) => (
+                                    <View key={tx.id} style={[
+                                        styles.activityItem,
+                                        index === dashboardStats.recentActivity.length - 1 && styles.lastActivityItem
+                                    ]}>
+                                        <View style={styles.activityLeft}>
+                                            <View style={styles.activityIconBg}>
+                                                <Text style={{ fontSize: 16 }}>
+                                                    {tx.tipe === 'Kas Keluar' ? '📤' : '📥'}
+                                                </Text>
+                                            </View>
+                                            <View>
+                                                <Text style={styles.activityOutlet}>
+                                                    {tx.outlets?.nama_outlet || 'Unknown'}
+                                                </Text>
+                                                <Text style={styles.activityTime}>
+                                                    {formatTime(tx.created_at)} • {tx.deskripsi?.[0]?.deskripsi || 'Transaksi'}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        <Text style={[
+                                            styles.activityAmount,
+                                            tx.tipe === 'Kas Keluar' ? styles.textRed : styles.textGreen
+                                        ]}>
+                                            {tx.tipe === 'Kas Keluar' ? '-' : '+'}
+                                            {formatCurrency(tx.grand_total)}
+                                        </Text>
+                                    </View>
+                                ))
+                            ) : (
+                                <View style={styles.emptyActivity}>
+                                    <Text style={styles.emptyActivityText}>Belum ada aktivitas hari ini</Text>
+                                </View>
+                            )}
+                        </AdminGlassCard>
+                    </View>
+
                     {/* Padding for Footer */}
                     <View style={{ height: 100 }} />
                 </ScrollView>
 
-                {/* 3. FIXED FOOTER: AKSES CEPAT */}
+                {/* 4. FIXED FOOTER: AKSES CEPAT */}
                 <View style={styles.fixedFooter}>
                     <Text style={styles.footerLabel}>🚀 AKSES CEPAT</Text>
                     <View style={styles.footerGrid}>
@@ -661,5 +744,66 @@ const styles = StyleSheet.create({
         color: "#10b981",
         fontWeight: "bold",
     },
+    // Recent Activity Styles
+    recentActivityCard: {
+        padding: 0, // List needs full width
+        borderRadius: 20,
+        overflow: 'hidden'
+    },
+    activityItem: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+    },
+    lastActivityItem: {
+        borderBottomWidth: 0,
+    },
+    activityLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    activityIconBg: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: '#f3f4f6',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    activityOutlet: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#374151',
+    },
+    activityTime: {
+        fontSize: 11,
+        color: '#9ca3af',
+        marginTop: 1,
+    },
+    activityAmount: {
+        fontSize: 13,
+        fontWeight: '700',
+    },
+    textRed: {
+        color: '#dc2626',
+    },
+    textGreen: {
+        color: '#16a34a',
+    },
+    emptyActivity: {
+        padding: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyActivityText: {
+        color: '#9ca3af',
+        fontStyle: 'italic',
+        fontSize: 13,
+    }
 });
 
