@@ -19,6 +19,8 @@ import * as Clipboard from "expo-clipboard";
 import MessageModal from "../../../components/MessageModal";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { formatDateToISO } from "../../../lib/dateUtils";
+
 export default function ReimburseScreen() {
     const { profile, outlet } = useAuthStore();
     const router = useRouter();
@@ -66,8 +68,8 @@ export default function ReimburseScreen() {
         setIsLoading(true);
 
         try {
-            const startStr = startDate.toISOString().split('T')[0];
-            const endStr = endDate.toISOString().split('T')[0];
+            const startStr = formatDateToISO(startDate);
+            const endStr = formatDateToISO(endDate);
 
             // 1. Fetch Transactions + Items
             const { data: transactions, error } = await supabase
