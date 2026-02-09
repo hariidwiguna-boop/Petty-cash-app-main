@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
     View,
     Text,
@@ -12,7 +12,7 @@ import {
     Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase, Transaction, TransactionItem } from "../../../lib/supabase";
 import PlatformDatePicker from "../../../components/PlatformDatePicker";
@@ -131,6 +131,12 @@ export default function HistoryScreen() {
     useEffect(() => {
         paginationState.fetchData(1);
     }, [outlet, isAdmin, adminSelectedOutlet]);
+
+    useFocusEffect(
+        useCallback(() => {
+            paginationState.fetchData(1);
+        }, [outlet, isAdmin, adminSelectedOutlet])
+    );
 
     const onRefresh = async () => {
         setRefreshing(true);

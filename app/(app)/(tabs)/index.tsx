@@ -171,6 +171,13 @@ export default function DashboardScreen() {
         fetchDashboardData();
     }, [selectedOutlet]);
 
+    // Auto-refresh when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            fetchDashboardData();
+        }, [selectedOutlet])
+    );
+
     const onRefresh = async () => {
         setRefreshing(true);
         await fetchDashboardData();
