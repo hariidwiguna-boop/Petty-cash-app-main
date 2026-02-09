@@ -7,6 +7,7 @@ import * as React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../../stores/authStore';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 // Brand Colors - Red & White Only
 const BRAND = {
@@ -31,6 +32,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     onLogoutPress,
 }) => {
     const { profile, isAdmin } = useAuthStore();
+    const { fontScale, horizontalScale, isTablet } = useResponsive();
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -70,8 +72,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     </View>
 
                     <View>
-                        <Text style={styles.greetingText}>{getGreeting()},</Text>
-                        <Text style={styles.userNameText}>{profile?.nama || "User"}</Text>
+                        <Text style={[styles.greetingText, { fontSize: fontScale(11) }]}>{getGreeting()},</Text>
+                        <Text style={[styles.userNameText, { fontSize: fontScale(14) }]}>{profile?.nama || "User"}</Text>
                     </View>
                 </View>
             </View>

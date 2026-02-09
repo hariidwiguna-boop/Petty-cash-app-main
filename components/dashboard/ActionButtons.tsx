@@ -6,6 +6,7 @@
 import * as React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 // Brand Colors - Red & White Only
 const BRAND = {
@@ -19,6 +20,7 @@ const BRAND = {
 
 export const ActionButtons: React.FC = () => {
     const router = useRouter();
+    const { fontScale, isTablet, getResponsiveValue } = useResponsive();
 
     return (
         <View style={styles.bottomNavContainer}>
@@ -27,16 +29,12 @@ export const ActionButtons: React.FC = () => {
 
             {/* Left Items */}
             <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/reimburse")}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.navIcon}>📋</Text>
-                </View>
+                <Text style={styles.navIcon}>📋</Text>
                 <Text style={styles.navLabel}>Request</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/status")}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.navIcon}>📊</Text>
-                </View>
+                <Text style={styles.navIcon}>📊</Text>
                 <Text style={styles.navLabel}>Status</Text>
             </TouchableOpacity>
 
@@ -54,16 +52,12 @@ export const ActionButtons: React.FC = () => {
 
             {/* Right Items */}
             <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/history")}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.navIcon}>📜</Text>
-                </View>
+                <Text style={styles.navIcon}>📜</Text>
                 <Text style={styles.navLabel}>Riwayat</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/daily-report")}>
-                <View style={styles.iconContainer}>
-                    <Text style={styles.navIcon}>📈</Text>
-                </View>
+                <Text style={styles.navIcon}>📈</Text>
                 <Text style={styles.navLabel}>Laporan</Text>
             </TouchableOpacity>
         </View>
@@ -76,18 +70,17 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'flex-end',
         paddingHorizontal: 12,
-        paddingBottom: 20, // Safe area for bottom
+        paddingBottom: 20,
         paddingTop: 12,
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
         backgroundColor: 'transparent',
-        height: 85,
     },
     glassBackground: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: "rgba(255, 255, 255, 0.9)", // High opacity glass
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
         borderTopWidth: 1.5,
         borderTopColor: "rgba(255, 255, 255, 0.8)",
         shadowColor: "#000",
@@ -101,31 +94,29 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        height: 50,
+        height: 60,
         zIndex: 10,
-    },
-    iconContainer: {
-        marginBottom: 2,
     },
     navIcon: {
         fontSize: 22,
     },
     navLabel: {
         fontSize: 10,
-        fontWeight: '600',
+        fontWeight: '700',
         color: '#64748B',
+        marginTop: 2,
     },
     centerFabContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-end',
         zIndex: 20,
-        top: -24, // Pull up to float
+        top: -30,
     },
     centerFab: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
+        width: 68,
+        height: 68,
+        borderRadius: 34,
         backgroundColor: BRAND.red,
         alignItems: 'center',
         justifyContent: 'center',
@@ -134,19 +125,17 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         shadowRadius: 16,
         elevation: 10,
-        marginBottom: 4,
         borderWidth: 4,
-        borderColor: 'rgba(255,255,255,0.2)', // Subtle inner ring
+        borderColor: 'rgba(255,255,255,0.3)',
     },
     fabIcon: {
-        fontSize: 28,
+        fontSize: 30,
         color: 'white',
     },
     fabLabel: {
-        fontSize: 11,
-        fontWeight: '700',
+        fontSize: 12,
+        fontWeight: '800',
         color: BRAND.textDark,
-        marginTop: 4,
-        // Add text shadow for legibility if needed
+        marginTop: 6,
     },
 });

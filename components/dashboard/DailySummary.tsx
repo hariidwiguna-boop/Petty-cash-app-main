@@ -4,6 +4,7 @@
 
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useResponsive } from '../../src/hooks/useResponsive';
 import { Transaction, TransactionItem } from '../../lib/supabase';
 
 interface DailySummaryProps {
@@ -16,6 +17,7 @@ interface DailySummaryProps {
 }
 
 export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
+    const { fontScale, isTablet } = useResponsive();
     const formatCurrency = (amount: number) => {
         return "Rp " + amount.toLocaleString("id-ID");
     };
@@ -23,10 +25,10 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
     return (
         <View style={styles.dailySummaryCard}>
             <View style={styles.dailyHeader}>
-                <Text style={styles.dailyIcon}>📊</Text>
-                <Text style={styles.dailyTitle}>Ringkasan Hari Ini</Text>
+                <Text style={[styles.dailyIcon, { fontSize: fontScale(18) }]}>📊</Text>
+                <Text style={[styles.dailyTitle, { fontSize: fontScale(16) }]}>Ringkasan Hari Ini</Text>
             </View>
-            <Text style={styles.dailyDate}>{today}</Text>
+            <Text style={[styles.dailyDate, { fontSize: fontScale(12) }]}>{today}</Text>
 
             {/* Detailed Expenses List */}
             <View style={styles.dailyStats}>

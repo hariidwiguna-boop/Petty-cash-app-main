@@ -69,7 +69,7 @@ const variantConfig = {
     gradient: ['rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.1)'],
     shadow: glassmorphism.shadow.heavy,
   },
-};
+} as const;
 
 export const GlassButton: React.FC<GlassButtonProps> = ({
   children,

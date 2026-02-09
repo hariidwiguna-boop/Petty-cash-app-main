@@ -7,12 +7,21 @@ import AdminLayout from "../../../../components/admin/AdminLayout";
 import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useResponsive } from "../../../../src/hooks/useResponsive";
 
 
 
 export default function AdminControlCenter() {
     const { profile, signOut, adminSelectedOutlet, setAdminSelectedOutlet } = useAuthStore();
     const router = useRouter();
+    const {
+        isTablet,
+        moderateScale,
+        fontScale,
+        getResponsiveValue,
+        containerPadding,
+        modalWidth
+    } = useResponsive();
 
     // Logout Modal State
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
@@ -220,15 +229,18 @@ export default function AdminControlCenter() {
                     {/* 2. ACTIONABLE INSIGHTS */}
                     <View style={styles.sectionContainer}>
                         <Text style={styles.sectionLabel}>⚠️ STATUS & PERHATIAN</Text>
-                        <View style={styles.statsGrid}>
+                        <View style={[
+                            styles.statsGrid,
+                            isTablet && { flexWrap: 'wrap', justifyContent: 'flex-start' }
+                        ]}>
                             {/* Critical Outlets */}
                             <AdminGlassCard
-                                style={styles.glassStatCard}
+                                style={[styles.glassStatCard, isTablet && { width: '31%', flex: 0 }]}
                                 onPress={() => router.push("/(app)/(tabs)/admin/outlets")}
                             >
                                 <View style={styles.statHeader}>
                                     <Text style={styles.statIcon}>🔴</Text>
-                                    <Text style={[styles.statCount, { color: "#dc2626" }]}>
+                                    <Text style={[styles.statCount, { color: "#dc2626", fontSize: fontScale(20) }]}>
                                         {dashboardStats.criticalOutlets}
                                     </Text>
                                 </View>
@@ -238,12 +250,12 @@ export default function AdminControlCenter() {
 
                             {/* Pending Approvals */}
                             <AdminGlassCard
-                                style={styles.glassStatCard}
+                                style={[styles.glassStatCard, isTablet && { width: '31%', flex: 0 }]}
                                 onPress={() => router.push("/(app)/(tabs)/admin/approval")}
                             >
                                 <View style={styles.statHeader}>
                                     <Text style={styles.statIcon}>🟠</Text>
-                                    <Text style={[styles.statCount, { color: "#ea580c" }]}>
+                                    <Text style={[styles.statCount, { color: "#ea580c", fontSize: fontScale(20) }]}>
                                         {dashboardStats.pendingApprovals}
                                     </Text>
                                 </View>
@@ -253,12 +265,12 @@ export default function AdminControlCenter() {
 
                             {/* Total Outlets (Info) */}
                             <AdminGlassCard
-                                style={styles.glassStatCard}
+                                style={[styles.glassStatCard, isTablet && { width: '31%', flex: 0 }]}
                                 onPress={() => router.push("/(app)/(tabs)/admin/outlets")}
                             >
                                 <View style={styles.statHeader}>
                                     <Text style={styles.statIcon}>🔵</Text>
-                                    <Text style={[styles.statCount, { color: "#2563eb" }]}>
+                                    <Text style={[styles.statCount, { color: "#2563eb", fontSize: fontScale(20) }]}>
                                         {dashboardStats.totalOutlets}
                                     </Text>
                                 </View>
@@ -534,8 +546,8 @@ const styles = StyleSheet.create({
     },
     // HERO CARD
     heroCard: {
-        padding: 20,
-        borderRadius: 20,
+        padding: 24,
+        borderRadius: 24,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
@@ -552,10 +564,10 @@ const styles = StyleSheet.create({
         fontWeight: "600",
     },
     heroValue: {
-        fontSize: 28,
+        fontSize: 32,
         fontWeight: "800",
         color: "white",
-        marginBottom: 4,
+        marginVertical: 4,
     },
     heroSub: {
         fontSize: 12,
@@ -576,7 +588,7 @@ const styles = StyleSheet.create({
     statsGrid: {
         flexDirection: "row",
         justifyContent: "space-between",
-        gap: 10,
+        gap: 12,
     },
     statCard: {
         flex: 1,
@@ -598,7 +610,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     statCount: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: "800",
     },
     statLabel: {
@@ -618,7 +630,8 @@ const styles = StyleSheet.create({
     },
     glassStatCard: {
         flex: 1,
-        minHeight: 90,
+        minHeight: 110,
+        padding: 16,
     },
     glassStatLabel: {
         fontSize: 12,
@@ -752,17 +765,17 @@ const styles = StyleSheet.create({
     // Modals
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
         justifyContent: "center",
         alignItems: "center",
         padding: 20,
     },
     confirmModal: {
         backgroundColor: "white",
-        borderRadius: 20,
-        padding: 24,
-        width: "100%",
-        maxWidth: 320,
+        borderRadius: 24,
+        padding: 32,
+        width: "90%",
+        maxWidth: 400,
         alignItems: "center",
     },
     confirmTitle: {
@@ -806,10 +819,10 @@ const styles = StyleSheet.create({
     // Outlet Modal
     outletModalCard: { // Same as confirmModal but for outlet list
         backgroundColor: "white",
-        borderRadius: 20,
-        width: "100%",
-        maxWidth: 340,
-        maxHeight: "80%",
+        borderRadius: 24,
+        width: "90%",
+        maxWidth: 500,
+        maxHeight: "85%",
         overflow: "hidden",
     },
     outletModalHeader: {
@@ -1009,4 +1022,3 @@ const styles = StyleSheet.create({
         color: "#111827",
     },
 });
-

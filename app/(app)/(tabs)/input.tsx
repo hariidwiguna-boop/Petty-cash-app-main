@@ -21,6 +21,7 @@ import PlatformDatePicker from "../../../components/PlatformDatePicker";
 import { formatDateToISO } from "../../../lib/dateUtils";
 import MessageModal from "../../../components/MessageModal";
 import { LinearGradient } from "expo-linear-gradient";
+import { useResponsive } from "../../../src/hooks/useResponsive";
 
 interface ItemRow {
     id: string;
@@ -37,6 +38,7 @@ interface MasterItem {
 }
 
 export default function InputScreen() {
+    const { isTablet, fontScale, horizontalScale, getResponsiveValue, modalWidth } = useResponsive();
     const { profile, outlet } = useAuthStore();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -312,8 +314,8 @@ export default function InputScreen() {
                     {/* Modal Header */}
                     <View style={styles.modalHeader}>
                         <View style={styles.modalHeaderLeft}>
-                            <Text style={styles.modalTitle}>Catat Transaksi</Text>
-                            <Text style={styles.modalSubtitle}>Input pengeluaran kas kecil</Text>
+                            <Text style={[styles.modalTitle, { fontSize: fontScale(20) }]}>Catat Transaksi</Text>
+                            <Text style={[styles.modalSubtitle, { fontSize: fontScale(13) }]}>Input pengeluaran kas kecil</Text>
                         </View>
                         <View style={styles.totalBadge}>
                             <Text style={styles.totalLabel}>TOTAL</Text>
@@ -334,71 +336,73 @@ export default function InputScreen() {
                         />
 
                         {/* Items */}
-                        {items.map((item, index) => (
-                            <View key={item.id} style={styles.itemCard}>
-                                <View style={styles.itemCardHeader}>
-                                    <Text style={styles.itemNumber}>Item {index + 1}</Text>
-                                    {items.length > 1 && (
-                                        <TouchableOpacity onPress={() => removeItem(item.id)}>
-                                            <Text style={styles.removeBtn}>🗑️</Text>
-                                        </TouchableOpacity>
+                        <View style={[isTablet && { flexDirection: 'row', flexWrap: 'wrap', gap: 16 }]}>
+                            {items.map((item, index) => (
+                                <View key={item.id} style={[styles.itemCard, isTablet && { width: '48.5%', marginBottom: 0 }]}>
+                                    <View style={styles.itemCardHeader}>
+                                        <Text style={styles.itemNumber}>Item {index + 1}</Text>
+                                        {items.length > 1 && (
+                                            <TouchableOpacity onPress={() => removeItem(item.id)}>
+                                                <Text style={styles.removeBtn}>🗑️</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    {/* Smart Input for Deskripsi */}
+                                    <TouchableOpacity
+                                        style={[styles.formInput, styles.dropdownBtn]}
+                                        onPress={() => openItemSelector(item.id, item.deskripsi)}
+                                    >
+                                        <Text style={item.deskripsi ? styles.inputText : styles.placeholderText}>
+                                            {item.deskripsi || "Cari / Ketik Nama Item..."}
+                                        </Text>
+                                        <Text>🔍</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.itemRow}>
+                                        <View style={styles.itemRowField}>
+                                            <Text style={styles.itemFieldLabel}>Qty</Text>
+                                            <TextInput
+                                                style={styles.formInputSmall}
+                                                placeholder=""
+                                                keyboardType="default" // Changed to default to allow '/'
+                                                value={item.qty}
+                                                onChangeText={(v) => updateItem(item.id, "qty", v)}
+                                            />
+                                        </View>
+                                        <View style={styles.itemRowField}>
+                                            <Text style={styles.itemFieldLabel}>Satuan</Text>
+                                            <TextInput
+                                                style={styles.formInputSmall}
+                                                placeholder="Pcs"
+                                                value={item.satuan}
+                                                onChangeText={(v) => updateItem(item.id, "satuan", v)}
+                                            />
+                                        </View>
+                                        <View style={[styles.itemRowField, { flex: 1.5 }]}>
+                                            <Text style={styles.itemFieldLabel}>Total Harga</Text>
+                                            <TextInput
+                                                style={styles.formInputSmall}
+                                                placeholder="0"
+                                                keyboardType="numeric"
+                                                value={formatCurrencyInput(item.harga)}
+                                                onChangeText={(v) => handlePriceChange(item.id, v)}
+                                            />
+                                        </View>
+                                    </View>
+
+                                    {/* Optional: Show calculated unit price if qty exists */}
+                                    {item.qty && item.harga && parseQty(item.qty) > 0 && (
+                                        <Text style={styles.itemSubtotal}>
+                                            (@ {formatCurrency(parseFloat(item.harga) / parseQty(item.qty))})
+                                        </Text>
                                     )}
                                 </View>
-
-                                {/* Smart Input for Deskripsi */}
-                                <TouchableOpacity
-                                    style={[styles.formInput, styles.dropdownBtn]}
-                                    onPress={() => openItemSelector(item.id, item.deskripsi)}
-                                >
-                                    <Text style={item.deskripsi ? styles.inputText : styles.placeholderText}>
-                                        {item.deskripsi || "Cari / Ketik Nama Item..."}
-                                    </Text>
-                                    <Text>🔍</Text>
-                                </TouchableOpacity>
-
-                                <View style={styles.itemRow}>
-                                    <View style={styles.itemRowField}>
-                                        <Text style={styles.itemFieldLabel}>Qty</Text>
-                                        <TextInput
-                                            style={styles.formInputSmall}
-                                            placeholder=""
-                                            keyboardType="default" // Changed to default to allow '/'
-                                            value={item.qty}
-                                            onChangeText={(v) => updateItem(item.id, "qty", v)}
-                                        />
-                                    </View>
-                                    <View style={styles.itemRowField}>
-                                        <Text style={styles.itemFieldLabel}>Satuan</Text>
-                                        <TextInput
-                                            style={styles.formInputSmall}
-                                            placeholder="Pcs"
-                                            value={item.satuan}
-                                            onChangeText={(v) => updateItem(item.id, "satuan", v)}
-                                        />
-                                    </View>
-                                    <View style={[styles.itemRowField, { flex: 1.5 }]}>
-                                        <Text style={styles.itemFieldLabel}>Total Harga</Text>
-                                        <TextInput
-                                            style={styles.formInputSmall}
-                                            placeholder="0"
-                                            keyboardType="numeric"
-                                            value={formatCurrencyInput(item.harga)}
-                                            onChangeText={(v) => handlePriceChange(item.id, v)}
-                                        />
-                                    </View>
-                                </View>
-
-                                {/* Optional: Show calculated unit price if qty exists */}
-                                {item.qty && item.harga && parseQty(item.qty) > 0 && (
-                                    <Text style={styles.itemSubtotal}>
-                                        (@ {formatCurrency(parseFloat(item.harga) / parseQty(item.qty))})
-                                    </Text>
-                                )}
-                            </View>
-                        ))}
+                            ))}
+                        </View>
 
                         {/* Add Item Button */}
-                        <TouchableOpacity style={styles.addItemBtn} onPress={addItem}>
+                        <TouchableOpacity style={[styles.addItemBtn, isTablet && { alignSelf: 'flex-start', paddingHorizontal: 30 }]} onPress={addItem}>
                             <Text style={styles.addItemIcon}>➕</Text>
                             <Text style={styles.addItemText}>Tambah Item</Text>
                         </TouchableOpacity>
@@ -518,6 +522,9 @@ const styles = StyleSheet.create({
         elevation: 10,
         borderWidth: 1.5,
         borderColor: "rgba(255, 255, 255, 0.6)",
+        alignSelf: 'center',
+        width: '95%',
+        maxWidth: 1000,
         ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
     },
     keyboardView: {

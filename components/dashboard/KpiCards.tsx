@@ -5,6 +5,7 @@
 
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useResponsive } from '../../src/hooks/useResponsive';
 
 // Brand Colors - Red & White Only
 const BRAND = {
@@ -27,59 +28,60 @@ interface KpiCardsProps {
 }
 
 export const KpiCards: React.FC<KpiCardsProps> = ({ data }) => {
+    const { isTablet, fontScale, horizontalScale } = useResponsive();
     const formatCurrency = (amount: number) => {
         return "Rp " + amount.toLocaleString("id-ID");
     };
 
     return (
-        <View style={styles.kpiGrid}>
+        <View style={[styles.kpiGrid, isTablet && { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }]}>
             {/* 1. Kas Awal Hari Ini */}
-            <View style={[styles.kpiCard]}>
+            <View style={[styles.kpiCard, isTablet && { width: '48.5%' }]}>
                 <View style={[styles.kpiIcon, { backgroundColor: 'rgba(100, 116, 139, 0.08)' }]}>
                     <Text style={styles.kpiIconText}>📥</Text>
                 </View>
                 <View style={styles.kpiInfo}>
-                    <Text style={styles.kpiLabel}>Kas Awal Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.textDark }]}>
+                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Awal Hari Ini</Text>
+                    <Text style={[styles.kpiValue, { color: BRAND.textDark, fontSize: fontScale(14) }]}>
                         {formatCurrency(data.kasAwalHariIni)}
                     </Text>
                 </View>
             </View>
 
             {/* 2. Kas Masuk Hari Ini */}
-            <View style={[styles.kpiCard, styles.kpiKasMasuk]}>
+            <View style={[styles.kpiCard, styles.kpiKasMasuk, isTablet && { width: '48.5%' }]}>
                 <View style={[styles.kpiIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
                     <Text style={styles.kpiIconText}>↗️</Text>
                 </View>
                 <View style={styles.kpiInfo}>
-                    <Text style={styles.kpiLabel}>Kas Masuk Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: '#10b981' }]}>
+                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Masuk Hari Ini</Text>
+                    <Text style={[styles.kpiValue, { color: '#10b981', fontSize: fontScale(14) }]}>
                         {formatCurrency(data.kasMasukHariIni)}
                     </Text>
                 </View>
             </View>
 
             {/* 3. Kas Keluar Hari Ini */}
-            <View style={[styles.kpiCard, styles.kpiKasKeluar]}>
+            <View style={[styles.kpiCard, styles.kpiKasKeluar, isTablet && { width: '48.5%' }]}>
                 <View style={[styles.kpiIcon, { backgroundColor: BRAND.redGlass }]}>
                     <Text style={styles.kpiIconText}>↘️</Text>
                 </View>
                 <View style={styles.kpiInfo}>
-                    <Text style={styles.kpiLabel}>Kas Keluar Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.red }]}>
+                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Keluar Hari Ini</Text>
+                    <Text style={[styles.kpiValue, { color: BRAND.red, fontSize: fontScale(14) }]}>
                         {formatCurrency(data.kasKeluarHariIni)}
                     </Text>
                 </View>
             </View>
 
             {/* 4. Saldo Saat Ini (Bottom) */}
-            <View style={[styles.kpiCard, styles.kpiSaldo]}>
+            <View style={[styles.kpiCard, styles.kpiSaldo, isTablet && { width: '48.5%' }]}>
                 <View style={[styles.kpiIcon, { backgroundColor: BRAND.redGlass }]}>
                     <Text style={styles.kpiIconText}>💰</Text>
                 </View>
                 <View style={styles.kpiInfo}>
-                    <Text style={styles.kpiLabel}>Saldo Saat Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.red }]}>
+                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Saldo Saat Ini</Text>
+                    <Text style={[styles.kpiValue, { color: BRAND.red, fontSize: fontScale(14) }]}>
                         {formatCurrency(data.saldoSekarang)}
                     </Text>
                 </View>

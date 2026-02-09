@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ViewStyle } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ViewStyle, StyleProp } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,7 +11,7 @@ interface AdminLayoutProps {
     showBackButton?: boolean;
     rightAction?: React.ReactNode;
     scrollable?: boolean;
-    contentContainerStyle?: ViewStyle;
+    contentContainerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function AdminLayout({

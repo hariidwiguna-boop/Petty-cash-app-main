@@ -4,6 +4,7 @@
 
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useResponsive } from '../../src/hooks/useResponsive';
 import { Transaction } from '../../lib/supabase';
 
 interface RecentTransactionsProps {
@@ -15,6 +16,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
     transactions,
     onTransactionPress
 }) => {
+    const { fontScale, isTablet } = useResponsive();
     const formatCurrency = (amount: number) => {
         return "Rp " + amount.toLocaleString("id-ID");
     };
@@ -30,7 +32,7 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
 
     return (
         <View style={styles.recentSection}>
-            <Text style={styles.sectionTitle}>Transaksi Terakhir</Text>
+            <Text style={[styles.sectionTitle, { fontSize: fontScale(14) }]}>Transaksi Terakhir</Text>
             {transactions.map((tx, index) => (
                 <View key={tx.id || index} style={styles.txItem}>
                     <View style={styles.txItemInfo}>

@@ -3,6 +3,7 @@ import {
     View,
     StyleSheet,
     ViewStyle,
+    StyleProp,
     Platform,
     TouchableOpacity,
 } from 'react-native';
@@ -11,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 interface AdminGlassCardProps {
     children: React.ReactNode;
-    style?: ViewStyle;
+    style?: StyleProp<ViewStyle>;
     onPress?: () => void;
     floating?: boolean;
     intensity?: 'light' | 'medium' | 'heavy';
