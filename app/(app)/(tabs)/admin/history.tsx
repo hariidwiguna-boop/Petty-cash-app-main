@@ -19,9 +19,9 @@ export default function AdminHistory() {
     const [refreshing, setRefreshing] = useState(false);
 
     // Filters
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Default: All Dates
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const [filterOutlet, setFilterOutlet] = useState<any>(adminSelectedOutlet);
+    const [filterOutlet, setFilterOutlet] = useState<any>(null); // Default: All Outlets
 
     // Outlet Modal
     const [showOutletModal, setShowOutletModal] = useState(false);
@@ -49,12 +49,11 @@ export default function AdminHistory() {
                 .select("*, outlets(nama_outlet)")
                 .order("created_at", { ascending: false });
 
-            // Date Filter (Example: Match specific day)
-            // Adjust based on need: exact day, or range. User asked for "filter tanggal".
-            // Typically "history" implies looking at past. Default is Today? Or All Time?
-            // Let's assume Filter by Day since we have a single date picker.
-            const dateStr = formatDateToISO(selectedDate);
-            query = query.eq("tanggal", dateStr);
+            // Date Filter
+            if (selectedDate) {
+                const dateStr = formatDateToISO(selectedDate);
+                query = query.eq("tanggal", dateStr);
+            }
 
             // Outlet Filter
             if (filterOutlet) {
@@ -83,6 +82,10 @@ export default function AdminHistory() {
         if (date) {
             setSelectedDate(date);
         }
+    };
+
+    const clearDateFilter = () => {
+        setSelectedDate(null);
     };
 
     const formatCurrency = (amount: number) => {
@@ -147,15 +150,56 @@ export default function AdminHistory() {
             <View style={styles.filterContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
                     {/* Date Picker Button */}
-                    <TouchableOpacity
-                        style={styles.filterBtn}
-                        onPress={() => setShowDatePicker(true)}
-                    >
-                        <Text style={styles.filterIcon}>📅</Text>
-                        <Text style={styles.filterText}>
-                            {formatDate(selectedDate)}
-                        </Text>
-                    </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        {/* Native/Web Date Picker Trigger */}
+                        {Platform.OS === 'web' ? (
+                            <View style={[styles.filterBtn, selectedDate && styles.filterBtnActive, { position: 'relative' }]}>
+                                <Text style={styles.filterIcon}>📅</Text>
+                                <Text style={[styles.filterText, selectedDate && styles.filterTextActive]}>
+                                    {selectedDate ? formatDate(selectedDate) : "Semua Tanggal"}
+                                </Text>
+                                {/* Invisible date input overlay for Web */}
+                                <input
+                                    type="date"
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        height: '100%',
+                                        opacity: 0,
+                                        cursor: 'pointer'
+                                    }}
+                                    onChange={(e: any) => {
+                                        if (e.target.value) {
+                                            const parts = e.target.value.split('-');
+                                            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                                            setSelectedDate(d);
+                                        } else {
+                                            setSelectedDate(null);
+                                        }
+                                    }}
+                                />
+                            </View>
+                        ) : (
+                            <TouchableOpacity
+                                style={[styles.filterBtn, selectedDate && styles.filterBtnActive]}
+                                onPress={() => setShowDatePicker(true)}
+                            >
+                                <Text style={styles.filterIcon}>📅</Text>
+                                <Text style={[styles.filterText, selectedDate && styles.filterTextActive]}>
+                                    {selectedDate ? formatDate(selectedDate) : "Semua Tanggal"}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Clear Date Button */}
+                        {selectedDate && (
+                            <TouchableOpacity onPress={clearDateFilter} style={styles.clearBtn}>
+                                <Text style={styles.clearBtnText}>✕</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
 
                     {/* Outlet Picker Button */}
                     <TouchableOpacity
@@ -181,16 +225,16 @@ export default function AdminHistory() {
                     !loading ? (
                         <View style={styles.emptyState}>
                             <Text style={styles.emptyIcon}>📭</Text>
-                            <Text style={styles.emptyText}>Tidak ada transaksi pada tanggal ini</Text>
+                            <Text style={styles.emptyText}>Tidak ada transaksi ditemukan</Text>
                         </View>
                     ) : null
                 }
             />
 
-            {/* Date Picker Modal (Platform specific handling usually needed but using standard for now) */}
-            {showDatePicker && (
+            {/* Date Picker Modal (Native Only) */}
+            {showDatePicker && Platform.OS !== 'web' && (
                 <DateTimePicker
-                    value={selectedDate}
+                    value={selectedDate || new Date()}
                     mode="date"
                     display="default"
                     onChange={handleDateChange}
@@ -434,5 +478,19 @@ const styles = StyleSheet.create({
     checkIcon: {
         color: "#2563eb",
         fontWeight: "bold",
+    },
+    clearBtn: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#fee2e2',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: -4,
+    },
+    clearBtnText: {
+        fontSize: 12,
+        color: '#dc2626',
+        fontWeight: 'bold',
     },
 });
