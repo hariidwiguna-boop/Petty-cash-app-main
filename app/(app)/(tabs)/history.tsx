@@ -153,6 +153,10 @@ export default function HistoryScreen() {
 
     // Edit functions
     const openEditModal = (tx: TransactionWithItems) => {
+        if (tx.status_reimburse === "Disetujui") {
+            showModal("Akses Ditolak", "Transaksi yang sudah disetujui tidak dapat diedit.", "warning");
+            return;
+        }
         setEditingTx(tx);
         setEditDate(tx.tanggal);
         setEditItems(tx.items.map(item => ({
@@ -254,12 +258,16 @@ export default function HistoryScreen() {
         }
     };
 
-    const handleDeletePress = (id: string) => {
+    const handleDeletePress = (tx: TransactionWithItems) => {
+        if (tx.status_reimburse === "Disetujui") {
+            showModal("Akses Ditolak", "Transaksi yang sudah disetujui tidak dapat dihapus.", "warning");
+            return;
+        }
         showModal(
             "Hapus Transaksi?",
             "Transaksi ini akan dihapus permanen.",
             "confirm",
-            () => executeDelete(id)
+            () => executeDelete(tx.id)
         );
     };
 
@@ -393,7 +401,7 @@ export default function HistoryScreen() {
                                                 </TouchableOpacity>
                                                 <TouchableOpacity
                                                     style={styles.deleteBtn}
-                                                    onPress={() => handleDeletePress(tx.id)}
+                                                    onPress={() => handleDeletePress(tx)}
                                                 >
                                                     <Text style={styles.deleteBtnText}>🗑️ Hapus</Text>
                                                 </TouchableOpacity>
