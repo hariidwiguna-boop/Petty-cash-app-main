@@ -9,6 +9,7 @@ import {
     Alert,
     Modal,
     StyleSheet,
+    Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -16,6 +17,10 @@ import { supabase } from "../../../../lib/supabase";
 import { useAuthStore } from "../../../../stores/authStore";
 import MessageModal from "../../../../components/MessageModal";
 import AdminLayout from "../../../../components/admin/AdminLayout";
+import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface ReimburseRequest {
     id: string;
@@ -199,7 +204,7 @@ export default function ApprovalScreen() {
             subtitle="Kelola pengajuan reimburse"
             showBackButton={true}
         >
-            <View style={styles.modalCard}>
+            <View style={styles.contentWrapper}>
                 {/* Filters */}
                 <View style={styles.filterBar}>
                     <TouchableOpacity
@@ -215,130 +220,164 @@ export default function ApprovalScreen() {
                                 filterStatus === "Pending" && styles.filterChipTextActive,
                             ]}
                         >
-                            Pending
+                            PENDING
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[
                             styles.filterChip,
-                            filterStatus === "Disetujui" && styles.filterChipActive,
+                            filterStatus === "Approved" && styles.filterChipActive,
                         ]}
-                        onPress={() => setFilterStatus("Disetujui")}
+                        onPress={() => setFilterStatus("Approved")}
                     >
                         <Text
                             style={[
                                 styles.filterChipText,
-                                filterStatus === "Disetujui" && styles.filterChipTextActive,
+                                filterStatus === "Approved" && styles.filterChipTextActive,
                             ]}
                         >
-                            Disetujui
+                            DONE
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[
                             styles.filterChip,
-                            filterStatus === "Ditolak" && styles.filterChipActive,
+                            filterStatus === "Rejected" && styles.filterChipActive,
                         ]}
-                        onPress={() => setFilterStatus("Ditolak")}
+                        onPress={() => setFilterStatus("Rejected")}
                     >
                         <Text
                             style={[
                                 styles.filterChipText,
-                                filterStatus === "Ditolak" && styles.filterChipTextActive,
+                                filterStatus === "Rejected" && styles.filterChipTextActive,
                             ]}
                         >
-                            Ditolak
+                            REJECTED
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.refreshBtn} onPress={fetchRequests}>
-                        <Text>🔄</Text>
+                        <Ionicons name="reload" size={18} color="#94A3B8" />
                     </TouchableOpacity>
                 </View>
 
                 {/* Content */}
                 <ScrollView
-                    style={styles.modalContent}
+                    style={styles.scrollArea}
+                    contentContainerStyle={styles.scrollContent}
                     refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF3131" />
                     }
                 >
                     {requests.length === 0 ? (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyIcon}>📭</Text>
-                            <Text style={styles.emptyText}>Tidak ada pengajuan</Text>
+                            <Ionicons name="file-tray-outline" size={64} color="rgba(255,255,255,0.05)" />
+                            <Text style={styles.emptyText}>No requests found</Text>
                         </View>
                     ) : (
                         requests.map((req) => (
-                            <View key={req.id} style={styles.requestCard}>
+                            <AdminGlassCard key={req.id} style={styles.requestCard}>
                                 <View style={styles.requestHeader}>
-                                    <Text style={styles.requestOutlet}>
-                                        {req.outlets?.nama_outlet || "Outlet"}
-                                    </Text>
-                                    <Text style={styles.requestId}>ID: {req.id.slice(0, 8)}</Text>
+                                    <View>
+                                        <Text style={styles.requestOutlet}>
+                                            {req.outlets?.nama_outlet.toUpperCase() || "OUTLET"}
+                                        </Text>
+                                        <Text style={styles.requestId}>TRANSACTION ID: {req.id.slice(0, 8)}</Text>
+                                    </View>
+                                    <View style={[
+                                        styles.statusBadge,
+                                        req.status === 'Approved' ? styles.statusApproved :
+                                            req.status === 'Rejected' ? styles.statusRejected : styles.statusPending
+                                    ]}>
+                                        <Text style={styles.statusText}>{req.status.toUpperCase()}</Text>
+                                    </View>
                                 </View>
-                                <Text style={styles.requestAmount}>
-                                    {formatCurrency(req.total_amount)}
-                                </Text>
-                                <Text style={styles.requestDate}>
-                                    {formatDate(req.start_date)} - {formatDate(req.end_date)}
-                                </Text>
 
-                                {filterStatus === "Pending" && (
+                                <View style={styles.divider} />
+
+                                <View style={styles.priceContainer}>
+                                    <Text style={styles.amountLabel}>REIMBURSEMENT VALUE</Text>
+                                    <Text style={styles.requestAmount}>
+                                        {formatCurrency(req.total_amount)}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.dateInfo}>
+                                    <Ionicons name="calendar-outline" size={12} color="#64748B" />
+                                    <Text style={styles.requestDate}>
+                                        {formatDate(req.start_date)} — {formatDate(req.end_date)}
+                                    </Text>
+                                </View>
+
+                                {req.status === "Pending" && (
                                     <View style={styles.requestActions}>
                                         <TouchableOpacity
                                             style={styles.approveBtn}
                                             onPress={() => openActionModal(req)}
                                         >
-                                            <Text style={styles.approveBtnText}>✅ Setujui</Text>
+                                            <LinearGradient
+                                                colors={['#10B981', '#059669']}
+                                                style={styles.actionGradient}
+                                            >
+                                                <Ionicons name="checkmark-circle" size={16} color="white" />
+                                                <Text style={styles.approveBtnText}>APPROVE</Text>
+                                            </LinearGradient>
                                         </TouchableOpacity>
                                         <TouchableOpacity
                                             style={styles.rejectBtn}
                                             onPress={() => openActionModal(req)}
                                         >
-                                            <Text style={styles.rejectBtnText}>❌ Tolak</Text>
+                                            <View style={styles.rejectInner}>
+                                                <Ionicons name="close-circle" size={16} color="#FF4D4D" />
+                                                <Text style={styles.rejectBtnText}>REJECT</Text>
+                                            </View>
                                         </TouchableOpacity>
                                     </View>
                                 )}
-                            </View>
+                            </AdminGlassCard>
                         ))
                     )}
                 </ScrollView>
-
             </View>
 
             {/* Action Modal */}
             <Modal visible={actionModal} animationType="fade" transparent>
                 <View style={styles.actionModalOverlay}>
                     <View style={styles.actionModalCard}>
-                        <Text style={styles.actionModalTitle}>Proses Request</Text>
-                        <Text style={styles.actionModalAmount}>
-                            {selectedRequest && formatCurrency(selectedRequest.total_amount)}
-                        </Text>
+                        <Text style={styles.actionModalTitle}>PROCESS REQUEST</Text>
+                        <View style={styles.actionModalPrice}>
+                            <Text style={styles.actionModalAmount}>
+                                {selectedRequest && formatCurrency(selectedRequest.total_amount)}
+                            </Text>
+                        </View>
+
+                        <Text style={styles.inputLabel}>REASON / NOTES</Text>
                         <TextInput
                             style={styles.catatanInput}
-                            placeholder="Catatan (opsional)"
+                            placeholder="Add administrative notes..."
+                            placeholderTextColor="#64748B"
                             value={catatan}
                             onChangeText={setCatatan}
                             multiline
                         />
+
                         <View style={styles.actionModalButtons}>
                             <TouchableOpacity
                                 style={styles.modalCancelBtn}
                                 onPress={() => setActionModal(false)}
                             >
-                                <Text style={styles.modalCancelText}>Batal</Text>
+                                <Text style={styles.modalCancelText}>CANCEL</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.modalRejectBtn}
                                 onPress={handleReject}
                             >
-                                <Text style={styles.modalRejectText}>Tolak</Text>
+                                <Text style={styles.modalRejectText}>REJECT</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.modalApproveBtn}
                                 onPress={handleApprove}
                             >
-                                <Text style={styles.modalApproveText}>Setujui</Text>
+                                <Text style={styles.modalApproveText}>APPROVE</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -358,173 +397,297 @@ export default function ApprovalScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    modalCard: {
+    contentWrapper: {
         flex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.25)",
-        margin: 16,
-        borderRadius: 20,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.4)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 8,
     },
-    modalHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-    },
-    modalTitle: { fontSize: 20, fontWeight: "800" },
-    modalSubtitle: { fontSize: 13, color: "#666", marginTop: 2 },
-    closeBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    closeBtnText: { fontSize: 16, color: "#64748b" },
     // Filters
     filterBar: {
         flexDirection: "row",
-        padding: 12,
-        gap: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+        gap: 10,
+        alignItems: 'center',
     },
     filterChip: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 16,
-        backgroundColor: "#f3f4f6",
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.05)",
     },
-    filterChipActive: { backgroundColor: "#DC2626" },
-    filterChipText: { fontSize: 12, fontWeight: "600", color: "#666" },
-    filterChipTextActive: { color: "white" },
+    filterChipActive: {
+        backgroundColor: "#FF3131",
+        borderColor: "#FF3131",
+    },
+    filterChipText: {
+        fontSize: 10,
+        fontWeight: "900",
+        color: "#64748B",
+        letterSpacing: 1,
+    },
+    filterChipTextActive: {
+        color: "white",
+    },
     refreshBtn: {
         marginLeft: "auto",
-        width: 32,
-        height: 32,
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.05)",
     },
     // Content
-    modalContent: { flex: 1, padding: 16 },
-    emptyState: { alignItems: "center", paddingVertical: 60 },
-    emptyIcon: { fontSize: 48, marginBottom: 12 },
-    emptyText: { fontSize: 14, color: "#999" },
+    scrollArea: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+    },
+    emptyState: {
+        alignItems: "center",
+        paddingVertical: 100,
+        gap: 16,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: "#64748B",
+        fontWeight: '900',
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+    },
     // Request Card
     requestCard: {
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 12,
+        padding: 20,
+        marginBottom: 16,
     },
     requestHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 8,
+        alignItems: "flex-start",
     },
-    requestOutlet: { fontSize: 15, fontWeight: "800" },
-    requestId: { fontSize: 11, color: "#999" },
-    requestAmount: {
-        fontSize: 22,
+    requestOutlet: {
+        fontSize: 15,
         fontWeight: "900",
-        color: "#1d4ed8",
+        color: "#FFFFFF",
+        letterSpacing: 1,
+    },
+    requestId: {
+        fontSize: 10,
+        color: "#64748B",
+        fontWeight: '700',
+        marginTop: 2,
+    },
+    statusBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+    },
+    statusText: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#FFFFFF',
+        letterSpacing: 1,
+    },
+    statusPending: {
+        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    },
+    statusApproved: {
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    },
+    statusRejected: {
+        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        marginVertical: 16,
+    },
+    priceContainer: {
+        marginBottom: 16,
+    },
+    amountLabel: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#475569',
+        letterSpacing: 1,
         marginBottom: 4,
     },
-    requestDate: { fontSize: 12, color: "#666", marginBottom: 12 },
-    requestActions: { flexDirection: "row", gap: 10 },
+    requestAmount: {
+        fontSize: 24,
+        fontWeight: "900",
+        color: "#F8FAFC",
+    },
+    dateInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 24,
+    },
+    requestDate: {
+        fontSize: 11,
+        color: "#94A3B8",
+        fontWeight: '700',
+    },
+    requestActions: {
+        flexDirection: "row",
+        gap: 12,
+    },
     approveBtn: {
         flex: 1,
-        backgroundColor: "#22c55e",
-        padding: 12,
-        borderRadius: 10,
-        alignItems: "center",
+        borderRadius: 14,
+        overflow: 'hidden',
     },
-    approveBtnText: { color: "white", fontWeight: "700", fontSize: 13 },
+    actionGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        gap: 8,
+    },
+    approveBtnText: {
+        color: "white",
+        fontWeight: "900",
+        fontSize: 12,
+        letterSpacing: 1,
+    },
     rejectBtn: {
         flex: 1,
-        backgroundColor: "#fee2e2",
-        padding: 12,
-        borderRadius: 10,
-        alignItems: "center",
+        borderRadius: 14,
+        backgroundColor: 'rgba(239, 68, 68, 0.05)',
+        borderWidth: 1,
+        borderColor: 'rgba(239, 68, 68, 0.2)',
     },
-    rejectBtnText: { color: "#dc2626", fontWeight: "700", fontSize: 13 },
-    // Footer
-    modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: "#e5e7eb" },
-    btnSecondary: {
-        backgroundColor: "#f1f5f9",
-        borderRadius: 12,
-        paddingVertical: 14,
-        alignItems: "center",
+    rejectInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 13, // 1 offset for border
+        gap: 8,
     },
-    btnSecondaryText: { fontSize: 15, fontWeight: "700", color: "#64748b" },
+    rejectBtnText: {
+        color: "#FF4D4D",
+        fontWeight: "900",
+        fontSize: 12,
+        letterSpacing: 1,
+    },
     // Action Modal
     actionModalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.6)",
+        backgroundColor: "rgba(0,0,0,0.85)",
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
     },
     actionModalCard: {
-        backgroundColor: "white",
-        borderRadius: 20,
-        padding: 24,
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
+        padding: 32,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
-    actionModalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 8 },
-    actionModalAmount: {
-        fontSize: 28,
+    actionModalTitle: {
+        fontSize: 14,
         fontWeight: "900",
-        color: "#1d4ed8",
+        color: '#475569',
+        letterSpacing: 2,
         marginBottom: 16,
+    },
+    actionModalPrice: {
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        borderRadius: 20,
+        marginBottom: 32,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    actionModalAmount: {
+        fontSize: 32,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
+    },
+    inputLabel: {
+        alignSelf: 'flex-start',
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#475569',
+        letterSpacing: 1,
+        marginBottom: 8,
+        marginLeft: 4,
     },
     catatanInput: {
         width: "100%",
-        backgroundColor: "#f9fafb",
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 10,
-        padding: 12,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        borderRadius: 16,
+        padding: 16,
         fontSize: 14,
-        minHeight: 80,
+        color: '#FFFFFF',
+        fontWeight: '600',
+        minHeight: 100,
         textAlignVertical: "top",
-        marginBottom: 16,
+        marginBottom: 32,
     },
-    actionModalButtons: { flexDirection: "row", gap: 8, width: "100%" },
+    actionModalButtons: {
+        flexDirection: "row",
+        gap: 10,
+        width: "100%",
+    },
     modalCancelBtn: {
         flex: 1,
-        backgroundColor: "#f1f5f9",
-        padding: 12,
-        borderRadius: 10,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        padding: 14,
+        borderRadius: 14,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
     },
-    modalCancelText: { fontWeight: "700", color: "#64748b" },
+    modalCancelText: {
+        fontWeight: "900",
+        color: "#94A3B8",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
     modalRejectBtn: {
         flex: 1,
-        backgroundColor: "#dc2626",
-        padding: 12,
-        borderRadius: 10,
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        padding: 14,
+        borderRadius: 14,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(239, 68, 68, 0.2)",
     },
-    modalRejectText: { fontWeight: "700", color: "white" },
+    modalRejectText: {
+        fontWeight: "900",
+        color: "#FF4D4D",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
     modalApproveBtn: {
         flex: 1,
-        backgroundColor: "#22c55e",
-        padding: 12,
-        borderRadius: 10,
+        backgroundColor: "#10B981",
+        padding: 14,
+        borderRadius: 14,
         alignItems: "center",
     },
-    modalApproveText: { fontWeight: "700", color: "white" },
+    modalApproveText: {
+        fontWeight: "900",
+        color: "white",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
 });

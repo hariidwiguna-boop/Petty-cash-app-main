@@ -1,24 +1,9 @@
-// ============================================
-// DASHBOARD HEADER COMPONENT - evrdayplcs. Brand
-// Red Gradient Header | White Glass Design
-// ============================================
-
 import * as React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from '../../stores/authStore';
 import { useResponsive } from '../../src/hooks/useResponsive';
-
-// Brand Colors - Red & White Only
-const BRAND = {
-    red: '#DC2626',
-    redDark: '#991B1B',
-    redGlass: 'rgba(220, 38, 38, 0.1)',
-    white: '#FFFFFF',
-    whiteGlass: 'rgba(255, 255, 255, 0.25)',
-    textDark: '#1E293B',
-    textGray: '#64748B',
-};
+import { theme } from '../../src/design-system/theme';
 
 interface DashboardHeaderProps {
     onSettingsPress: () => void;
@@ -45,26 +30,20 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return (
         <View style={styles.headerContainer}>
             <View style={styles.leftContainer}>
-                {/* Logo Section (Wrapped in Card, Original Colors) */}
+                {/* Official Logo Integration */}
                 <View style={styles.logoCard}>
-                    <View style={styles.logoMini}>
-                        <View style={styles.logoLeft}>
-                            <View style={styles.logoBar} />
-                            <View style={styles.logoBar} />
-                            <View style={styles.logoBar} />
-                        </View>
-                        <View style={styles.logoRight}>
-                            <View style={styles.logoRectangle} />
-                            <View style={styles.logoCircle} />
-                        </View>
-                    </View>
+                    <Image
+                        source={require('../../assets/logo.png')}
+                        style={styles.logoImage}
+                        resizeMode="contain"
+                    />
                 </View>
 
                 {/* Vertical Divider */}
                 <View style={styles.divider} />
 
                 <View style={styles.userInfo}>
-                    {/* Avatar Placeholder */}
+                    {/* Avatar with ring glow */}
                     <View style={styles.avatar}>
                         <Text style={styles.avatarText}>
                             {profile?.nama?.charAt(0) || "U"}
@@ -85,7 +64,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     activeOpacity={0.8}
                 >
                     <LinearGradient
-                        colors={[BRAND.red, BRAND.redDark]}
+                        colors={[theme.colors.brand.red, theme.colors.brand.redDark]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.adminBtnGradient}
@@ -98,7 +77,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     onPress={onLogoutPress}
                     style={styles.logoutBtn}
                 >
-                    {/* Power/Exit Icon */}
                     <Text style={styles.logoutIcon}>⏻</Text>
                 </TouchableOpacity>
             )}
@@ -112,74 +90,37 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         paddingHorizontal: 20,
-        paddingVertical: 12, // Increased slightly
+        paddingVertical: 12,
         marginBottom: 10,
-        // No background, no card shadow - Pure clean header
     },
     leftContainer: {
         flexDirection: "row",
         alignItems: "center",
         gap: 12,
     },
-    // Logo Card Style (Similar to Logout Button)
     logoCard: {
-        paddingHorizontal: 10,
-        paddingVertical: 6,
+        width: 44,
+        height: 44,
         borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.9)", // White glass background for contrast
+        backgroundColor: "rgba(255, 255, 255, 0.08)",
         borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.5)",
+        borderColor: "rgba(255, 255, 255, 0.15)",
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     },
-    // Logo Styles (Mini Version, Original Colors)
-    logoMini: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        transform: [{ scale: 0.65 }], // Slightly smaller to fit in card
-    },
-    logoLeft: {
-        flexDirection: 'column',
-        gap: 4,
-        justifyContent: 'space-between',
-    },
-    logoBar: {
-        width: 20,
-        height: 6,
-        backgroundColor: '#0A0A0A', // Original Black
-        borderRadius: 2,
-    },
-    logoRight: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 3,
-        height: 26, // Adjusted for scale
-    },
-    logoRectangle: {
-        width: 6,
-        height: 26,
-        borderWidth: 1.5,
-        borderColor: '#0A0A0A', // Original Black
-        borderRadius: 2,
-        backgroundColor: 'transparent',
-    },
-    logoCircle: {
-        width: 10,
-        height: 10,
-        backgroundColor: '#DC2626', // Original Red
-        borderRadius: 5,
-        marginTop: 0,
+    logoImage: {
+        width: 32,
+        height: 32,
     },
     divider: {
         width: 1,
         height: 24,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
     },
     userInfo: {
         flexDirection: "row",
@@ -190,63 +131,59 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
         alignItems: "center",
         justifyContent: "center",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.3)",
+        borderWidth: 1.5,
+        borderColor: "rgba(220, 38, 38, 0.4)", // Neon red ring
     },
     avatarText: {
         fontSize: 16,
         fontWeight: "700",
-        color: "#FFFFFF",
+        color: "#F8FAFC",
     },
     greetingText: {
-        fontSize: 11,
-        color: "rgba(255, 255, 255, 0.8)",
+        color: "#94A3B8",
         fontWeight: "600",
     },
     userNameText: {
-        fontSize: 14,
         fontWeight: "700",
-        color: "#FFFFFF",
+        color: "#F8FAFC",
         letterSpacing: 0.5,
     },
-    // Admin Button Styles
     headerAdminBtn: {
         borderRadius: 20,
         overflow: 'hidden',
-        shadowColor: "rgba(0,0,0,0.2)",
-        shadowOffset: { width: 0, height: 2 },
+        shadowColor: "rgba(220, 38, 38, 0.4)",
+        shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 8,
+        elevation: 6,
     },
     adminBtnGradient: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
         flexDirection: 'row',
         alignItems: 'center',
     },
     headerAdminBtnText: {
         fontSize: 12,
-        fontWeight: "700",
-        color: BRAND.white,
+        fontWeight: "800",
+        color: "#FFFFFF",
     },
-    // Logout Button Styles
     logoutBtn: {
-        width: 36,
-        height: 36,
+        width: 40,
+        height: 40,
         borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.15)", // Subtle translucent white
+        backgroundColor: "rgba(255, 255, 255, 0.08)",
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.2)",
+        borderColor: "rgba(255, 255, 255, 0.15)",
     },
     logoutIcon: {
-        fontSize: 16,
-        color: "#FFFFFF",
+        fontSize: 18,
+        color: "#FF3131", // Neon red exit
         fontWeight: 'bold',
     },
 });

@@ -19,6 +19,10 @@ import { useRouter } from "expo-router";
 import { supabase } from "../../../../lib/supabase";
 import { formatDateToISO, getTodayISO } from "../../../../lib/dateUtils";
 import AdminLayout from "../../../../components/admin/AdminLayout";
+import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface Outlet {
     id: string;
@@ -305,44 +309,82 @@ export default function OutletsScreen() {
                 onClose={() => setMsgModalVisible(false)}
             />
 
-            <View style={s.card}>
-                <View style={s.tb}>
-                    <TextInput style={s.si} placeholder="Cari..." value={search} onChangeText={setSearch} />
-                    <TouchableOpacity style={s.add} onPress={openAddModal}>
-                        <Text style={s.addT}>➕ Tambah</Text>
-                    </TouchableOpacity>
-                </View>
-                <ScrollView style={s.sc} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-                    {outlets.length === 0 ? (
-                        <View style={s.emptyBox}>
-                            <Text style={s.emptyIcon}>🏪</Text>
-                            <Text style={s.emptyText}>Belum ada outlet</Text>
-                            <Text style={s.emptyHint}>Klik "Tambah" untuk menambahkan outlet</Text>
-                        </View>
-                    ) : (
-                        outlets.filter(o => o.nama_outlet.toLowerCase().includes(search.toLowerCase())).map(o => (
-                            <View key={o.id} style={s.oc}>
-                                <View style={s.oH}>
-                                    <Text style={s.oN}>{o.nama_outlet}</Text>
-                                    <View style={s.oA}>
-                                        <TouchableOpacity style={s.iconBtn} onPress={() => openEditModal(o)}>
-                                            <Text>✏️</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={s.iconBtn} onPress={() => confirmDeleteOutlet(o)}>
-                                            <Text>🗑️</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                <View style={s.oS}>
-                                    <Text style={s.oL}>Saldo: {formatCurrency(o.saldo_awal)}</Text>
-                                    <Text style={s.oL}>Limit: {formatCurrency(o.saldo_limit)}</Text>
-                                </View>
-                                {o.nama_bank && <Text style={s.bk}>🏦 {o.nama_bank} - {o.no_rekening}</Text>}
-                            </View>
-                        ))
-                    )}
-                </ScrollView>
+            <View style={s.tb}>
+                <AdminGlassCard style={s.searchBarCard} intensity="light">
+                    <Ionicons name="search" size={18} color="#94A3B8" />
+                    <TextInput
+                        style={s.si}
+                        placeholder="Cari outlet..."
+                        placeholderTextColor="#64748B"
+                        value={search}
+                        onChangeText={setSearch}
+                    />
+                </AdminGlassCard>
+                <TouchableOpacity style={s.add} onPress={openAddModal}>
+                    <LinearGradient
+                        colors={['#FF3131', '#991B1B']}
+                        style={s.addGradient}
+                    >
+                        <Ionicons name="add" size={20} color="white" />
+                        <Text style={s.addT}>TAMBAH</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
             </View>
+
+            <ScrollView
+                style={s.sc}
+                contentContainerStyle={s.scContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF3131" />
+                }
+            >
+                {outlets.length === 0 ? (
+                    <View style={s.emptyBox}>
+                        <Ionicons name="business" size={64} color="rgba(255,255,255,0.05)" />
+                        <Text style={s.emptyText}>Empty Repository</Text>
+                        <Text style={s.emptyHint}>Belum ada outlet terdaftar di sistem.</Text>
+                    </View>
+                ) : (
+                    outlets.filter(o => o.nama_outlet.toLowerCase().includes(search.toLowerCase())).map(o => (
+                        <AdminGlassCard key={o.id} style={s.oc}>
+                            <View style={s.oH}>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={s.oN}>{o.nama_outlet.toUpperCase()}</Text>
+                                    <Text style={s.picName}>{o.pic_name || 'NO PIC ASSIGNED'}</Text>
+                                </View>
+                                <View style={s.oA}>
+                                    <TouchableOpacity style={s.iconBtn} onPress={() => openEditModal(o)}>
+                                        <Ionicons name="pencil" size={18} color="#94A3B8" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={s.iconBtn} onPress={() => confirmDeleteOutlet(o)}>
+                                        <Ionicons name="trash" size={18} color="#FF4D4D" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View style={s.divider} />
+
+                            <View style={s.oS}>
+                                <View style={s.statItem}>
+                                    <Text style={s.statLabel}>SALDO AWAL</Text>
+                                    <Text style={s.oL}>{formatCurrency(o.saldo_awal)}</Text>
+                                </View>
+                                <View style={s.statItem}>
+                                    <Text style={s.statLabel}>LIMIT ALERT</Text>
+                                    <Text style={[s.oL, { color: '#F59E0B' }]}>{formatCurrency(o.saldo_limit)}</Text>
+                                </View>
+                            </View>
+
+                            {o.nama_bank && (
+                                <View style={s.bkContainer}>
+                                    <Ionicons name="card" size={14} color="#64748B" />
+                                    <Text style={s.bk}>{o.nama_bank} • {o.no_rekening}</Text>
+                                </View>
+                            )}
+                        </AdminGlassCard>
+                    ))
+                )}
+            </ScrollView>
 
             {/* Modal Form */}
             <Modal visible={modalVisible} transparent animationType="slide">
@@ -392,11 +434,12 @@ export default function OutletsScreen() {
                                             border: 'none',
                                             background: 'transparent',
                                             fontSize: '15px',
-                                            color: '#1a1a1a',
+                                            color: '#FFFFFF',
                                             width: '100%',
                                             outline: 'none',
                                             fontFamily: 'system-ui',
-                                            cursor: 'pointer'
+                                            cursor: 'pointer',
+                                            fontWeight: '600'
                                         }
                                     })}
                                 </View>
@@ -407,7 +450,9 @@ export default function OutletsScreen() {
                                         style={s.inp}
                                         onPress={() => setShowDatePicker(true)}
                                     >
-                                        <Text>{formData.saldo_date || "Pilih Tanggal"}</Text>
+                                        <Text style={{ color: '#F1F5F9', fontWeight: '600' }}>
+                                            {formData.saldo_date || "Pilih Tanggal"}
+                                        </Text>
                                     </TouchableOpacity>
 
                                     {showDatePicker && (
@@ -475,68 +520,233 @@ export default function OutletsScreen() {
 }
 
 const s = StyleSheet.create({
-    c: { flex: 1, backgroundColor: "#f0f4d0" },
-    card: {
+    tb: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+        gap: 12,
+    },
+    searchBarCard: {
         flex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.25)",
-        margin: 16,
-        borderRadius: 20,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.4)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 4, // Adjusted for internal text input
+        borderRadius: 16,
+        gap: 12,
+    },
+    si: {
+        flex: 1,
+        height: 44,
+        color: "#F1F5F9",
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    add: {
+        borderRadius: 16,
+        overflow: 'hidden',
         elevation: 8,
-    },
-    hdr: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
-    t: { fontSize: 20, fontWeight: "800" },
-    x: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" },
-    xT: { fontSize: 16, color: "#64748b" },
-    tb: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", padding: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: "#f3f4f6" },
-    si: { flex: 1, minWidth: 200, backgroundColor: "#f9fafb", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-    add: { backgroundColor: "#C94C4C", paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, justifyContent: "center" },
-    addT: { color: "#fff", fontWeight: "700", fontSize: 14 },
-    sc: { flex: 1, padding: 16 },
-    emptyBox: { alignItems: "center", paddingVertical: 60 },
-    emptyIcon: { fontSize: 48, marginBottom: 12 },
-    emptyText: { fontSize: 16, fontWeight: "700", color: "#374151" },
-    emptyHint: { fontSize: 13, color: "#9ca3af", marginTop: 4 },
-    oc: {
-        backgroundColor: "rgba(255, 255, 255, 0.4)",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.5)",
-        borderRadius: 14,
-        padding: 14,
-        marginBottom: 12,
-        shadowColor: "#000",
+        shadowColor: "#FF3131",
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
     },
-    oH: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-    oN: { fontSize: 16, fontWeight: "800", color: "#1a1a1a" },
-    oA: { flexDirection: "row", gap: 8 },
-    iconBtn: { padding: 8 },
-    oS: { flexDirection: "row", gap: 16 },
-    oL: { fontSize: 13, color: "#16a34a", fontWeight: "600" },
-    bk: { fontSize: 12, color: "#666", marginTop: 8, backgroundColor: "#f9fafb", padding: 8, borderRadius: 8 },
-    ft: { padding: 16, borderTopWidth: 1, borderTopColor: "#e5e7eb" },
-    btn: { backgroundColor: "#f1f5f9", borderRadius: 12, paddingVertical: 14, alignItems: "center" },
-    btnT: { fontWeight: "700", color: "#64748b", fontSize: 15 },
+    addGradient: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        gap: 6,
+    },
+    addT: {
+        color: "#fff",
+        fontWeight: "900",
+        fontSize: 12,
+        letterSpacing: 1,
+    },
+    sc: {
+        flex: 1,
+    },
+    scContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+    },
+    emptyBox: {
+        alignItems: "center",
+        paddingVertical: 80,
+    },
+    emptyText: {
+        fontSize: 18,
+        fontWeight: "900",
+        color: "#F8FAFC",
+        marginTop: 16,
+        letterSpacing: 1,
+    },
+    emptyHint: {
+        fontSize: 13,
+        color: "#64748B",
+        marginTop: 8,
+        fontWeight: '600',
+    },
+    oc: {
+        marginBottom: 16,
+        padding: 20,
+    },
+    oH: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    oN: {
+        fontSize: 16,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
+    },
+    picName: {
+        fontSize: 11,
+        color: "#94A3B8",
+        fontWeight: '700',
+        marginTop: 2,
+        letterSpacing: 0.5,
+    },
+    oA: {
+        flexDirection: "row",
+        gap: 4,
+    },
+    iconBtn: {
+        padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    divider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        marginVertical: 16,
+    },
+    oS: {
+        flexDirection: "row",
+        gap: 32,
+    },
+    statItem: {
+        flex: 1,
+    },
+    statLabel: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#475569',
+        letterSpacing: 1,
+        marginBottom: 4,
+    },
+    oL: {
+        fontSize: 15,
+        color: "#4ADE80",
+        fontWeight: "800",
+    },
+    bkContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        marginTop: 16,
+        padding: 12,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        borderRadius: 12,
+    },
+    bk: {
+        fontSize: 11,
+        color: "#94A3B8",
+        fontWeight: '700',
+    },
     // Modal
-    mo: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", padding: 20 },
-    mc: { backgroundColor: "#fff", borderRadius: 20, padding: 24, maxHeight: "90%" },
-    mt: { fontSize: 18, fontWeight: "800", marginBottom: 20, textAlign: "center" },
-    label: { fontSize: 12, fontWeight: "600", color: "#374151", marginBottom: 6, marginTop: 4 },
-    inp: { backgroundColor: "#f9fafb", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 12, marginBottom: 8, fontSize: 15 },
-    mf: { flexDirection: "row", gap: 12, marginTop: 16 },
-    cb: { flex: 1, backgroundColor: "#f1f5f9", padding: 14, borderRadius: 12, alignItems: "center" },
-    cbT: { fontWeight: "700", color: "#64748b", fontSize: 15 },
-    sb: { flex: 1, backgroundColor: "#C94C4C", padding: 14, borderRadius: 12, alignItems: "center" },
-    sbDisabled: { backgroundColor: "#e5a3a3" },
-    sbT: { fontWeight: "700", color: "#fff", fontSize: 15 },
-    savingRow: { flexDirection: "row", alignItems: "center" },
+    mo: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.85)",
+        justifyContent: "center",
+        padding: 24,
+    },
+    mc: {
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
+        padding: 32,
+        maxHeight: "90%",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
+    },
+    mt: {
+        fontSize: 20,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        marginBottom: 24,
+        textAlign: "center",
+        letterSpacing: 1,
+    },
+    label: {
+        fontSize: 10,
+        fontWeight: "900",
+        color: "#475569",
+        marginBottom: 8,
+        marginTop: 12,
+        letterSpacing: 1,
+        textTransform: 'uppercase',
+    },
+    inp: {
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        borderRadius: 16,
+        padding: 16,
+        fontSize: 15,
+        color: "#FFFFFF",
+        fontWeight: '600',
+    },
+    mf: {
+        flexDirection: "row",
+        gap: 12,
+        marginTop: 32,
+    },
+    cb: {
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        padding: 16,
+        borderRadius: 16,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+    },
+    cbT: {
+        fontWeight: "900",
+        color: "#F8FAFC",
+        fontSize: 14,
+        letterSpacing: 1,
+    },
+    sb: {
+        flex: 1,
+        backgroundColor: "#FF3131",
+        padding: 16,
+        borderRadius: 16,
+        alignItems: "center",
+    },
+    sbDisabled: {
+        backgroundColor: "rgba(255, 49, 49, 0.5)",
+    },
+    sbT: {
+        fontWeight: "900",
+        color: "#fff",
+        fontSize: 14,
+        letterSpacing: 1,
+    },
+    savingRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
 });

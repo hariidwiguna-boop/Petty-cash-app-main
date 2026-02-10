@@ -1,17 +1,17 @@
-
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Share, Platform } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Share, Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../../lib/supabase";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import MessageModal from "../../../../../components/MessageModal"; // Import Custom Modal
+import MessageModal from "../../../../../components/MessageModal";
 import CustomLoading from "../../../../../components/CustomLoading";
-
 import AdminLayout from "../../../../../components/admin/AdminLayout";
-
-// ... imports
+import AdminGlassCard from "../../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function SecurityScreen() {
     const router = useRouter();
@@ -159,18 +159,26 @@ export default function SecurityScreen() {
     // Changed renderLog to be used in map
     const renderLog = (item: any) => (
         <View key={item.id} style={styles.logItem}>
-            <View style={styles.logHeader}>
-                <Text style={styles.logAction}>{item.action}</Text>
-                <Text style={styles.logDate}>
-                    {new Date(item.created_at).toLocaleString("id-ID")}
-                </Text>
+            <View style={styles.logStatusLine} />
+            <View style={styles.logBody}>
+                <View style={styles.logHeader}>
+                    <Text style={styles.logAction}>{item.action.toUpperCase()}</Text>
+                    <Text style={styles.logDate}>
+                        {new Date(item.created_at).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                </View>
+                <View style={styles.logMeta}>
+                    <Ionicons name="person-circle-outline" size={12} color="#475569" />
+                    <Text style={styles.logUser}>UID: {item.profiles?.username || "SYSTEM_DAEMON"}</Text>
+                </View>
+                {item.details && (
+                    <View style={styles.logDetailsContainer}>
+                        <Text style={styles.logDetails} numberOfLines={1}>
+                            {JSON.stringify(item.details).replace(/[{}]/g, '').toUpperCase()}
+                        </Text>
+                    </View>
+                )}
             </View>
-            <Text style={styles.logUser}>User: {item.profiles?.username || "System"}</Text>
-            {item.details && (
-                <Text style={styles.logDetails} numberOfLines={2}>
-                    {JSON.stringify(item.details)}
-                </Text>
-            )}
         </View>
     );
 
@@ -194,121 +202,263 @@ export default function SecurityScreen() {
                 onClose={() => setModalVisible(false)}
             />
 
-            <View style={styles.content}>
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Audit Trail</Text>
+                    <View style={styles.headerInfo}>
+                        <Ionicons name="list" size={16} color="#3B82F6" />
+                        <Text style={styles.sectionTitle}>AUDIT TRAIL</Text>
+                    </View>
                     <TouchableOpacity style={styles.refreshBtn} onPress={fetchLogs}>
-                        <Text style={styles.refreshText}>🔄 Refresh</Text>
+                        <Ionicons name="refresh" size={14} color="#3B82F6" />
                     </TouchableOpacity>
                 </View>
 
                 {/* Audit Logs List */}
-                <View style={styles.logListContainer}>
+                <AdminGlassCard style={styles.logListContainer}>
                     {isLoading && logs.length === 0 ? (
-                        <ActivityIndicator color="#C94C4C" />
+                        <View style={styles.loadingPadding}>
+                            <ActivityIndicator color="#3B82F6" />
+                        </View>
                     ) : logs.length === 0 ? (
                         <View style={styles.empty}>
-                            <Text style={styles.emptyText}>Tidak ada log aktivitas.</Text>
-                            <Text style={styles.emptySub}>Aktivitas penting akan muncul di sini.</Text>
+                            <Ionicons name="shield-outline" size={32} color="rgba(255,255,255,0.05)" />
+                            <Text style={styles.emptyText}>CLEAN SLATE: NO RECENT LOGS</Text>
                         </View>
                     ) : (
-                        logs.map((item) => renderLog(item))
+                        logs.slice(0, 5).map((item) => renderLog(item))
                     )}
-                </View>
+                </AdminGlassCard>
 
                 {/* Backup Actions */}
-                <View style={styles.backupSection}>
-                    <Text style={styles.sectionTitle}>Backup Data</Text>
-                    <Text style={styles.backupDesc}>Download seluruh data aplikasi untuk cadangan offline.</Text>
+                <View style={[styles.sectionHeader, { marginTop: 12 }]}>
+                    <View style={styles.headerInfo}>
+                        <Ionicons name="cloud-download-outline" size={16} color="#10B981" />
+                        <Text style={[styles.sectionTitle, { color: '#10B981' }]}>DATA CONTINUITY</Text>
+                    </View>
+                </View>
+
+                <AdminGlassCard style={styles.backupSection}>
+                    <Text style={styles.backupDesc}>Generate encrypted snapshots for institutional records.</Text>
                     <TouchableOpacity
                         style={styles.backupBtn}
                         onPress={handleExportData}
                         disabled={isLoading}
                     >
-                        <Text style={styles.backupBtnText}>
-                            {isLoading ? "Exporting..." : "📥 Download Full Backup (JSON)"}
-                        </Text>
+                        <LinearGradient
+                            colors={['#10B981', '#059669']}
+                            style={styles.backupGradient}
+                        >
+                            <Ionicons name="download-outline" size={18} color="white" />
+                            <Text style={styles.backupBtnText}>
+                                {isLoading ? "PROCESSING..." : "EXPORT JSON BACKUP"}
+                            </Text>
+                        </LinearGradient>
                     </TouchableOpacity>
-                </View>
+                </AdminGlassCard>
 
                 {/* Danger Zone */}
-                <View style={styles.dangerZone}>
-                    <Text style={styles.dangerTitle}>Danger Zone</Text>
-                    <Text style={styles.dangerDesc}>Reset Data akan menghapus semua Transaksi & Laporan. User & Outlet tetap aman.</Text>
+                <View style={[styles.sectionHeader, { marginTop: 12 }]}>
+                    <View style={styles.headerInfo}>
+                        <Ionicons name="warning-outline" size={16} color="#FF3131" />
+                        <Text style={[styles.sectionTitle, { color: '#FF3131' }]}>OVERRIDE PROTOCOLS</Text>
+                    </View>
+                </View>
+
+                <AdminGlassCard style={styles.dangerZone}>
+                    <Text style={styles.dangerTitle}>SYSTEMIC RESET</Text>
+                    <Text style={styles.dangerDesc}>PURGE ALL TRANSACTIONS. IRREVERSIBLE ACTION.</Text>
                     <TouchableOpacity
                         style={styles.resetBtn}
                         onPress={handleResetData}
                         disabled={isLoading}
                     >
-                        <Text style={styles.resetBtnText}>
-                            {isLoading ? "Deleting..." : "💣 RESET DATABASE"}
-                        </Text>
+                        <LinearGradient
+                            colors={['#FF3131', '#991B1B']}
+                            style={styles.resetGradient}
+                        >
+                            <Ionicons name="trash-bin-outline" size={18} color="white" />
+                            <Text style={styles.resetBtnText}>
+                                {isLoading ? "EXECUTING..." : "COMMIT RESET"}
+                            </Text>
+                        </LinearGradient>
                     </TouchableOpacity>
-                </View>
-            </View>
+                </AdminGlassCard>
+            </ScrollView>
         </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    content: { flex: 1, padding: 20, gap: 20 },
-    sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-    sectionTitle: { fontSize: 16, fontWeight: "800", color: "#1a1a1a" },
-    refreshBtn: { backgroundColor: "#e0f2fe", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-    refreshText: { fontSize: 12, color: "#0284c7", fontWeight: "700" },
-    logListContainer: {
-        flex: 1,
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 10,
+    container: { flex: 1 },
+    scrollContent: { padding: 20, paddingBottom: 60, gap: 12 },
+    sectionHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 8,
+    },
+    headerInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    sectionTitle: {
+        fontSize: 10,
+        fontWeight: "900",
+        color: "#3B82F6",
+        letterSpacing: 2
+    },
+    refreshBtn: {
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
         borderWidth: 1,
-        borderColor: "#e5e7eb"
+        borderColor: 'rgba(59, 130, 246, 0.1)',
+    },
+    logListContainer: {
+        padding: 4,
+        overflow: 'hidden',
+    },
+    loadingPadding: {
+        padding: 40,
+        alignItems: 'center',
     },
     logItem: {
-        padding: 12,
+        flexDirection: 'row',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6"
+        borderBottomColor: "rgba(255, 255, 255, 0.03)",
     },
-    logHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-    logAction: { fontSize: 14, fontWeight: "700", color: "#1a1a1a" },
-    logDate: { fontSize: 11, color: "#999" },
-    logUser: { fontSize: 12, color: "#666", fontWeight: "600", marginBottom: 2 },
-    logDetails: { fontSize: 11, color: "#9ca3af", fontFamily: "monospace" },
-    empty: { padding: 40, alignItems: "center" },
-    emptyText: { color: "#666", fontWeight: "600" },
-    emptySub: { color: "#9ca3af", fontSize: 12, marginTop: 4 },
+    logStatusLine: {
+        width: 3,
+        height: '100%',
+        backgroundColor: '#3B82F6',
+        borderRadius: 2,
+        marginRight: 16,
+        opacity: 0.6,
+    },
+    logBody: {
+        flex: 1,
+    },
+    logHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 4
+    },
+    logAction: {
+        fontSize: 11,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 0.5,
+    },
+    logDate: {
+        fontSize: 9,
+        color: "#475569",
+        fontWeight: '900',
+    },
+    logMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 8,
+    },
+    logUser: {
+        fontSize: 10,
+        color: "#64748B",
+        fontWeight: "700",
+    },
+    logDetailsContainer: {
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: 6,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.03)',
+    },
+    logDetails: {
+        fontSize: 9,
+        color: "#334155",
+        fontFamily: Platform.OS === 'ios' ? "Menlo" : "monospace",
+        letterSpacing: 0.5,
+    },
+    empty: { padding: 40, alignItems: "center", gap: 12 },
+    emptyText: {
+        color: "#475569",
+        fontWeight: "900",
+        fontSize: 10,
+        letterSpacing: 1,
+    },
     // Backup
     backupSection: {
-        backgroundColor: "white",
-        padding: 20,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#e5e7eb"
+        padding: 24,
     },
-    backupDesc: { fontSize: 13, color: "#666", marginTop: 4, marginBottom: 16 },
+    backupDesc: {
+        fontSize: 11,
+        color: "#64748B",
+        fontWeight: '700',
+        marginBottom: 20,
+        lineHeight: 16,
+    },
     backupBtn: {
-        backgroundColor: "#1a1a1a",
-        padding: 16,
-        borderRadius: 12,
-        alignItems: "center"
+        borderRadius: 14,
+        overflow: 'hidden',
     },
-    backupBtnText: { color: "white", fontWeight: "700", fontSize: 15 },
+    backupGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        gap: 10,
+    },
+    backupBtnText: {
+        color: "white",
+        fontWeight: "900",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
     // Danger Zone
     dangerZone: {
-        backgroundColor: "#fee2e2",
-        padding: 20,
-        borderRadius: 16,
+        padding: 24,
         borderWidth: 1,
-        borderColor: "#fca5a5",
-        marginTop: 20,
+        borderColor: 'rgba(239, 68, 68, 0.1)',
     },
-    dangerTitle: { fontSize: 16, fontWeight: "800", color: "#b91c1c", marginBottom: 4 },
-    dangerDesc: { fontSize: 13, color: "#7f1d1d", marginBottom: 16 },
+    dangerTitle: {
+        fontSize: 12,
+        fontWeight: "900",
+        color: "#FF3131",
+        marginBottom: 8,
+        letterSpacing: 1,
+    },
+    dangerDesc: {
+        fontSize: 10,
+        color: "#991B1B",
+        fontWeight: '900',
+        marginBottom: 20,
+        letterSpacing: 0.5,
+    },
     resetBtn: {
-        backgroundColor: "#b91c1c",
-        padding: 16,
-        borderRadius: 12,
-        alignItems: "center"
+        borderRadius: 14,
+        overflow: 'hidden',
     },
-    resetBtnText: { color: "white", fontWeight: "700", fontSize: 15 }
+    resetGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 14,
+        gap: 10,
+    },
+    resetBtnText: {
+        color: "white",
+        fontWeight: "900",
+        fontSize: 11,
+        letterSpacing: 1,
+    }
 });

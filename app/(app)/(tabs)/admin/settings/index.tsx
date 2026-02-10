@@ -2,62 +2,60 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import AdminLayout from "../../../../../components/admin/AdminLayout";
+import AdminGlassCard from "../../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Settings Menu Data
 const SETTINGS_MENU = [
     {
         id: "users",
-        title: "Manajemen Users",
-        description: "Kelola akun pengguna & hak akses",
-        icon: "👥",
+        title: "TEAM MANAGEMENT",
+        description: "Control user credentials & authorization",
+        icon: "people",
         route: "/(app)/(tabs)/admin/users",
-        color: "#eff6ff",
-        iconColor: "#2563eb"
+        accent: "#3B82F6"
     },
     {
         id: "outlets",
-        title: "Manajemen Outlets",
-        description: "Kelola daftar outlet & saldo",
-        icon: "🏪",
+        title: "BRANCH NETWORK",
+        description: "Configure outlets & fiscal balances",
+        icon: "business",
         route: "/(app)/(tabs)/admin/outlets",
-        color: "#fff7ed",
-        iconColor: "#ea580c"
+        accent: "#F59E0B"
     },
     {
         id: "master_data",
-        title: "Master Data",
-        description: "Kelola item barang & kategori",
-        icon: "📦",
+        title: "MASTER CATALOG",
+        description: "Product inventory & categorization",
+        icon: "cube",
         route: "/(app)/(tabs)/admin/settings/master",
-        color: "#e0f2fe",
-        iconColor: "#0284c7"
+        accent: "#8B5CF6"
     },
     {
         id: "general",
-        title: "Pengaturan Umum",
-        description: "Limit saldo, aplikasi, dll",
-        icon: "⚙️",
+        title: "CORE PARAMETERS",
+        description: "System limits & global variables",
+        icon: "settings",
         route: "/(app)/(tabs)/admin/settings/general",
-        color: "#f3e8ff",
-        iconColor: "#9333ea"
+        accent: "#10B981"
     },
     {
         id: "finance",
-        title: "Keuangan",
-        description: "Rekening Bank & Kebijakan",
-        icon: "💰",
+        title: "FISCAL POLICY",
+        description: "Banking details & reimbursement rules",
+        icon: "wallet",
         route: "/(app)/(tabs)/admin/settings/finance",
-        color: "#dcfce7",
-        iconColor: "#16a34a"
+        accent: "#EC4899"
     },
     {
         id: "security",
-        title: "Keamanan & Logs",
-        description: "Audit trail & Backup data",
-        icon: "🛡️",
+        title: "SECURITY AUDIT",
+        description: "Audit trails, logs & data continuity",
+        icon: "shield-checkmark",
         route: "/(app)/(tabs)/admin/settings/security",
-        color: "#fee2e2",
-        iconColor: "#dc2626"
+        accent: "#EF4444"
     }
 ];
 
@@ -66,118 +64,163 @@ export default function SettingsDashboard() {
 
     return (
         <AdminLayout
-            title="⚙️ Pengaturan"
-            subtitle="Konfigurasi sistem admin"
+            title="⚙️ Settings"
+            subtitle="System architecture control"
             showBackButton={true}
         >
-            <View style={styles.banner}>
-                <Text style={styles.bannerIcon}>🛠️</Text>
-                <View>
-                    <Text style={styles.bannerTitle}>Pusat Kontrol</Text>
-                    <Text style={styles.bannerDesc}>Atur semua konfigurasi aplikasi di sini.</Text>
+            <View style={styles.heroContainer}>
+                <AdminGlassCard style={styles.heroCard}>
+                    <LinearGradient
+                        colors={['rgba(59, 130, 246, 0.1)', 'transparent']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.heroGradient}
+                    />
+                    <View style={styles.heroContent}>
+                        <View style={styles.heroIconBg}>
+                            <Ionicons name="construct" size={24} color="#3B82F6" />
+                        </View>
+                        <View>
+                            <Text style={styles.heroTitle}>COMMAND CENTER</Text>
+                            <Text style={styles.heroDesc}>Optimize and govern system operations.</Text>
+                        </View>
+                    </View>
+                </AdminGlassCard>
+            </View>
+
+            <ScrollView
+                style={styles.scrollArea}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.grid}>
+                    {SETTINGS_MENU.map((item) => (
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.cardContainer}
+                            onPress={() => router.push(item.route as any)}
+                            activeOpacity={0.7}
+                        >
+                            <AdminGlassCard style={styles.menuCard}>
+                                <View style={[styles.iconBox, { backgroundColor: `${item.accent}15` }]}>
+                                    <Ionicons name={item.icon as any} size={22} color={item.accent} />
+                                </View>
+                                <View style={styles.cardInfo}>
+                                    <Text style={styles.cardTitle}>{item.title}</Text>
+                                    <Text style={styles.cardDesc}>{item.description}</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={18} color="#475569" />
+                            </AdminGlassCard>
+                        </TouchableOpacity>
+                    ))}
                 </View>
-            </View>
 
-            <View style={styles.grid}>
-                {SETTINGS_MENU.map((item) => (
-                    <TouchableOpacity
-                        key={item.id}
-                        style={styles.card}
-                        onPress={() => router.push(item.route as any)}
-                    >
-                        <View style={[styles.iconBox, { backgroundColor: item.color }]}>
-                            <Text style={styles.icon}>{item.icon}</Text>
-                        </View>
-                        <View style={styles.cardContent}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            <Text style={styles.cardDesc}>{item.description}</Text>
-                        </View>
-                        <Text style={styles.arrow}>›</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>Petty Cash Management v1.1.0</Text>
-            </View>
+                <View style={styles.footer}>
+                    <Text style={styles.versionText}>EVR DAY PLCS PETTY CASH</Text>
+                    <Text style={styles.versionSub}>SYSTEM ARCHITECTURE v1.1.0_PRO</Text>
+                </View>
+            </ScrollView>
         </AdminLayout>
     );
 }
 
 const styles = StyleSheet.create({
-    banner: {
+    heroContainer: {
+        paddingHorizontal: 20,
+        marginBottom: 24,
+    },
+    heroCard: {
+        padding: 24,
+        overflow: 'hidden',
+    },
+    heroGradient: {
+        ...StyleSheet.absoluteFillObject,
+    },
+    heroContent: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "#1a1a1a",
-        padding: 20,
-        borderRadius: 16,
-        gap: 16,
-        marginBottom: 24,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 5
+        gap: 20,
     },
-    bannerIcon: {
-        fontSize: 32
+    heroIconBg: {
+        width: 56,
+        height: 56,
+        borderRadius: 18,
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(59, 130, 246, 0.2)',
     },
-    bannerTitle: {
-        fontSize: 18,
-        fontWeight: "800",
-        color: "white"
+    heroTitle: {
+        fontSize: 14,
+        fontWeight: "900",
+        color: "white",
+        letterSpacing: 2,
     },
-    bannerDesc: {
-        fontSize: 13,
-        color: "#9ca3af",
-        marginTop: 2
+    heroDesc: {
+        fontSize: 12,
+        color: "#94A3B8",
+        fontWeight: '600',
+        marginTop: 4,
+    },
+    scrollArea: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
     },
     grid: {
-        gap: 16
+        gap: 12,
     },
-    card: {
+    cardContainer: {
+        width: '100%',
+    },
+    menuCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "white",
         padding: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        gap: 16
+        gap: 16,
     },
     iconBox: {
-        width: 50,
-        height: 50,
-        borderRadius: 12,
+        width: 48,
+        height: 48,
+        borderRadius: 14,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
-    icon: {
-        fontSize: 24
-    },
-    cardContent: {
-        flex: 1
+    cardInfo: {
+        flex: 1,
     },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#1a1a1a",
-        marginBottom: 2
+        fontSize: 12,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
+        marginBottom: 4,
     },
     cardDesc: {
-        fontSize: 12,
-        color: "#6b7280"
-    },
-    arrow: {
-        fontSize: 20,
-        color: "#cbd5e1"
+        fontSize: 11,
+        color: "#64748B",
+        fontWeight: '700',
     },
     footer: {
-        paddingVertical: 40,
-        alignItems: "center"
+        marginTop: 40,
+        alignItems: "center",
+        gap: 6,
     },
-    footerText: {
-        fontSize: 12,
-        color: "#999"
+    versionText: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: "#475569",
+        letterSpacing: 3,
+    },
+    versionSub: {
+        fontSize: 9,
+        fontWeight: '700',
+        color: '#1E293B',
+        letterSpacing: 1,
     }
 });

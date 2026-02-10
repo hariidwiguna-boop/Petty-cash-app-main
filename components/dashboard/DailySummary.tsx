@@ -1,11 +1,8 @@
-// ============================================
-// DAILY SUMMARY COMPONENT
-// ============================================
-
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Transaction, TransactionItem } from '../../lib/supabase';
+import { theme } from '../../src/design-system/theme';
 
 interface DailySummaryProps {
     data: {
@@ -25,36 +22,41 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
     return (
         <View style={styles.dailySummaryCard}>
             <View style={styles.dailyHeader}>
-                <Text style={[styles.dailyIcon, { fontSize: fontScale(18) }]}>📊</Text>
-                <Text style={[styles.dailyTitle, { fontSize: fontScale(16) }]}>Ringkasan Hari Ini</Text>
+                <View style={styles.accentBar} />
+                <View>
+                    <Text style={[styles.dailyTitle, { fontSize: fontScale(15) }]}>TODAY'S OPERATIONS</Text>
+                    <Text style={[styles.dailyDate, { fontSize: fontScale(10) }]}>{today.toUpperCase()}</Text>
+                </View>
             </View>
-            <Text style={[styles.dailyDate, { fontSize: fontScale(12) }]}>{today}</Text>
 
             {/* Detailed Expenses List */}
             <View style={styles.dailyStats}>
-                <Text style={[styles.dailyStatText, { marginBottom: 8, fontWeight: '600' }]}>Rincian Pengeluaran:</Text>
                 {data.todayTransactions.length === 0 ? (
-                    <Text style={{ color: '#999', fontSize: 13, fontStyle: 'italic' }}>Belum ada pengeluaran hari ini.</Text>
+                    <View style={styles.emptyState}>
+                        <Text style={styles.emptyText}>No transactions recorded for today.</Text>
+                    </View>
                 ) : (
                     data.todayTransactions.map((tx, idx) => (
-                        <View key={idx}>
+                        <View key={idx} style={styles.txRow}>
                             {tx.transaction_items && tx.transaction_items.length > 0 ? (
                                 tx.transaction_items.map((item: TransactionItem, i: number) => (
-                                    <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                                        <Text style={{ fontSize: 13, color: '#374151', flex: 1 }}>
-                                            • {item.deskripsi} {item.qty ? `(${item.qty} ${item.satuan})` : ''}
+                                    <View key={i} style={styles.itemLine}>
+                                        <View style={styles.dot} />
+                                        <Text style={styles.itemDesc} numberOfLines={1}>
+                                            {item.deskripsi} {item.qty ? `(${item.qty})` : ''}
                                         </Text>
-                                        <Text style={{ fontSize: 13, fontWeight: '700', color: '#dc2626' }}>
+                                        <Text style={styles.itemValue}>
                                             {formatCurrency(Number(item.total_harga))}
                                         </Text>
                                     </View>
                                 ))
                             ) : (
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
-                                    <Text style={{ fontSize: 13, color: '#374151', flex: 1 }}>
-                                        • {tx.tipe || "Pengeluaran"}
+                                <View style={styles.itemLine}>
+                                    <View style={styles.dot} />
+                                    <Text style={styles.itemDesc}>
+                                        {tx.tipe || "General Expense"}
                                     </Text>
-                                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#dc2626' }}>
+                                    <Text style={styles.itemValue}>
                                         {formatCurrency(Number(tx.grand_total))}
                                     </Text>
                                 </View>
@@ -64,10 +66,12 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
                 )}
             </View>
 
-            <View style={styles.progressContainer}>
+            <View style={styles.progressSection}>
                 <View style={styles.progressLabel}>
-                    <Text style={styles.progressLabelText}>Penggunaan Kas</Text>
-                    <Text style={styles.progressPercent}>{data.usagePercent}%</Text>
+                    <Text style={styles.progressLabelText}>BUDGET UTILIZATION</Text>
+                    <Text style={[styles.progressPercent, data.usagePercent > 80 && styles.textRed]}>
+                        {data.usagePercent}%
+                    </Text>
                 </View>
                 <View style={styles.progressBar}>
                     <View
@@ -79,7 +83,9 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
                         ]}
                     />
                 </View>
-                <Text style={styles.progressHint}>dari limit {formatCurrency(data.saldoLimit)}</Text>
+                <View style={styles.progressFooter}>
+                    <Text style={styles.progressHint}>LIMIT: {formatCurrency(data.saldoLimit)}</Text>
+                </View>
             </View>
         </View>
     );
@@ -87,94 +93,135 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
 
 const styles = StyleSheet.create({
     dailySummaryCard: {
-        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
         borderRadius: 24,
-        padding: 20,
+        padding: 24,
         marginHorizontal: 20,
         marginBottom: 20,
-        borderWidth: 1.5,
-        borderColor: "rgba(255, 255, 255, 0.8)", // Crisper border
-        shadowColor: "#1E293B",
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
-        elevation: 8,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
+        elevation: 12,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     dailyHeader: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-        marginBottom: 8,
+        gap: 12,
+        marginBottom: 20,
     },
-    dailyIcon: {
-        fontSize: 18,
+    accentBar: {
+        width: 4,
+        height: 32,
+        backgroundColor: '#FF3131',
+        borderRadius: 2,
     },
     dailyTitle: {
-        fontSize: 16,
-        fontWeight: "800",
-        color: "#0F172A", // Sharper dark
-        letterSpacing: 0.5,
+        fontWeight: "900",
+        color: "#F8FAFC",
+        letterSpacing: 1.5,
     },
     dailyDate: {
-        fontSize: 12,
-        color: "#334155", // Darker gray
-        marginBottom: 12,
-        paddingBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-        borderStyle: "dashed",
+        color: "#64748B",
+        fontWeight: "700",
+        letterSpacing: 2,
+        marginTop: 2,
     },
     dailyStats: {
-        marginBottom: 14,
-        gap: 6,
+        marginBottom: 24,
+        gap: 12,
     },
-    dailyStatText: {
+    emptyState: {
+        paddingVertical: 12,
+        alignItems: 'center',
+    },
+    emptyText: {
+        color: '#475569',
         fontSize: 13,
-        color: "#334155", // Sharper text
-        fontWeight: "600",
+        fontStyle: 'italic',
     },
-    progressContainer: {
-        backgroundColor: "#f9fafb",
-        borderRadius: 10,
-        padding: 12,
+    txRow: {
+        gap: 8,
+    },
+    itemLine: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+    },
+    dot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#475569',
+        marginRight: 8,
+    },
+    itemDesc: {
+        fontSize: 13,
+        color: "#94A3B8",
+        flex: 1,
+        fontWeight: '500',
+    },
+    itemValue: {
+        fontSize: 13,
+        fontWeight: '800',
+        color: "#F1F5F9",
+    },
+    progressSection: {
+        backgroundColor: "rgba(255, 255, 255, 0.02)",
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
     progressLabel: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 8,
+        alignItems: 'center',
+        marginBottom: 10,
     },
     progressLabelText: {
-        fontSize: 12,
-        color: "#475569", // Darker slate
-        fontWeight: "600",
+        fontSize: 10,
+        color: "#64748B",
+        fontWeight: "800",
+        letterSpacing: 1,
     },
     progressPercent: {
-        fontSize: 12,
-        fontWeight: "800",
-        color: "#0F172A",
+        fontSize: 14,
+        fontWeight: "900",
+        color: "#F8FAFC",
+    },
+    textRed: {
+        color: '#FF3131',
     },
     progressBar: {
-        height: 8,
-        backgroundColor: "#e5e7eb",
-        borderRadius: 4,
+        height: 6,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderRadius: 3,
         overflow: "hidden",
     },
     progressFill: {
         height: "100%",
-        backgroundColor: "#22c55e",
-        borderRadius: 4,
+        backgroundColor: "#22C55E",
+        borderRadius: 3,
     },
     progressWarning: {
-        backgroundColor: "#f59e0b",
+        backgroundColor: "#F59E0B",
     },
     progressDanger: {
-        backgroundColor: "#ef4444",
+        backgroundColor: "#FF3131",
+    },
+    progressFooter: {
+        marginTop: 10,
     },
     progressHint: {
-        fontSize: 11,
-        color: "#9ca3af",
-        marginTop: 6,
+        fontSize: 10,
+        color: "#475569",
+        fontWeight: '700',
+        letterSpacing: 1,
         textAlign: "right",
     },
 });

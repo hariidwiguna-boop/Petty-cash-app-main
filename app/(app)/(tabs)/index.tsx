@@ -227,8 +227,7 @@ export default function DashboardScreen() {
 
     return (
         <LinearGradient
-            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
-            locations={[0, 0.3, 0.8, 1]}
+            colors={['#0F172A', '#020617']} // Slate-900 to Slate-950
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
             style={{ flex: 1 }}
@@ -274,14 +273,8 @@ export default function DashboardScreen() {
                 {/* Custom Big Box Low Balance Popup */}
                 {isLowBalance && !isLowBalanceDismissed && (
                     <View style={styles.bigPopupOverlay}>
-                        {/* Dimmed Background */}
                         <View style={styles.bigPopupBackdrop} />
-
-                        {/* Popup Content */}
-                        <LinearGradient
-                            colors={['#FFFFFF', '#F8FAFC']}
-                            style={styles.bigPopupCard}
-                        >
+                        <View style={styles.bigPopupCard}>
                             <TouchableOpacity
                                 style={styles.bigPopupCloseBtn}
                                 onPress={() => setIsLowBalanceDismissed(true)}
@@ -293,10 +286,10 @@ export default function DashboardScreen() {
                                 <Text style={styles.bigPopupIcon}>⚠️</Text>
                             </View>
 
-                            <Text style={styles.bigPopupTitle}>Saldo Menipis!</Text>
+                            <Text style={styles.bigPopupTitle}>LOW BALANCE ALERT</Text>
                             <Text style={styles.bigPopupMessage}>
-                                Saldo Anda saat ini tersisa <Text style={{ fontWeight: 'bold' }}>{formatCurrency(dashboardData.saldoSekarang)}</Text>.{'\n'}
-                                Segera ajukan reimbursement agar operasional tidak terganggu.
+                                Your current balance is <Text style={{ fontWeight: 'bold', color: '#F8FAFC' }}>{formatCurrency(dashboardData.saldoSekarang)}</Text>.{'\n'}
+                                Please request reimbursement to ensure operational continuity.
                             </Text>
 
                             <TouchableOpacity
@@ -307,13 +300,13 @@ export default function DashboardScreen() {
                                 }}
                             >
                                 <LinearGradient
-                                    colors={['#DC2626', '#B91C1C']}
+                                    colors={['#DC2626', '#991B1B']}
                                     style={styles.bigPopupActionGradient}
                                 >
-                                    <Text style={styles.bigPopupActionText}>Ajukan Reimbursement</Text>
+                                    <Text style={styles.bigPopupActionText}>SUBMIT REQUEST</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
-                        </LinearGradient>
+                        </View>
                     </View>
                 )}
 
@@ -332,14 +325,14 @@ export default function DashboardScreen() {
                     <View style={styles.adminMenuFullscreen}>
                         {/* Header with Emerald Gradient */}
                         <LinearGradient
-                            colors={['#10b981', '#059669']}
+                            colors={['#FF3131', '#991B1B']}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 1 }}
                             style={styles.adminMenuHeader}
                         >
                             <View>
-                                <Text style={styles.adminMenuTitle}>👑 Admin Control Center</Text>
-                                <Text style={styles.adminMenuSubtitle}>Pusat kendali & navigasi</Text>
+                                <Text style={styles.adminMenuTitle}>EXECUTIVE CONTROL</Text>
+                                <Text style={styles.adminMenuSubtitle}>System Authority & Navigation</Text>
                             </View>
                             <TouchableOpacity style={styles.closeCircleBtn} onPress={() => setShowAdminMenu(false)}>
                                 <Text style={styles.closeCircleText}>✕</Text>
@@ -493,251 +486,104 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "transparent",
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 20,
+        paddingBottom: 100,
     },
-    header: {
-        backgroundColor: "white",
-        paddingVertical: 16,
-        paddingBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#e0e0e0",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 4,
-        zIndex: 10
-    },
-    headerTop: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        paddingHorizontal: 20,
-        marginBottom: 16,
-    },
-    greetingText: {
-        fontSize: 16,
-        color: "#6b7280",
-        fontWeight: "600",
-    },
-    userNameText: {
-        fontSize: 20,
-        fontWeight: "800",
-        color: "#1a1a1a",
-        marginBottom: 2,
-    },
-    subGreeting: {
-        fontSize: 12,
-        color: "#9ca3af",
-        fontStyle: "italic",
-    },
-    adminBadgeHeader: {
-        backgroundColor: "#fcd34d",
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 6,
-        marginBottom: 4,
-        alignSelf: 'flex-end',
-    },
-    adminBadgeTextHeader: {
-        fontSize: 10,
-        fontWeight: "800",
-        color: "#78350f",
-    },
-    outletSelector: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#f9fafb",
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        gap: 6,
-    },
-    outletNameHeader: {
-        fontSize: 13,
-        fontWeight: "700",
-        color: "#374151",
-        maxWidth: 120,
-    },
-    outletChangeIcon: {
-        fontSize: 10,
-        color: "#9ca3af",
-    },
-    // Admin Shortcuts
-    adminShortcutContainer: {
-        paddingTop: 0,
-    },
-    adminShortcutScroll: {
-        paddingHorizontal: 20,
-        gap: 8,
-    },
-    adminChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fffbeb',
-        borderWidth: 1,
-        borderColor: '#fcd34d',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 100,
-    },
-    adminChipText: {
-        fontSize: 12,
-        fontWeight: '700',
-        color: '#92400e',
-    },
-    kpiGrid: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        gap: 12,
-        padding: 20,
-        paddingTop: 24, // Added padding since header is removed from scrollview
-    },
-    kpiCard: {
-        width: "48%",
-        backgroundColor: "white",
-        borderRadius: 14,
-        padding: 14,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 2,
-    },
-    kpiSaldo: {},
-    kpiKasAwal: {},
-    kpiKasMasuk: {},
-    kpiKasKeluar: {},
-    kpiIcon: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    kpiIconText: {
-        fontSize: 24,
-    },
-    kpiInfo: {
-        flex: 1,
-    },
-    kpiLabel: {
-        fontSize: 10,
-        color: "#666",
-        fontWeight: "500",
-        marginBottom: 2,
-    },
-    kpiValue: {
-        fontSize: 14,
-        fontWeight: "800",
-    },
-    headerAdminBtn: {
-        backgroundColor: "#fcd34d",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        shadowColor: "#d97706",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    headerAdminBtnText: {
-        fontSize: 12,
-        fontWeight: "800",
-        color: "#78350f"
-    },
-    // Admin Menu Modal Styles - Fullscreen
+    // Removal of legacy styles block
+    // Admin Fullscreen Menu
     adminMenuFullscreen: {
         flex: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "#020617",
     },
     adminMenuHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 20,
-        paddingTop: 50,
-        borderBottomWidth: 0,
+        padding: 24,
+        paddingTop: Platform.OS === 'ios' ? 60 : 40,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255, 255, 255, 0.05)',
     },
     adminMenuTitle: {
         fontSize: 18,
-        fontWeight: "800",
-        color: "#ffffff",
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 2,
     },
     adminMenuSubtitle: {
-        fontSize: 12,
-        color: "rgba(255, 255, 255, 0.9)",
+        fontSize: 11,
+        color: "#94A3B8",
+        fontWeight: '700',
+        letterSpacing: 1,
+        marginTop: 4,
     },
     closeCircleBtn: {
-        width: 32,
-        height: 32,
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
-        borderRadius: 16,
+        width: 40,
+        height: 40,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderRadius: 20,
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
     closeCircleText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "bold",
-        color: "#ffffff",
+        color: "#FFFFFF",
     },
     adminMenuBody: {
         flex: 1,
-        padding: 20,
-        backgroundColor: "#f3f4f6",
+        padding: 24,
     },
     menuSection: {
-        marginBottom: 24,
+        marginBottom: 32,
     },
     menuSectionTitle: {
-        fontSize: 13,
-        fontWeight: "700",
-        color: "#6b7280",
-        marginBottom: 12,
-        textTransform: "uppercase",
-        letterSpacing: 0.5,
+        fontSize: 11,
+        fontWeight: "900",
+        color: "#475569",
+        marginBottom: 16,
+        letterSpacing: 2,
     },
     outletSelectionCard: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
-        borderWidth: 1.5,
-        borderColor: "rgba(255, 255, 255, 0.8)",
-        padding: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        padding: 20,
         borderRadius: 20,
-        shadowColor: "#1E293B",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1,
-        shadowRadius: 16,
-        elevation: 6,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(16px)' } : {}),
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 8,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(30px)' } : {}),
     },
     outletSelectionLabel: {
-        fontSize: 12,
-        color: "#6b7280",
+        fontSize: 10,
+        color: "#64748B",
+        fontWeight: '800',
+        letterSpacing: 1,
+        marginBottom: 4,
     },
     outletSelectionValue: {
         fontSize: 16,
-        fontWeight: "bold",
-        color: "#1f2937",
+        fontWeight: "900",
+        color: "#F8FAFC",
+        letterSpacing: 0.5,
     },
     outletSelectionAction: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: "#2563eb",
+        fontSize: 12,
+        fontWeight: "900",
+        color: "#FF3131",
+        letterSpacing: 1,
     },
     adminGrid: {
         flexDirection: "row",
@@ -746,62 +592,54 @@ const styles = StyleSheet.create({
     },
     adminGridItem: {
         width: "48%",
-        backgroundColor: "rgba(255, 255, 255, 0.45)", // Glass
-        borderWidth: 1.5,
-        borderColor: "rgba(255, 255, 255, 0.8)",
-        borderRadius: 20,
-        padding: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.08)",
+        borderRadius: 24,
+        padding: 20,
         alignItems: "center",
-        gap: 8,
-        shadowColor: "#1E293B",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1,
-        shadowRadius: 16,
-        elevation: 6,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(16px)' } : {}),
+        gap: 12,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 8,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(30px)' } : {}),
     },
     adminGridIconBg: {
-        width: 48,
-        height: 48,
-        borderRadius: 14,
+        width: 52,
+        height: 52,
+        borderRadius: 16,
         alignItems: "center",
         justifyContent: "center",
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
     },
     adminGridIcon: {
-        fontSize: 20,
+        fontSize: 22,
     },
     adminGridLabel: {
-        fontSize: 13,
-        fontWeight: "600",
-        color: "#374151",
+        fontSize: 12,
+        fontWeight: "900",
+        color: "#F8FAFC",
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     menuLogoutBtn: {
-        backgroundColor: "rgba(254, 226, 226, 0.7)",
-        padding: 16,
-        borderRadius: 16,
+        backgroundColor: "rgba(220, 38, 38, 0.05)",
+        padding: 18,
+        borderRadius: 20,
         alignItems: "center",
         flexDirection: "row",
         justifyContent: "center",
-        gap: 8,
+        gap: 12,
         borderWidth: 1,
         borderColor: "rgba(220, 38, 38, 0.2)",
     },
     menuLogoutText: {
         fontSize: 14,
-        fontWeight: "bold",
-        color: "#dc2626",
-    },
-    dailySummaryCard: {
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 16,
-        marginHorizontal: 20,
-        marginBottom: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
-        elevation: 2,
+        fontWeight: "900",
+        color: "#FF3131",
+        letterSpacing: 1.5,
     },
     dailyHeader: {
         flexDirection: "row",
@@ -855,7 +693,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
     },
-    // Big Box Custom Popup Styles
+    // Big Box Custom Popup (Low Balance)
     bigPopupOverlay: {
         position: 'absolute',
         top: 0,
@@ -865,7 +703,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         zIndex: 100,
-        paddingHorizontal: 30,
+        paddingHorizontal: 24,
     },
     bigPopupBackdrop: {
         position: 'absolute',
@@ -873,85 +711,85 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Dimmed background
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
     },
     bigPopupCard: {
         width: '100%',
         maxWidth: 340,
-        backgroundColor: 'white',
-        borderRadius: 24,
-        padding: 24,
+        backgroundColor: 'rgba(30, 41, 59, 0.95)',
+        borderRadius: 32,
+        padding: 32,
         alignItems: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 31, 31, 0.3)',
+        shadowColor: "#FF3131",
+        shadowOffset: { width: 0, height: 20 },
         shadowOpacity: 0.2,
-        shadowRadius: 20,
-        elevation: 10,
+        shadowRadius: 40,
+        elevation: 15,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(30px)' } : {}),
     },
     bigPopupCloseBtn: {
         position: 'absolute',
-        top: 16,
-        right: 16,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        backgroundColor: '#f1f5f9',
+        top: 20,
+        right: 20,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 10,
     },
     bigPopupCloseText: {
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: 'bold',
-        color: '#94a3b8',
+        color: '#94A3B8',
     },
     bigPopupIconContainer: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
-        backgroundColor: '#fee2e2',
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: 'rgba(220, 38, 38, 0.1)',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 16,
-        borderWidth: 4,
-        borderColor: '#fef2f2',
+        marginBottom: 20,
+        borderWidth: 2,
+        borderColor: 'rgba(220, 38, 38, 0.3)',
     },
     bigPopupIcon: {
-        fontSize: 32,
+        fontSize: 36,
     },
     bigPopupTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: '#dc2626',
-        marginBottom: 8,
+        fontSize: 22,
+        fontWeight: '900',
+        color: '#FF3131',
+        marginBottom: 12,
         textAlign: 'center',
+        letterSpacing: 2,
     },
     bigPopupMessage: {
         fontSize: 14,
-        color: '#475569',
+        color: '#94A3B8',
         textAlign: 'center',
-        lineHeight: 20,
-        marginBottom: 24,
+        lineHeight: 22,
+        marginBottom: 32,
+        fontWeight: '500',
     },
     bigPopupActionBtn: {
         width: '100%',
         borderRadius: 16,
         overflow: 'hidden',
-        shadowColor: '#dc2626',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
     },
     bigPopupActionGradient: {
-        paddingVertical: 14,
+        paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center',
     },
     bigPopupActionText: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 14,
+        fontWeight: '900',
         color: 'white',
+        letterSpacing: 1.5,
     },
 
     progressLabelText: {
@@ -986,124 +824,7 @@ const styles = StyleSheet.create({
         marginTop: 6,
         textAlign: "right",
     },
-    alertBanner: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-        backgroundColor: "#fef3c7",
-        borderWidth: 1,
-        borderColor: "#fbbf24",
-        borderRadius: 12,
-        padding: 12,
-        marginHorizontal: 20,
-        marginBottom: 16,
-    },
-    alertIcon: {
-        fontSize: 20,
-    },
-    alertText: {
-        flex: 1,
-        fontSize: 13,
-        fontWeight: "600",
-        color: "#92400e",
-    },
-    mainActionBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 12,
-        backgroundColor: "#C94C4C",
-        marginHorizontal: 20,
-        padding: 20,
-        borderRadius: 16,
-        marginBottom: 20,
-        shadowColor: "#C94C4C",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.35,
-        shadowRadius: 25,
-        elevation: 8,
-    },
-    mainActionIcon: {
-        fontSize: 28,
-    },
-    mainActionText: {
-        fontSize: 18,
-        fontWeight: "800",
-        color: "white",
-    },
-    actionGrid: {
-        flexDirection: "row",
-        gap: 10,
-        paddingHorizontal: 20,
-        marginBottom: 24,
-    },
-    actionCard: {
-        flex: 1,
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#e0e0e0",
-        borderRadius: 16,
-        paddingVertical: 16,
-        paddingHorizontal: 8,
-        alignItems: "center",
-        gap: 8,
-    },
-    actionIcon: {
-        fontSize: 28,
-    },
-    actionLabel: {
-        fontSize: 10,
-        fontWeight: "700",
-        color: "#666",
-        textAlign: "center",
-        lineHeight: 14,
-    },
-    recentSection: {
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 16,
-        marginHorizontal: 20,
-        borderWidth: 1,
-        borderColor: "#e0e0e0",
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: "800",
-        marginBottom: 12,
-        color: "#1a1a1a",
-    },
-    txItem: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 12,
-        backgroundColor: "#f8fafc",
-        borderRadius: 10,
-        marginBottom: 8,
-    },
-    txItemInfo: {
-        flex: 1,
-    },
-    txItemDesc: {
-        fontSize: 13,
-        fontWeight: "600",
-        color: "#1a1a1a",
-    },
-    txItemDate: {
-        fontSize: 11,
-        color: "#666",
-    },
-    txItemAmount: {
-        fontSize: 14,
-        fontWeight: "800",
-        color: "#dc2626",
-    },
-    txEmpty: {
-        textAlign: "center",
-        color: "#999",
-        fontSize: 13,
-        padding: 24,
-    },
+    // Removal of legacy content styles
     footer: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -1155,19 +876,20 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         padding: 20,
     },
+    // Outlet Selector Modal
     modalContent: {
-        backgroundColor: "rgba(255, 255, 255, 0.85)", // High opacity glass for readablity
-        borderRadius: 24,
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
         padding: 24,
         maxHeight: "80%",
-        borderWidth: 1.5,
-        borderColor: "rgba(255, 255, 255, 0.8)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.2,
-        shadowRadius: 24,
-        elevation: 10,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(24px)' } : {}),
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     modalHeader: {
         flexDirection: "row",

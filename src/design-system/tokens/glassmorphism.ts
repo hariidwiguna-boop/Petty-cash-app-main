@@ -2,91 +2,82 @@ import { Platform } from 'react-native';
 
 // Ultra-premium glassmorphism tokens
 export const glassmorphism = {
-  // Very prominent glass surfaces
+  // Very prominent glass surfaces (Executive 2.0)
   surface: {
-    ultra: 'rgba(255, 255, 255, 0.08)',      // Ultra transparent
-    light: 'rgba(255, 255, 255, 0.10)',       // Light glass
-    medium: 'rgba(255, 255, 255, 0.12)',      // Medium glass
-    prominent: 'rgba(255, 255, 255, 0.15)',     // Prominent
-    visible: 'rgba(255, 255, 255, 0.18)',      // More visible
-    hover: 'rgba(255, 255, 255, 0.22)',        // On hover
-    active: 'rgba(255, 255, 255, 0.28)',       // Active state
-    solid: 'rgba(255, 255, 255, 0.95)',        // Solid background
+    ultra: 'rgba(255, 255, 255, 0.03)',      // Whisper thin
+    light: 'rgba(255, 255, 255, 0.06)',       // Light frost
+    medium: 'rgba(255, 255, 255, 0.10)',      // Frost
+    prominent: 'rgba(255, 255, 255, 0.15)',     // Clear frost
+    visible: 'rgba(255, 255, 255, 0.20)',      // Semi-solid
+    hover: 'rgba(255, 255, 255, 0.25)',        // Glow
+    active: 'rgba(255, 255, 255, 0.35)',       // Intense
+    solid: 'rgba(15, 23, 42, 0.98)',           // Slate-900 fallback
   },
 
-  // Maximum blur effects
+  // Maximum blur effects (High Intensity)
   backdropBlur: {
-    light: 'blur(12px)',
-    medium: 'blur(24px)',
-    heavy: 'blur(32px)',
-    ultra: 'blur(48px)',
-    intense: 'blur(64px)',
-    extreme: 'blur(80px)',
+    light: 'blur(16px)',
+    medium: 'blur(32px)',
+    heavy: 'blur(48px)',
+    ultra: 'blur(64px)',
+    intense: 'blur(80px)',
+    extreme: 'blur(120px)',
   },
 
-  // Premium glass borders
+  // Premium glass borders (Light catchers)
   border: {
-    subtle: 'rgba(255, 255, 255, 0.15)',
-    normal: 'rgba(255, 255, 255, 0.25)',
-    prominent: 'rgba(255, 255, 255, 0.35)',
-    intense: 'rgba(255, 255, 255, 0.45)',
-    glow: 'rgba(255, 255, 255, 0.2)',
+    subtle: 'rgba(255, 255, 255, 0.08)',
+    normal: 'rgba(255, 255, 255, 0.15)',
+    prominent: 'rgba(255, 255, 255, 0.25)',
+    intense: 'rgba(255, 255, 255, 0.40)',
+    glow: 'rgba(255, 255, 255, 0.15)',
   },
 
-  // Premium shadows
+  // Premium shadows (3D Depth)
   shadow: {
     light: {
-      shadowColor: 'rgba(31, 38, 135, 0.1)',
+      shadowColor: '#000000',
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 12,
-      elevation: 8,
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      elevation: 5,
     },
     medium: {
-      shadowColor: 'rgba(31, 38, 135, 0.15)',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 1,
-      shadowRadius: 20,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.4,
+      shadowRadius: 24,
       elevation: 12,
     },
     heavy: {
-      shadowColor: 'rgba(31, 38, 135, 0.25)',
-      shadowOffset: { width: 0, height: 16 },
-      shadowOpacity: 1,
-      shadowRadius: 32,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 24 },
+      shadowOpacity: 0.5,
+      shadowRadius: 40,
       elevation: 20,
     },
     extreme: {
-      shadowColor: 'rgba(31, 38, 135, 0.37)',
-      shadowOffset: { width: 0, height: 24 },
-      shadowOpacity: 1,
-      shadowRadius: 48,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 48 },
+      shadowOpacity: 0.6,
+      shadowRadius: 64,
       elevation: 32,
     },
   },
 
-  // Premium reflections
-  reflection: {
-    intensity: 0.9,
-    shimmerSpeed: 1800,
-    shimmerWidth: 100,
-    opacity: 0.7,
-    gradient: 'linear-gradient(135deg, rgba(255,255,255,0.6) 0%, transparent 50%, rgba(255,255,255,0.6) 100%)',
-  },
-
-  // Semantic colors with transparency - evrdayplcs. brand
+  // Premium reflections & semantic accents
   semantic: {
     success: {
-      background: 'rgba(16, 185, 129, 0.15)',
-      border: 'rgba(16, 185, 129, 0.3)',
-      text: 'rgba(16, 185, 129, 0.9)',
-      glow: 'rgba(16, 185, 129, 0.2)',
+      background: 'rgba(16, 185, 129, 0.12)',
+      border: 'rgba(16, 185, 129, 0.4)',
+      text: '#10B981',
+      glow: 'rgba(16, 185, 129, 0.3)',
     },
     error: {
       background: 'rgba(220, 38, 38, 0.15)',
-      border: 'rgba(220, 38, 38, 0.3)',
-      text: 'rgba(220, 38, 38, 0.9)',
-      glow: 'rgba(220, 38, 38, 0.2)',
+      border: 'rgba(220, 38, 38, 0.5)',
+      text: '#FF3131',
+      glow: 'rgba(220, 38, 38, 0.4)',
     },
     warning: {
       background: 'rgba(245, 158, 11, 0.15)',

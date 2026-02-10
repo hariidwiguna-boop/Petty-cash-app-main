@@ -1,22 +1,7 @@
-// ============================================
-// KPI CARDS COMPONENT - evrdayplcs. Brand Theme
-// Red Glass | White Glass Design (No Black)
-// ============================================
-
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useResponsive } from '../../src/hooks/useResponsive';
-
-// Brand Colors - Red & White Only
-const BRAND = {
-    red: '#DC2626',
-    redLight: '#EF4444',
-    redGlass: 'rgba(220, 38, 38, 0.08)',
-    white: '#FFFFFF',
-    whiteGlass: 'rgba(255, 255, 255, 0.95)',
-    textDark: '#1E293B',
-    textGray: '#64748B',
-};
+import { theme } from '../../src/design-system/theme';
 
 interface KpiCardsProps {
     data: {
@@ -34,56 +19,60 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data }) => {
     };
 
     return (
-        <View style={[styles.kpiGrid, isTablet && { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }]}>
-            {/* 1. Kas Awal Hari Ini */}
-            <View style={[styles.kpiCard, isTablet && { width: '48.5%' }]}>
-                <View style={[styles.kpiIcon, { backgroundColor: 'rgba(100, 116, 139, 0.08)' }]}>
-                    <Text style={styles.kpiIconText}>📥</Text>
+        <View style={styles.kpiGrid}>
+            <View style={styles.topRow}>
+                {/* 1. Kas Awal Hari Ini */}
+                <View style={[styles.kpiCard, isTablet && { flex: 1 }]}>
+                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(148, 163, 184, 0.1)' }]}>
+                        <Text style={styles.kpiIconText}>🏦</Text>
+                    </View>
+                    <View style={styles.kpiInfo}>
+                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>ASSET START</Text>
+                        <Text style={[styles.kpiValue, { color: '#F8FAFC', fontSize: fontScale(14) }]}>
+                            {formatCurrency(data.kasAwalHariIni)}
+                        </Text>
+                    </View>
                 </View>
-                <View style={styles.kpiInfo}>
-                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Awal Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.textDark, fontSize: fontScale(14) }]}>
-                        {formatCurrency(data.kasAwalHariIni)}
-                    </Text>
+
+                {/* 2. Kas Masuk Hari Ini */}
+                <View style={[styles.kpiCard, styles.kpiKasMasuk, isTablet && { flex: 1 }]}>
+                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+                        <Text style={styles.kpiIconText}>📈</Text>
+                    </View>
+                    <View style={styles.kpiInfo}>
+                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>INCOME TODAY</Text>
+                        <Text style={[styles.kpiValue, { color: '#10B981', fontSize: fontScale(14) }]}>
+                            {formatCurrency(data.kasMasukHariIni)}
+                        </Text>
+                    </View>
                 </View>
             </View>
 
-            {/* 2. Kas Masuk Hari Ini */}
-            <View style={[styles.kpiCard, styles.kpiKasMasuk, isTablet && { width: '48.5%' }]}>
-                <View style={[styles.kpiIcon, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
-                    <Text style={styles.kpiIconText}>↗️</Text>
+            <View style={styles.bottomRow}>
+                {/* 3. Kas Keluar Hari Ini */}
+                <View style={[styles.kpiCard, styles.kpiKasKeluar, isTablet && { flex: 1 }]}>
+                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(220, 38, 38, 0.15)' }]}>
+                        <Text style={styles.kpiIconText}>📉</Text>
+                    </View>
+                    <View style={styles.kpiInfo}>
+                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>EXPENSE TODAY</Text>
+                        <Text style={[styles.kpiValue, { color: '#FF3131', fontSize: fontScale(14) }]}>
+                            {formatCurrency(data.kasKeluarHariIni)}
+                        </Text>
+                    </View>
                 </View>
-                <View style={styles.kpiInfo}>
-                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Masuk Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: '#10b981', fontSize: fontScale(14) }]}>
-                        {formatCurrency(data.kasMasukHariIni)}
-                    </Text>
-                </View>
-            </View>
 
-            {/* 3. Kas Keluar Hari Ini */}
-            <View style={[styles.kpiCard, styles.kpiKasKeluar, isTablet && { width: '48.5%' }]}>
-                <View style={[styles.kpiIcon, { backgroundColor: BRAND.redGlass }]}>
-                    <Text style={styles.kpiIconText}>↘️</Text>
-                </View>
-                <View style={styles.kpiInfo}>
-                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Kas Keluar Hari Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.red, fontSize: fontScale(14) }]}>
-                        {formatCurrency(data.kasKeluarHariIni)}
-                    </Text>
-                </View>
-            </View>
-
-            {/* 4. Saldo Saat Ini (Bottom) */}
-            <View style={[styles.kpiCard, styles.kpiSaldo, isTablet && { width: '48.5%' }]}>
-                <View style={[styles.kpiIcon, { backgroundColor: BRAND.redGlass }]}>
-                    <Text style={styles.kpiIconText}>💰</Text>
-                </View>
-                <View style={styles.kpiInfo}>
-                    <Text style={[styles.kpiLabel, { fontSize: fontScale(10) }]}>Saldo Saat Ini</Text>
-                    <Text style={[styles.kpiValue, { color: BRAND.red, fontSize: fontScale(14) }]}>
-                        {formatCurrency(data.saldoSekarang)}
-                    </Text>
+                {/* 4. Saldo Saat Ini */}
+                <View style={[styles.kpiCard, styles.kpiSaldo, isTablet && { flex: 1 }]}>
+                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(220, 38, 38, 0.2)' }]}>
+                        <Text style={styles.kpiIconText}>💎</Text>
+                    </View>
+                    <View style={styles.kpiInfo}>
+                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>CURRENT BALANCE</Text>
+                        <Text style={[styles.kpiValue, { color: '#FFFFFF', fontSize: fontScale(14) }]}>
+                            {formatCurrency(data.saldoSekarang)}
+                        </Text>
+                    </View>
                 </View>
             </View>
         </View>
@@ -92,61 +81,64 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ data }) => {
 
 const styles = StyleSheet.create({
     kpiGrid: {
-        flexDirection: "column",
-        gap: 8, // Reduced gap
         padding: 20,
-        paddingTop: 16, // Reduced top padding
+        paddingTop: 8,
+        gap: 12,
+    },
+    topRow: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    bottomRow: {
+        flexDirection: 'row',
+        gap: 12,
     },
     kpiCard: {
-        width: "100%",
-        backgroundColor: "rgba(255, 255, 255, 0.45)",
-        borderRadius: 16, // Smaller border radius
-        padding: 10, // Significantly reduced padding (was 18)
-        paddingHorizontal: 16,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        borderWidth: 1, // Thinner border
-        borderColor: "rgba(255, 255, 255, 0.8)",
-        shadowColor: "#1E293B",
-        shadowOffset: { width: 0, height: 4 }, // Smaller shadow offset
-        shadowOpacity: 0.1,
-        shadowRadius: 10, // Smaller shadow radius
-        elevation: 4,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
+        flex: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.04)',
+        borderRadius: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 10,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(30px)' } : {}),
     },
     kpiSaldo: {
-        borderColor: "rgba(220, 38, 38, 0.2)",
+        borderColor: 'rgba(220, 38, 38, 0.3)',
+        backgroundColor: 'rgba(220, 38, 38, 0.05)',
     },
     kpiKasMasuk: {
-        borderColor: "rgba(16, 185, 129, 0.2)",
+        borderColor: 'rgba(16, 185, 129, 0.2)',
     },
     kpiKasKeluar: {
-        borderColor: "rgba(220, 38, 38, 0.2)",
+        borderColor: 'rgba(220, 38, 38, 0.2)',
     },
     kpiIcon: {
-        width: 36, // Smaller icon (was 48)
-        height: 36,
-        borderRadius: 10, // Smaller radius
+        width: 32,
+        height: 32,
+        borderRadius: 10,
         alignItems: "center",
         justifyContent: "center",
+        marginBottom: 12,
     },
     kpiIconText: {
-        fontSize: 16, // Smaller emoji (was 22)
+        fontSize: 14,
     },
     kpiInfo: {
-        flex: 1,
+        gap: 4,
     },
     kpiLabel: {
-        fontSize: 10, // Smaller label (was 12)
-        color: "#334155",
-        fontWeight: "600",
-        marginBottom: 2,
-        letterSpacing: 0.5,
+        color: "#94A3B8",
+        fontWeight: "800",
+        letterSpacing: 1,
         textTransform: "uppercase",
     },
     kpiValue: {
-        fontSize: 14, // Smaller value (was 16)
-        fontWeight: "800",
+        fontWeight: "900",
+        letterSpacing: -0.5,
     },
 });

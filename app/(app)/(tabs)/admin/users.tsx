@@ -17,6 +17,10 @@ import { useRouter } from "expo-router";
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from "../../../../lib/supabase";
 import AdminLayout from "../../../../components/admin/AdminLayout";
+import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface User {
     id: string;
@@ -310,115 +314,141 @@ export default function UsersScreen() {
                 onClose={() => setMsgModalVisible(false)}
             />
 
-            <View style={styles.modalCard}>
-
-                {/* Search & Add */}
-                <View style={styles.toolbar}>
+            {/* Search & Add */}
+            <View style={styles.toolbar}>
+                <View style={styles.searchContainer}>
+                    <Ionicons name="search" size={18} color="#64748B" style={styles.searchIcon} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Cari user..."
+                        placeholder="SEARCH TEAM MEMBERS..."
+                        placeholderTextColor="#475569"
                         value={search}
                         onChangeText={setSearch}
                     />
-                    <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
-                        <Text style={styles.addBtnText}>➕ Tambah</Text>
-                    </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
+                    <LinearGradient
+                        colors={['#FF3131', '#D00000']}
+                        style={styles.addGradient}
+                    >
+                        <Ionicons name="person-add" size={18} color="white" />
+                        <Text style={styles.addBtnText}>NEW USER</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
 
-                {/* Content */}
-                <ScrollView
-                    style={styles.modalContent}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
-                >
-                    {filteredUsers.map((user) => (
-                        <View key={user.id} style={styles.userCard}>
-                            <View style={styles.userAvatar}>
-                                <Text style={styles.userAvatarText}>
+            {/* Content */}
+            <ScrollView
+                style={styles.scrollArea}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF3131" />
+                }
+            >
+                {filteredUsers.length === 0 ? (
+                    <View style={styles.emptyState}>
+                        <Ionicons name="people-outline" size={64} color="rgba(255,255,255,0.05)" />
+                        <Text style={styles.emptyText}>UNABLE TO LOCATE USERS</Text>
+                    </View>
+                ) : (
+                    filteredUsers.map((user) => (
+                        <AdminGlassCard key={user.id} style={styles.userCard}>
+                            <View style={[
+                                styles.userAvatar,
+                                { backgroundColor: user.role === 'Admin' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)' }
+                            ]}>
+                                <Text style={[
+                                    styles.userAvatarText,
+                                    { color: user.role === 'Admin' ? '#3B82F6' : '#94A3B8' }
+                                ]}>
                                     {user.nama?.charAt(0).toUpperCase() || "U"}
                                 </Text>
                             </View>
                             <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{user.nama}</Text>
-                                <Text style={styles.userUsername}>@{user.username}</Text>
+                                <Text style={styles.userName}>{user.nama.toUpperCase()}</Text>
+                                <Text style={styles.userUsername}>@{user.username.toLowerCase()}</Text>
                                 <View style={styles.userMeta}>
                                     <View
                                         style={[
                                             styles.roleBadge,
-                                            user.role?.toLowerCase() === "admin" && styles.roleBadgeAdmin,
+                                            user.role?.toLowerCase() === "admin" ? styles.roleBadgeAdmin : styles.roleBadgeKasir,
                                         ]}
                                     >
                                         <Text style={styles.roleText}>
-                                            {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "User"}
+                                            {user.role ? user.role.toUpperCase() : "STAFF"}
                                         </Text>
                                     </View>
-                                    <Text style={styles.userOutlet}>
-                                        {user.role === 'Admin' ? "🌍 Semua Outlet" : (user.outlets?.nama_outlet || "No outlet")}
-                                    </Text>
+                                    <View style={styles.outletInfo}>
+                                        <Ionicons name="business" size={10} color="#475569" />
+                                        <Text style={styles.userOutlet}>
+                                            {user.role === 'Admin' ? "GLOBAL ACCESS" : (user.outlets?.nama_outlet.toUpperCase() || "NO BRANCH")}
+                                        </Text>
+                                    </View>
                                 </View>
                             </View>
                             <View style={styles.userActions}>
                                 <TouchableOpacity
-                                    style={styles.editIconBtn}
+                                    style={styles.actionBtn}
                                     onPress={() => openEditModal(user)}
                                 >
-                                    <Text>✏️</Text>
+                                    <Ionicons name="pencil-outline" size={16} color="#94A3B8" />
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    style={styles.deleteIconBtn}
+                                    style={[styles.actionBtn, styles.deleteBtn]}
                                     onPress={() => confirmDeleteUser(user)}
                                 >
-                                    <Text>🗑️</Text>
+                                    <Ionicons name="trash-outline" size={16} color="#FF4D4D" />
                                 </TouchableOpacity>
                             </View>
-                        </View>
-                    ))}
-                </ScrollView>
-
-            </View>
+                        </AdminGlassCard>
+                    ))
+                )}
+            </ScrollView>
 
             {/* User Form Modal */}
-            <Modal visible={modalVisible} animationType="slide" transparent>
+            <Modal visible={modalVisible} animationType="fade" transparent>
                 <View style={styles.formModalOverlay}>
                     <View style={styles.formModalCard}>
                         <Text style={styles.formModalTitle}>
-                            {editingUser ? "Edit User" : "Tambah User"}
+                            {editingUser ? "EDIT USER PROFILE" : "ENROLL NEW USER"}
                         </Text>
 
-                        <Text style={styles.label}>Username</Text>
+                        <Text style={styles.inputLabel}>IDENTIFICATION / USERNAME</Text>
                         <TextInput
-                            style={[styles.input, editingUser && { backgroundColor: '#e5e7eb', opacity: 0.7 }]}
+                            style={[styles.input, editingUser && styles.inputDisabled]}
                             value={formData.username}
                             onChangeText={(v) => setFormData({ ...formData, username: v })}
                             placeholder="username"
+                            placeholderTextColor="#475569"
                             autoCapitalize="none"
                             editable={!editingUser}
                         />
-                        {editingUser && <Text style={{ fontSize: 10, color: '#666', marginBottom: 12, marginTop: -8 }}>Username tidak dapat diubah</Text>}
+                        {editingUser && <Text style={styles.inputHint}>Permanent account identifier</Text>}
 
                         {!editingUser && (
                             <>
-                                <Text style={styles.label}>Password</Text>
+                                <Text style={styles.inputLabel}>SECURE ACCESS PASSWORD</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={formData.password}
                                     onChangeText={(v) => setFormData({ ...formData, password: v })}
-                                    placeholder="password"
+                                    placeholder="Enter secure password"
+                                    placeholderTextColor="#475569"
                                     secureTextEntry
                                 />
                             </>
                         )}
 
-                        <Text style={styles.label}>Nama Lengkap</Text>
+                        <Text style={styles.inputLabel}>FULL LEGAL NAME</Text>
                         <TextInput
                             style={styles.input}
                             value={formData.nama}
                             onChangeText={(v) => setFormData({ ...formData, nama: v })}
-                            placeholder="Nama Lengkap"
+                            placeholder="John Doe"
+                            placeholderTextColor="#475569"
                         />
 
-                        <Text style={styles.label}>Role</Text>
+                        <Text style={styles.inputLabel}>ORGANIZATIONAL ROLE</Text>
                         <View style={styles.roleSelector}>
                             <TouchableOpacity
                                 style={[
@@ -429,11 +459,11 @@ export default function UsersScreen() {
                             >
                                 <Text
                                     style={[
-                                        styles.roleOptionText,
-                                        formData.role === "Kasir" && styles.roleOptionTextActive,
+                                        styles.roleOptionLabel,
+                                        formData.role === "Kasir" && styles.roleOptionLabelActive,
                                     ]}
                                 >
-                                    Kasir
+                                    CASHIER
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
@@ -445,28 +475,29 @@ export default function UsersScreen() {
                             >
                                 <Text
                                     style={[
-                                        styles.roleOptionText,
-                                        formData.role === "Admin" && styles.roleOptionTextActive,
+                                        styles.roleOptionLabel,
+                                        formData.role === "Admin" && styles.roleOptionLabelActive,
                                     ]}
                                 >
-                                    Admin
+                                    EXECUTIVE
                                 </Text>
                             </TouchableOpacity>
                         </View>
 
                         {formData.role === "Admin" ? (
-                            <View style={{ marginBottom: 16, padding: 12, backgroundColor: '#f0fdf4', borderRadius: 10, borderWidth: 1, borderColor: '#bbf7d0' }}>
-                                <Text style={{ color: '#166534', fontSize: 13, fontWeight: '600', textAlign: 'center' }}>
-                                    🌍 Admin memiliki akses ke semua outlet
+                            <View style={styles.adminAccessBadge}>
+                                <Ionicons name="globe-outline" size={16} color="#10B981" />
+                                <Text style={styles.adminAccessText}>
+                                    UNRESTRICTED ACCESS GRANTED
                                 </Text>
                             </View>
                         ) : (
                             <>
-                                <Text style={styles.label}>Outlet</Text>
+                                <Text style={styles.inputLabel}>ASSIGNED BRANCH</Text>
                                 <View style={styles.outletSelectorWrapper}>
-                                    <ScrollView style={{ maxHeight: 120 }} nestedScrollEnabled={true}>
+                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled={true}>
                                         {outlets.length === 0 ? (
-                                            <Text style={{ color: '#999', fontStyle: 'italic' }}>Belum ada data outlet</Text>
+                                            <Text style={styles.emptyOutletText}>NO BRANCHES DEFINED</Text>
                                         ) : (
                                             outlets.map((outlet) => (
                                                 <TouchableOpacity
@@ -481,9 +512,9 @@ export default function UsersScreen() {
                                                         styles.outletOptionText,
                                                         formData.outlet_id === outlet.id && styles.outletOptionTextActive
                                                     ]}>
-                                                        {outlet.nama_outlet}
+                                                        {outlet.nama_outlet.toUpperCase()}
                                                     </Text>
-                                                    {formData.outlet_id === outlet.id && <Text style={styles.checkmark}>✓</Text>}
+                                                    {formData.outlet_id === outlet.id && <Ionicons name="checkmark-circle" size={18} color="#10B981" />}
                                                 </TouchableOpacity>
                                             ))
                                         )}
@@ -497,16 +528,13 @@ export default function UsersScreen() {
                                 style={styles.cancelBtn}
                                 onPress={() => setModalVisible(false)}
                             >
-                                <Text style={styles.cancelBtnText}>Batal</Text>
+                                <Text style={styles.cancelBtnText}>DISCARD</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={saveUser} disabled={saving}>
                                 {saving ? (
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <ActivityIndicator size="small" color="white" />
-                                        <Text style={styles.saveBtnText}> Menyimpan...</Text>
-                                    </View>
+                                    <ActivityIndicator size="small" color="white" />
                                 ) : (
-                                    <Text style={styles.saveBtnText}>Simpan</Text>
+                                    <Text style={styles.saveBtnText}>COMMIT CHANGES</Text>
                                 )}
                             </TouchableOpacity>
                         </View>
@@ -519,204 +547,317 @@ export default function UsersScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    modalCard: {
-        flex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.25)",
-        margin: 16,
-        borderRadius: 20,
-        overflow: "hidden",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.4)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 8,
-    },
-    modalHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
-    },
-    modalTitle: { fontSize: 20, fontWeight: "800" },
-    modalSubtitle: { fontSize: 13, color: "#666", marginTop: 2 },
-    closeBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    closeBtnText: { fontSize: 16, color: "#64748b" },
     // Toolbar
     toolbar: {
         flexDirection: "row",
-        flexWrap: "wrap",
-        alignItems: "center",
-        padding: 12,
-        gap: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+        gap: 12,
+        alignItems: 'center',
+    },
+    searchContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.05)",
+        paddingHorizontal: 16,
+    },
+    searchIcon: {
+        marginRight: 10,
     },
     searchInput: {
         flex: 1,
-        minWidth: 200,
-        backgroundColor: "#f9fafb",
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 14,
+        paddingVertical: 12,
+        fontSize: 12,
+        color: '#FFFFFF',
+        fontWeight: '700',
+        letterSpacing: 0.5,
     },
     addBtn: {
-        backgroundColor: "#C94C4C",
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
+        borderRadius: 16,
+        overflow: 'hidden',
     },
-    addBtnText: { color: "white", fontWeight: "700", fontSize: 13 },
+    addGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        gap: 10,
+    },
+    addBtnText: {
+        color: "white",
+        fontWeight: "900",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
     // Content
-    modalContent: { flex: 1, padding: 16 },
+    scrollArea: {
+        flex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 20,
+        paddingBottom: 40,
+        gap: 16,
+    },
+    emptyState: {
+        alignItems: "center",
+        paddingVertical: 100,
+        gap: 16,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: "#64748B",
+        fontWeight: '900',
+        letterSpacing: 1,
+    },
     // User Card
     userCard: {
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 14,
-        padding: 14,
-        marginBottom: 10,
+        padding: 16,
     },
     userAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: "#3b82f6",
+        width: 54,
+        height: 54,
+        borderRadius: 18,
         alignItems: "center",
         justifyContent: "center",
-        marginRight: 12,
+        marginRight: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
     },
-    userAvatarText: { color: "white", fontSize: 18, fontWeight: "700" },
+    userAvatarText: { fontSize: 22, fontWeight: "900" },
     userInfo: { flex: 1 },
-    userName: { fontSize: 15, fontWeight: "700" },
-    userUsername: { fontSize: 12, color: "#666" },
-    userMeta: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 },
-    roleBadge: {
-        backgroundColor: "#e0f2fe",
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 8,
+    userName: {
+        fontSize: 16,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 0.5,
     },
-    roleBadgeAdmin: { backgroundColor: "#fef3c7" },
-    roleText: { fontSize: 10, fontWeight: "600", color: "#0284c7" },
-    userOutlet: { fontSize: 11, color: "#999" },
-    userActions: { flexDirection: "row", gap: 8 },
-    editIconBtn: { padding: 8 },
-    deleteIconBtn: { padding: 8 },
-    // Footer
-    modalFooter: { padding: 20, borderTopWidth: 1, borderTopColor: "#e5e7eb" },
-    btnSecondary: {
-        backgroundColor: "#f1f5f9",
-        borderRadius: 12,
-        paddingVertical: 14,
+    userUsername: {
+        fontSize: 12,
+        color: "#64748B",
+        fontWeight: '700',
+    },
+    userMeta: {
+        flexDirection: "row",
         alignItems: "center",
+        gap: 10,
+        marginTop: 6,
     },
-    btnSecondaryText: { fontSize: 15, fontWeight: "700", color: "#64748b" },
+    roleBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 6,
+    },
+    roleBadgeAdmin: { backgroundColor: "rgba(59, 130, 246, 0.15)" },
+    roleBadgeKasir: { backgroundColor: "rgba(148, 163, 184, 0.1)" },
+    roleText: {
+        fontSize: 9,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
+    },
+    outletInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    userOutlet: {
+        fontSize: 10,
+        color: "#475569",
+        fontWeight: '800',
+        letterSpacing: 0.3,
+    },
+    userActions: {
+        flexDirection: "row",
+        gap: 8,
+    },
+    actionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+    },
+    deleteBtn: {
+        backgroundColor: 'rgba(239, 68, 68, 0.03)',
+        borderColor: 'rgba(239, 68, 68, 0.1)',
+    },
     // Form Modal
     formModalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.5)",
+        backgroundColor: "rgba(0,0,0,0.85)",
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
     },
-    formModalCard: { backgroundColor: "white", borderRadius: 20, padding: 24 },
-    formModalTitle: {
-        fontSize: 18,
-        fontWeight: "800",
-        marginBottom: 16,
-        textAlign: "center",
-    },
-    label: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 },
-    input: {
-        backgroundColor: "#f9fafb",
+    formModalCard: {
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
+        padding: 32,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        fontSize: 14,
-        marginBottom: 12,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
-    roleSelector: { flexDirection: "row", gap: 8, marginBottom: 16 },
+    formModalTitle: {
+        fontSize: 14,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        marginBottom: 32,
+        textAlign: "center",
+        letterSpacing: 2,
+    },
+    inputLabel: {
+        fontSize: 10,
+        fontWeight: "900",
+        color: "#475569",
+        letterSpacing: 1,
+        marginBottom: 8,
+        marginLeft: 4,
+    },
+    input: {
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        fontSize: 14,
+        color: '#FFFFFF',
+        fontWeight: '600',
+        marginBottom: 16,
+    },
+    inputDisabled: {
+        opacity: 0.5,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+    },
+    inputHint: {
+        fontSize: 10,
+        color: '#475569',
+        marginTop: -12,
+        marginBottom: 16,
+        marginLeft: 4,
+        fontWeight: '700',
+    },
+    roleSelector: { flexDirection: "row", gap: 10, marginBottom: 24 },
     roleOption: {
         flex: 1,
-        paddingVertical: 10,
-        borderRadius: 10,
-        backgroundColor: "#f3f4f6",
+        paddingVertical: 14,
+        borderRadius: 14,
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
-    roleOptionActive: { backgroundColor: "#C94C4C" },
-    roleOptionText: { fontWeight: "700", color: "#666" },
-    roleOptionTextActive: { color: "white" },
+    roleOptionActive: {
+        backgroundColor: "rgba(255, 49, 49, 0.1)",
+        borderColor: '#FF3131',
+    },
+    roleOptionLabel: {
+        fontWeight: "900",
+        color: "#475569",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
+    roleOptionLabelActive: { color: "#FF3131" },
 
-    // Outlet Selector
+    adminAccessBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        backgroundColor: 'rgba(16, 185, 129, 0.05)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(16, 185, 129, 0.1)',
+        gap: 10,
+        marginBottom: 24,
+    },
+    adminAccessText: {
+        color: '#10B981',
+        fontSize: 11,
+        fontWeight: '900',
+        letterSpacing: 1,
+    },
+
     outletSelectorWrapper: {
         borderWidth: 1,
-        borderColor: '#e5e7eb',
-        borderRadius: 10,
-        backgroundColor: '#f9fafb',
-        marginBottom: 16,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 16,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        marginBottom: 24,
         overflow: 'hidden'
     },
     outletOption: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12,
+        paddingVertical: 14,
         paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#f3f4f6',
+        borderBottomColor: 'rgba(255, 255, 255, 0.05)',
     },
     outletOptionActive: {
-        backgroundColor: '#ecfdf5', // Light green background for active
+        backgroundColor: 'rgba(16, 185, 129, 0.05)',
     },
     outletOptionText: {
-        fontWeight: '600',
-        color: '#374151',
-        fontSize: 14,
+        fontWeight: '800',
+        color: '#94A3B8',
+        fontSize: 12,
+        letterSpacing: 0.5,
     },
     outletOptionTextActive: {
-        color: '#059669', // Green text for active
+        color: '#10B981',
+        fontWeight: '900',
     },
-    checkmark: {
-        color: '#059669',
-        fontWeight: 'bold'
+    emptyOutletText: {
+        padding: 16,
+        textAlign: 'center',
+        color: '#475569',
+        fontSize: 12,
+        fontWeight: '700',
     },
 
-    formModalFooter: { flexDirection: "row", gap: 12, marginTop: 8 },
+    formModalFooter: { flexDirection: "row", gap: 12, marginTop: 12 },
     cancelBtn: {
         flex: 1,
-        backgroundColor: "#f1f5f9",
-        paddingVertical: 12,
-        borderRadius: 10,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
     },
-    cancelBtnText: { fontWeight: "700", color: "#64748b" },
+    cancelBtnText: {
+        fontWeight: "900",
+        color: "#94A3B8",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
     saveBtn: {
-        flex: 1,
-        backgroundColor: "#C94C4C",
-        paddingVertical: 12,
-        borderRadius: 10,
+        flex: 2,
+        backgroundColor: "#FF3131",
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: "center",
+        justifyContent: 'center',
     },
-    saveBtnDisabled: { backgroundColor: "#e5a3a3" },
-    saveBtnText: { fontWeight: "700", color: "white" },
+    saveBtnDisabled: { opacity: 0.5 },
+    saveBtnText: {
+        fontWeight: "900",
+        color: "white",
+        fontSize: 11,
+        letterSpacing: 1,
+    },
 });

@@ -13,7 +13,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     splash: {
         image: "./assets/splash-icon.png",
         resizeMode: "contain",
-        backgroundColor: "#DC2626"
+        backgroundColor: "#020617"
     },
     ios: {
         supportsTablet: true,
@@ -22,7 +22,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     android: {
         adaptiveIcon: {
             foregroundImage: "./assets/adaptive-icon.png",
-            backgroundColor: "#DC2626"
+            backgroundColor: "#020617"
         },
         edgeToEdgeEnabled: true,
         package: "com.pettycash.app",
@@ -34,7 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         favicon: "./assets/favicon.png",
         bundler: "metro",
         display: "standalone",
-        backgroundColor: "#DC2626",
+        backgroundColor: "#020617",
         description: "Aplikasi Petty Cash Management"
     },
     plugins: [

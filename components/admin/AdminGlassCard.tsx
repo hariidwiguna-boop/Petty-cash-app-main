@@ -34,19 +34,19 @@ export default function AdminGlassCard({
     intensity = 'medium',
 }: AdminGlassCardProps) {
     const intensityValues = {
-        light: { blur: 10, opacity: 0.1 },
-        medium: { blur: 20, opacity: 0.15 },
-        heavy: { blur: 30, opacity: 0.2 },
+        light: { blur: 15, opacity: 0.04 },
+        medium: { blur: 30, opacity: 0.06 },
+        heavy: { blur: 50, opacity: 0.1 },
     };
 
     const { blur, opacity } = intensityValues[intensity];
 
     const floatingStyle: ViewStyle = floating ? {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 16 },
+        shadowOpacity: 0.4,
+        shadowRadius: 24,
+        elevation: 12,
     } : {};
 
     const cardContent = (
@@ -55,7 +55,7 @@ export default function AdminGlassCard({
             {Platform.OS !== 'web' && (
                 <BlurView
                     intensity={blur}
-                    tint="light"
+                    tint="dark"
                     style={StyleSheet.absoluteFillObject}
                 />
             )}
@@ -63,8 +63,8 @@ export default function AdminGlassCard({
             {/* Glass Gradient Overlay */}
             <LinearGradient
                 colors={[
-                    `rgba(255, 255, 255, ${opacity + 0.1})`,
-                    `rgba(255, 255, 255, ${opacity - 0.05})`,
+                    `rgba(255, 255, 255, ${opacity + 0.05})`,
+                    `rgba(255, 255, 255, ${opacity})`,
                 ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -94,16 +94,16 @@ export default function AdminGlassCard({
 
 const styles = StyleSheet.create({
     card: {
-        borderRadius: 16,
+        borderRadius: 24,
         overflow: 'hidden',
         backgroundColor: Platform.OS === 'web'
-            ? 'rgba(255, 255, 255, 0.25)'
+            ? 'rgba(255, 255, 255, 0.03)'
             : 'transparent',
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         ...(Platform.OS === 'web' && {
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
         }),
     },
     borderHighlight: {
@@ -112,11 +112,12 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
     content: {
-        padding: 16,
+        padding: 20,
         position: 'relative',
         zIndex: 1,
     },
 });
+

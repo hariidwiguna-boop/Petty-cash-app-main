@@ -8,6 +8,7 @@ import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useResponsive } from "../../../../src/hooks/useResponsive";
+import { BlurView } from 'expo-blur';
 
 
 
@@ -208,27 +209,35 @@ export default function AdminControlCenter() {
                 <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
                     {/* 1. HERO SECTION: Global Financial Overview */}
                     <View style={styles.sectionContainer}>
-                        <AdminGlassCard style={styles.heroCard} intensity="heavy">
+                        <LinearGradient
+                            colors={['#FF3131', '#991B1B']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={styles.heroCard}
+                        >
                             <View style={styles.heroContent}>
-                                <View>
-                                    <Text style={styles.heroLabel}>Total Saldo Perusahaan</Text>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.heroLabel}>CORPORATE LIQUIDITY</Text>
                                     <Text style={styles.heroValue}>
-                                        {isLoadingStats ? "..." : formatCurrency(dashboardStats.totalBalance)}
+                                        {isLoadingStats ? "Rp —" : formatCurrency(dashboardStats.totalBalance).replace('Rp', 'Rp ')}
                                     </Text>
-                                    <Text style={styles.heroSub}>
-                                        Dari {dashboardStats.totalOutlets} Outlet Aktif
-                                    </Text>
+                                    <View style={styles.heroSubContainer}>
+                                        <Text style={styles.heroSub}>
+                                            Monitoring {dashboardStats.totalOutlets} ACTIVE OUTLETS
+                                        </Text>
+                                        <View style={styles.activePulse} />
+                                    </View>
                                 </View>
                                 <View style={styles.heroIconCircle}>
-                                    <Text style={styles.heroIcon}>💰</Text>
+                                    <Ionicons name="briefcase" size={24} color="white" />
                                 </View>
                             </View>
-                        </AdminGlassCard>
+                        </LinearGradient>
                     </View>
 
                     {/* 2. ACTIONABLE INSIGHTS */}
                     <View style={styles.sectionContainer}>
-                        <Text style={styles.sectionLabel}>⚠️ STATUS & PERHATIAN</Text>
+                        <Text style={styles.sectionLabel}>SYSTEM INSIGHTS</Text>
                         <View style={[
                             styles.statsGrid,
                             isTablet && { flexWrap: 'wrap', justifyContent: 'flex-start' }
@@ -239,13 +248,15 @@ export default function AdminControlCenter() {
                                 onPress={() => router.push("/(app)/(tabs)/admin/outlets")}
                             >
                                 <View style={styles.statHeader}>
-                                    <Text style={styles.statIcon}>🔴</Text>
-                                    <Text style={[styles.statCount, { color: "#dc2626", fontSize: fontScale(20) }]}>
+                                    <View style={[styles.miniIconBg, { backgroundColor: 'rgba(239, 68, 68, 0.1)' }]}>
+                                        <Ionicons name="alert-circle" size={16} color="#FF3131" />
+                                    </View>
+                                    <Text style={[styles.statCount, { color: "#FF3131", fontSize: fontScale(22) }]}>
                                         {dashboardStats.criticalOutlets}
                                     </Text>
                                 </View>
-                                <Text style={styles.glassStatLabel}>Outlet Kritis</Text>
-                                <Text style={styles.glassStatSub}>Saldo &lt; 500rb</Text>
+                                <Text style={styles.glassStatLabel}>CRITICAL</Text>
+                                <Text style={styles.glassStatSub}>LOW BALANCE</Text>
                             </AdminGlassCard>
 
                             {/* Pending Approvals */}
@@ -254,28 +265,32 @@ export default function AdminControlCenter() {
                                 onPress={() => router.push("/(app)/(tabs)/admin/approval")}
                             >
                                 <View style={styles.statHeader}>
-                                    <Text style={styles.statIcon}>🟠</Text>
-                                    <Text style={[styles.statCount, { color: "#ea580c", fontSize: fontScale(20) }]}>
+                                    <View style={[styles.miniIconBg, { backgroundColor: 'rgba(234, 88, 12, 0.1)' }]}>
+                                        <Ionicons name="time" size={16} color="#EA580C" />
+                                    </View>
+                                    <Text style={[styles.statCount, { color: "#EA580C", fontSize: fontScale(22) }]}>
                                         {dashboardStats.pendingApprovals}
                                     </Text>
                                 </View>
-                                <Text style={styles.glassStatLabel}>Menunggu</Text>
-                                <Text style={styles.glassStatSub}>Approval</Text>
+                                <Text style={styles.glassStatLabel}>PENDING</Text>
+                                <Text style={styles.glassStatSub}>APPROVALS</Text>
                             </AdminGlassCard>
 
-                            {/* Total Outlets (Info) */}
+                            {/* Total Outlets */}
                             <AdminGlassCard
                                 style={[styles.glassStatCard, isTablet && { width: '31%', flex: 0 }]}
                                 onPress={() => router.push("/(app)/(tabs)/admin/outlets")}
                             >
                                 <View style={styles.statHeader}>
-                                    <Text style={styles.statIcon}>🔵</Text>
-                                    <Text style={[styles.statCount, { color: "#2563eb", fontSize: fontScale(20) }]}>
+                                    <View style={[styles.miniIconBg, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
+                                        <Ionicons name="business" size={16} color="#3B82F6" />
+                                    </View>
+                                    <Text style={[styles.statCount, { color: "#3B82F6", fontSize: fontScale(22) }]}>
                                         {dashboardStats.totalOutlets}
                                     </Text>
                                 </View>
-                                <Text style={styles.glassStatLabel}>Total Outlet</Text>
-                                <Text style={styles.glassStatSub}>Aktif Beroperasi</Text>
+                                <Text style={styles.glassStatLabel}>TOTAL</Text>
+                                <Text style={styles.glassStatSub}>ACTIVE BRANCH</Text>
                             </AdminGlassCard>
                         </View>
                     </View>
@@ -335,37 +350,38 @@ export default function AdminControlCenter() {
 
                 {/* 4. FIXED FOOTER: AKSES CEPAT */}
                 <View style={styles.fixedFooter}>
-                    <Text style={styles.footerLabel}>🚀 AKSES CEPAT</Text>
-                    <View style={styles.footerGrid}>
-                        {/* Row 1 */}
-                        <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/approval")}>
-                            <View style={[styles.footerIconBox, { backgroundColor: "#ecfdf5" }]}>
-                                <Text style={styles.footerIcon}>✅</Text>
-                            </View>
-                            <Text style={styles.footerText}>Approval</Text>
-                        </TouchableOpacity>
+                    <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFillObject} />
+                    <View style={styles.footerContent}>
+                        <Text style={styles.footerLabel}>EXECUTIVE NAVIGATION</Text>
+                        <View style={styles.footerGrid}>
+                            <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/approval")}>
+                                <View style={[styles.footerIconBox, { backgroundColor: "rgba(16, 185, 129, 0.1)" }]}>
+                                    <Ionicons name="checkbox" size={20} color="#10B981" />
+                                </View>
+                                <Text style={styles.footerText}>APPROVAL</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/history" as any)}>
-                            <View style={[styles.footerIconBox, { backgroundColor: "#fef3c7" }]}>
-                                <Text style={styles.footerIcon}>📜</Text>
-                            </View>
-                            <Text style={styles.footerText}>Riwayat</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/history" as any)}>
+                                <View style={[styles.footerIconBox, { backgroundColor: "rgba(245, 158, 11, 0.1)" }]}>
+                                    <Ionicons name="list" size={20} color="#F59E0B" />
+                                </View>
+                                <Text style={styles.footerText}>HISTORY</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/reports" as any)}>
-                            <View style={[styles.footerIconBox, { backgroundColor: "#fdf2f8" }]}>
-                                <Text style={styles.footerIcon}>📈</Text>
-                            </View>
-                            <Text style={styles.footerText}>Laporan</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/reports" as any)}>
+                                <View style={[styles.footerIconBox, { backgroundColor: "rgba(236, 72, 153, 0.1)" }]}>
+                                    <Ionicons name="stats-chart" size={20} color="#EC4899" />
+                                </View>
+                                <Text style={styles.footerText}>REPORTS</Text>
+                            </TouchableOpacity>
 
-                        {/* Row 2 */}
-                        <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/settings")}>
-                            <View style={[styles.footerIconBox, { backgroundColor: "#f0f9ff" }]}>
-                                <Text style={styles.footerIcon}>⚙️</Text>
-                            </View>
-                            <Text style={styles.footerText}>Settings</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.footerItem} onPress={() => router.push("/(app)/(tabs)/admin/settings" as any)}>
+                                <View style={[styles.footerIconBox, { backgroundColor: "rgba(59, 130, 246, 0.1)" }]}>
+                                    <Ionicons name="settings" size={20} color="#3B82F6" />
+                                </View>
+                                <Text style={styles.footerText}>SETTINGS</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
             </View>
@@ -569,17 +585,32 @@ const styles = StyleSheet.create({
         color: "white",
         marginVertical: 4,
     },
+    heroSubContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
     heroSub: {
-        fontSize: 12,
-        color: "rgba(255,255,255,0.8)",
+        fontSize: 11,
+        color: "rgba(255,255,255,0.7)",
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    activePulse: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#4ADE80',
     },
     heroIconCircle: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: "rgba(255,255,255,0.2)",
+        width: 52,
+        height: 52,
+        borderRadius: 16,
+        backgroundColor: "rgba(255,255,255,0.15)",
         justifyContent: "center",
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     heroIcon: {
         fontSize: 24,
@@ -633,14 +664,26 @@ const styles = StyleSheet.create({
         minHeight: 110,
         padding: 16,
     },
+    miniIconBg: {
+        width: 32,
+        height: 32,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     glassStatLabel: {
-        fontSize: 12,
-        fontWeight: "700",
-        color: "#1f2937",
+        fontSize: 11,
+        fontWeight: "900",
+        color: "#F8FAFC",
+        letterSpacing: 1,
+        marginTop: 12,
     },
     glassStatSub: {
-        fontSize: 10,
-        color: "#6b7280",
+        fontSize: 9,
+        color: "#64748B",
+        fontWeight: '800',
+        letterSpacing: 0.5,
+        marginTop: 2,
     },
     glassLogoutText: {
         fontSize: 14,
@@ -670,38 +713,42 @@ const styles = StyleSheet.create({
         elevation: 20,
         paddingBottom: 20, // Extra padding for safe area logic if needed
     },
+    footerContent: {
+        padding: 24,
+        paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    },
     footerLabel: {
         fontSize: 10,
-        fontWeight: "700",
-        color: "#9ca3af",
+        fontWeight: "900",
+        color: "#475569",
         textTransform: "uppercase",
-        letterSpacing: 0.5,
-        marginBottom: 12,
+        letterSpacing: 2,
+        marginBottom: 20,
         textAlign: "center",
     },
     footerGrid: {
         flexDirection: "row",
-        justifyContent: "space-around",
+        justifyContent: "space-between",
     },
     footerItem: {
-        width: "22%", // 4 items in single row
         alignItems: "center",
+        width: 70,
     },
     footerIconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 12,
+        width: 48,
+        height: 48,
+        borderRadius: 16,
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 4,
-    },
-    footerIcon: {
-        fontSize: 18,
+        marginBottom: 8,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
     footerText: {
-        fontSize: 10,
-        color: "#4b5563",
-        fontWeight: "600",
+        fontSize: 9,
+        color: "#94A3B8",
+        fontWeight: "900",
+        letterSpacing: 0.5,
     },
     // Outlet Card (Existing)
     outletCard: {
@@ -763,32 +810,43 @@ const styles = StyleSheet.create({
         color: "#dc2626",
     },
     // Modals
+    // Modals
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
         justifyContent: "center",
         alignItems: "center",
-        padding: 20,
+        padding: 24,
     },
     confirmModal: {
-        backgroundColor: "white",
-        borderRadius: 24,
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
         padding: 32,
-        width: "90%",
-        maxWidth: 400,
+        width: "100%",
+        maxWidth: 340,
         alignItems: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     confirmTitle: {
         fontSize: 18,
-        fontWeight: "800",
-        color: "#ef4444", // Red
-        marginBottom: 12,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        marginBottom: 8,
+        letterSpacing: 1,
     },
     confirmMessage: {
-        fontSize: 15,
-        color: "#4b5563",
+        fontSize: 14,
+        color: "#94A3B8",
         textAlign: "center",
-        marginBottom: 24,
+        marginBottom: 32,
+        lineHeight: 20,
     },
     confirmActions: {
         flexDirection: "row",
@@ -797,74 +855,84 @@ const styles = StyleSheet.create({
     },
     confirmBtn: {
         flex: 1,
-        paddingVertical: 12,
-        borderRadius: 12,
+        paddingVertical: 14,
+        borderRadius: 16,
         alignItems: "center",
         justifyContent: "center",
     },
     cancelBtn: {
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
     },
     logoutConfirmBtn: {
-        backgroundColor: "#ef4444",
+        backgroundColor: "#FF3131",
     },
     cancelBtnText: {
-        fontWeight: "700",
-        color: "#4b5563",
+        fontWeight: "900",
+        color: "#F8FAFC",
+        letterSpacing: 1,
     },
     logoutConfirmText: {
-        fontWeight: "700",
+        fontWeight: "900",
         color: "white",
+        letterSpacing: 1,
     },
     // Outlet Modal
-    outletModalCard: { // Same as confirmModal but for outlet list
-        backgroundColor: "white",
-        borderRadius: 24,
-        width: "90%",
-        maxWidth: 500,
-        maxHeight: "85%",
+    outletModalCard: {
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
+        width: "100%",
+        maxWidth: 400,
+        maxHeight: "80%",
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     outletModalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 16,
+        padding: 24,
         borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        borderBottomColor: "rgba(255, 255, 255, 0.05)",
     },
     outletModalTitle: {
         fontSize: 16,
-        fontWeight: "700",
-        color: "#1f2937",
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
     },
     closeIcon: {
         fontSize: 18,
-        color: "#6b7280",
-        padding: 4,
+        color: "#94A3B8",
+        fontWeight: 'bold',
     },
     outletList: {
-        padding: 8,
+        padding: 12,
     },
     outletItem: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 4,
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
     },
     outletName: {
-        fontSize: 15,
-        color: "#374151",
-        fontWeight: "500",
-    },
-    selectedOutletText: {
-        color: "#10b981", // Emerald
+        fontSize: 14,
+        color: "#F1F5F9",
         fontWeight: "700",
     },
+    selectedOutletText: {
+        color: "#10B981",
+        fontWeight: "900",
+    },
     checkIcon: {
-        color: "#10b981",
+        color: "#10B981",
+        fontSize: 18,
         fontWeight: "bold",
     },
     // Recent Activity Styles
@@ -891,134 +959,155 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     activityIconBg: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: '#f3f4f6',
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
         alignItems: 'center',
         justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
     activityOutlet: {
         fontSize: 13,
-        fontWeight: '700',
-        color: '#374151',
+        fontWeight: '800',
+        color: '#F1F5F9',
+        letterSpacing: 0.5,
     },
     activityTime: {
         fontSize: 11,
-        color: '#9ca3af',
-        marginTop: 1,
+        color: '#64748B',
+        marginTop: 2,
     },
     activityAmount: {
         fontSize: 13,
-        fontWeight: '700',
+        fontWeight: '900',
+        letterSpacing: 0.5,
     },
     textRed: {
-        color: '#dc2626',
+        color: '#FF4D4D',
     },
     textGreen: {
-        color: '#16a34a',
+        color: '#4ADE80',
     },
     emptyActivity: {
-        padding: 24,
+        padding: 32,
         alignItems: 'center',
         justifyContent: 'center',
     },
     emptyActivityText: {
-        color: '#9ca3af',
+        color: '#64748B',
         fontStyle: 'italic',
         fontSize: 13,
+        fontWeight: '600',
     },
     // Detail Modal Styles
     detailModalCard: {
-        backgroundColor: "white",
-        borderRadius: 20,
+        backgroundColor: "rgba(15, 23, 42, 0.98)",
+        borderRadius: 32,
         width: "100%",
-        maxWidth: 340,
-        maxHeight: "80%",
+        maxWidth: 360,
+        maxHeight: "85%",
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 24 },
+        shadowOpacity: 0.6,
+        shadowRadius: 40,
+        elevation: 25,
     },
     detailModalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 16,
+        padding: 24,
         borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        borderBottomColor: "rgba(255, 255, 255, 0.05)",
     },
     detailModalTitle: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#1f2937",
+        fontSize: 18,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 1,
     },
     detailModalSub: {
         fontSize: 12,
-        color: "#6b7280",
+        color: "#94A3B8",
+        fontWeight: '700',
+        marginTop: 2,
     },
     detailList: {
-        padding: 16,
+        padding: 24,
     },
     detailInfo: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginBottom: 8,
+        marginBottom: 12,
     },
     detailLabel: {
         fontSize: 13,
-        color: "#6b7280",
+        color: "#64748B",
+        fontWeight: '700',
     },
     detailValue: {
         fontSize: 13,
-        fontWeight: "600",
-        color: "#1f2937",
+        fontWeight: "800",
+        color: "#F1F5F9",
     },
     itemsTitle: {
-        marginTop: 12,
-        marginBottom: 8,
-        fontSize: 13,
-        fontWeight: "700",
-        color: "#374151",
+        marginTop: 20,
+        marginBottom: 12,
+        fontSize: 11,
+        fontWeight: "900",
+        color: "#475569",
+        letterSpacing: 1,
+        textTransform: 'uppercase',
     },
     itemRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        marginBottom: 8,
-        paddingBottom: 8,
+        marginBottom: 12,
+        paddingBottom: 12,
         borderBottomWidth: 1,
-        borderBottomColor: "#f9fafb",
+        borderBottomColor: "rgba(255, 255, 255, 0.03)",
     },
     itemName: {
         fontSize: 13,
-        color: "#1f2937",
+        color: "#F1F5F9",
+        fontWeight: '700',
     },
     itemSub: {
         fontSize: 11,
-        color: "#9ca3af",
+        color: "#64748B",
+        marginTop: 2,
     },
     itemTotal: {
         fontSize: 13,
-        fontWeight: "600",
-        color: "#1f2937",
+        fontWeight: "800",
+        color: "#F8FAFC",
     },
     divider: {
         height: 1,
-        backgroundColor: "#e5e7eb",
-        marginVertical: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        marginVertical: 16,
     },
     totalRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 20
+        marginBottom: 24,
     },
     totalLabel: {
         fontSize: 14,
-        fontWeight: "700",
-        color: "#374151",
+        fontWeight: "900",
+        color: "#94A3B8",
+        letterSpacing: 1,
     },
     totalValue: {
-        fontSize: 18,
-        fontWeight: "800",
-        color: "#111827",
+        fontSize: 20,
+        fontWeight: "900",
+        color: "#FFFFFF",
     },
 });

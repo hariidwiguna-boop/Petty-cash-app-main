@@ -32,39 +32,39 @@ export const colors = {
         900: '#7f1d1d',
     },
 
-    // Background (White/Light)
+    // Background (Executive Dark Slate)
     background: {
-        start: '#F8FAFC',     // Soft White
-        end: '#FFFFFF',       // Pure White
+        start: '#0F172A',      // Slate-900 (Deep)
+        end: '#020617',        // Slate-950 (Absolute depth)
         alternative: {
-            start: '#FEF2F2', // Light Red Tint
-            end: '#FFFFFF',
+            start: '#1E293B',  // Slate-800
+            end: '#0F172A',
         },
         redGradient: {
-            start: '#DC2626', // Red header
-            end: '#991B1B',   // Dark Red
+            start: '#DC2626', // Brand Red
+            end: '#7F1D1D',   // Dark Maroon
         },
     },
 
-    // Glass Surface Colors
+    // Glass Surface Colors (Executive Glass 2.0)
     surface: {
         white: '#FFFFFF',
-        whiteGlass: 'rgba(255, 255, 255, 0.95)',
-        whiteGlassLight: 'rgba(255, 255, 255, 0.85)',
-        whiteGlassMedium: 'rgba(255, 255, 255, 0.75)',
-        redGlass: 'rgba(220, 38, 38, 0.08)',
-        redGlassMedium: 'rgba(220, 38, 38, 0.12)',
-        redGlassStrong: 'rgba(220, 38, 38, 0.18)',
+        whiteGlass: 'rgba(255, 255, 255, 0.08)',
+        whiteGlassLight: 'rgba(255, 255, 255, 0.04)',
+        whiteGlassMedium: 'rgba(255, 255, 255, 0.12)',
+        redGlass: 'rgba(220, 38, 38, 0.15)',
+        redGlassMedium: 'rgba(220, 38, 38, 0.25)',
+        redGlassStrong: 'rgba(220, 38, 38, 0.4)',
     },
 
-    // Text Colors
+    // Text Colors (Premium Contrast)
     text: {
-        primary: '#1E293B',       // Dark Slate
-        secondary: '#64748B',     // Gray
-        tertiary: '#94A3B8',      // Light Gray
-        inverse: '#FFFFFF',       // White (for red backgrounds)
-        accent: '#DC2626',        // Red
-        link: '#DC2626',          // Red
+        primary: '#F8FAFC',       // Slate-50 (Near White)
+        secondary: '#94A3B8',     // Slate-400 (Gray)
+        tertiary: '#64748B',      // Slate-500
+        inverse: '#FFFFFF',       // Full White
+        accent: '#FF3131',        // Neon Red Accent
+        link: '#dc2626',          // Red
     },
 
     // Semantic Colors

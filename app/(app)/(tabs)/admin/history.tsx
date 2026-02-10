@@ -1,4 +1,3 @@
-
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView, Platform, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { useState, useEffect } from "react";
@@ -8,6 +7,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useAuthStore } from "../../../../stores/authStore";
 import { formatDateToISO } from "../../../../lib/dateUtils";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import AdminGlassCard from "../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
 
 export default function AdminHistory() {
     const router = useRouter();
@@ -106,38 +108,44 @@ export default function AdminHistory() {
     };
 
     const renderItem = ({ item }: { item: any }) => (
-        <View style={styles.card}>
+        <AdminGlassCard style={styles.recordCard}>
             <View style={styles.cardHeader}>
                 <View style={styles.outletBadge}>
-                    <Text style={styles.outletText}>{item.outlets?.nama_outlet || "Unknown Outlet"}</Text>
+                    <Text style={styles.outletText}>{item.outlets?.nama_outlet.toUpperCase() || "UNKNOWN OUTLET"}</Text>
                 </View>
-                <Text style={styles.dateText}>{item.created_at ? new Date(item.created_at).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' }) : ""}</Text>
+                <Text style={styles.dateText}>
+                    {item.created_at ? new Date(item.created_at).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' }) : ""}
+                </Text>
             </View>
 
             <View style={styles.cardBody}>
                 <View style={styles.infoRow}>
-                    <Text style={styles.label}>Tipe</Text>
-                    <Text style={[
-                        styles.value,
-                        item.tipe === 'Kas Masuk' ? styles.textGreen : styles.textRed,
-                        { fontWeight: 'bold' }
-                    ]}>{item.tipe}</Text>
+                    <View style={styles.tipeWrapper}>
+                        <View style={[
+                            styles.dot,
+                            { backgroundColor: item.tipe === 'Kas Masuk' ? '#4ADE80' : '#FF4D4D' }
+                        ]} />
+                        <Text style={[
+                            styles.value,
+                            item.tipe === 'Kas Masuk' ? styles.textGreen : styles.textRed,
+                            { fontWeight: '900', letterSpacing: 0.5 }
+                        ]}>{item.tipe.toUpperCase()}</Text>
+                    </View>
+                    <Text style={styles.categoryBadge}>{item.kategori || "TRANSAKSI"}</Text>
                 </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Kategori</Text>
-                    <Text style={styles.value}>{item.kategori || "-"}</Text>
-                </View>
-                <View style={styles.infoRow}>
-                    <Text style={styles.label}>Keterangan</Text>
-                    <Text style={styles.value} numberOfLines={2}>{item.deskripsi || "-"}</Text>
-                </View>
+
+                <Text style={styles.recordDesc} numberOfLines={2}>
+                    {item.deskripsi || "No description provided."}
+                </Text>
+
                 <View style={styles.divider} />
+
                 <View style={styles.totalRow}>
-                    <Text style={styles.totalLabel}>Total</Text>
+                    <Text style={styles.totalLabel}>NET VALUE</Text>
                     <Text style={styles.totalValue}>{formatCurrency(item.grand_total || 0)}</Text>
                 </View>
             </View>
-        </View>
+        </AdminGlassCard>
     );
 
     return (
@@ -147,18 +155,16 @@ export default function AdminHistory() {
             showBackButton={true}
         >
             {/* Filters */}
-            <View style={styles.filterContainer}>
+            <View style={styles.filterSection}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
                     {/* Date Picker Button */}
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        {/* Native/Web Date Picker Trigger */}
                         {Platform.OS === 'web' ? (
-                            <View style={[styles.filterBtn, selectedDate && styles.filterBtnActive, { position: 'relative' }]}>
-                                <Text style={styles.filterIcon}>📅</Text>
-                                <Text style={[styles.filterText, selectedDate && styles.filterTextActive]}>
-                                    {selectedDate ? formatDate(selectedDate) : "Semua Tanggal"}
+                            <AdminGlassCard intensity="light" style={[styles.filterBtn, selectedDate && styles.filterBtnActive]}>
+                                <Ionicons name="calendar" size={16} color={selectedDate ? "#3B82F6" : "#475569"} />
+                                <Text style={[styles.filterLabel, selectedDate && styles.filterLabelActive]}>
+                                    {selectedDate ? formatDate(selectedDate).toUpperCase() : "DATE RANGE"}
                                 </Text>
-                                {/* Invisible date input overlay for Web */}
                                 <input
                                     type="date"
                                     style={{
@@ -180,36 +186,33 @@ export default function AdminHistory() {
                                         }
                                     }}
                                 />
-                            </View>
+                            </AdminGlassCard>
                         ) : (
-                            <TouchableOpacity
-                                style={[styles.filterBtn, selectedDate && styles.filterBtnActive]}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Text style={styles.filterIcon}>📅</Text>
-                                <Text style={[styles.filterText, selectedDate && styles.filterTextActive]}>
-                                    {selectedDate ? formatDate(selectedDate) : "Semua Tanggal"}
-                                </Text>
+                            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                                <AdminGlassCard intensity="light" style={[styles.filterBtn, selectedDate && styles.filterBtnActive]}>
+                                    <Ionicons name="calendar" size={16} color={selectedDate ? "#3B82F6" : "#475569"} />
+                                    <Text style={[styles.filterLabel, selectedDate && styles.filterLabelActive]}>
+                                        {selectedDate ? formatDate(selectedDate).toUpperCase() : "DATE RANGE"}
+                                    </Text>
+                                </AdminGlassCard>
                             </TouchableOpacity>
                         )}
 
-                        {/* Clear Date Button */}
                         {selectedDate && (
                             <TouchableOpacity onPress={clearDateFilter} style={styles.clearBtn}>
-                                <Text style={styles.clearBtnText}>✕</Text>
+                                <Ionicons name="close-circle" size={18} color="#FF4D4D" />
                             </TouchableOpacity>
                         )}
                     </View>
 
                     {/* Outlet Picker Button */}
-                    <TouchableOpacity
-                        style={[styles.filterBtn, filterOutlet && styles.filterBtnActive]}
-                        onPress={() => setShowOutletModal(true)}
-                    >
-                        <Text style={styles.filterIcon}>🏪</Text>
-                        <Text style={[styles.filterText, filterOutlet && styles.filterTextActive]}>
-                            {filterOutlet ? filterOutlet.nama_outlet : "Semua Outlet"}
-                        </Text>
+                    <TouchableOpacity onPress={() => setShowOutletModal(true)}>
+                        <AdminGlassCard intensity="light" style={[styles.filterBtn, filterOutlet && styles.filterBtnActive]}>
+                            <Ionicons name="business" size={16} color={filterOutlet ? "#3B82F6" : "#475569"} />
+                            <Text style={[styles.filterLabel, filterOutlet && styles.filterLabelActive]}>
+                                {filterOutlet ? filterOutlet.nama_outlet.toUpperCase() : "SELECT BRANCH"}
+                            </Text>
+                        </AdminGlassCard>
                     </TouchableOpacity>
                 </ScrollView>
             </View>
@@ -219,13 +222,14 @@ export default function AdminHistory() {
                 data={transactions}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                contentContainerStyle={styles.listContent}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                contentContainerStyle={styles.listArea}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF3131" />}
                 ListEmptyComponent={
                     !loading ? (
                         <View style={styles.emptyState}>
-                            <Text style={styles.emptyIcon}>📭</Text>
-                            <Text style={styles.emptyText}>Tidak ada transaksi ditemukan</Text>
+                            <Ionicons name="documents-outline" size={64} color="rgba(255,255,255,0.05)" />
+                            <Text style={styles.emptyText}>GENERATE AUDIT TRAIL</Text>
+                            <Text style={styles.emptySub}>No transaction data matches your criteria.</Text>
                         </View>
                     ) : null
                 }
@@ -246,9 +250,9 @@ export default function AdminHistory() {
                 <View style={styles.modalOverlay}>
                     <View style={styles.outletModalCard}>
                         <View style={styles.outletModalHeader}>
-                            <Text style={styles.outletModalTitle}>Filter Outlet</Text>
+                            <Text style={styles.outletModalTitle}>BRANCH SELECTOR</Text>
                             <TouchableOpacity onPress={() => setShowOutletModal(false)}>
-                                <Text style={styles.closeIcon}>✕</Text>
+                                <Ionicons name="close" size={20} color="#94A3B8" />
                             </TouchableOpacity>
                         </View>
                         <ScrollView style={styles.outletList}>
@@ -262,8 +266,8 @@ export default function AdminHistory() {
                                 <Text style={[
                                     styles.outletName,
                                     !filterOutlet && styles.selectedOutletText
-                                ]}>Semua Outlet</Text>
-                                {!filterOutlet && <Text style={styles.checkIcon}>✓</Text>}
+                                ]}>GLOBAL VIEW (ALL BRANCHES)</Text>
+                                {!filterOutlet && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" />}
                             </TouchableOpacity>
                             {outlets.map(outlet => (
                                 <TouchableOpacity
@@ -277,8 +281,8 @@ export default function AdminHistory() {
                                     <Text style={[
                                         styles.outletName,
                                         filterOutlet?.id === outlet.id && styles.selectedOutletText
-                                    ]}>{outlet.nama_outlet}</Text>
-                                    {filterOutlet?.id === outlet.id && <Text style={styles.checkIcon}>✓</Text>}
+                                    ]}>{outlet.nama_outlet.toUpperCase()}</Text>
+                                    {filterOutlet?.id === outlet.id && <Ionicons name="checkmark-circle" size={18} color="#3B82F6" />}
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
@@ -291,106 +295,115 @@ export default function AdminHistory() {
 }
 
 const styles = StyleSheet.create({
-    filterContainer: {
-        marginBottom: 16,
+    filterSection: {
+        marginBottom: 20,
     },
     filterScroll: {
         paddingHorizontal: 20,
-        gap: 10,
+        gap: 12,
+        alignItems: 'center',
     },
     filterBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'white',
-        paddingVertical: 8,
         paddingHorizontal: 16,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: '#e5e7eb',
-        gap: 8,
+        paddingVertical: 10,
+        gap: 10,
+        minWidth: 100,
     },
     filterBtnActive: {
-        backgroundColor: '#eff6ff',
-        borderColor: '#3b82f6',
+        borderColor: 'rgba(59, 130, 246, 0.4)',
     },
-    filterIcon: {
-        fontSize: 16,
+    filterLabel: {
+        fontSize: 10,
+        color: '#475569',
+        fontWeight: '900',
+        letterSpacing: 1,
     },
-    filterText: {
-        fontSize: 13,
-        color: '#4b5563',
-        fontWeight: '600',
+    filterLabelActive: {
+        color: '#3B82F6',
     },
-    filterTextActive: {
-        color: '#2563eb',
+    clearBtn: {
+        marginLeft: -4,
     },
-    listContent: {
+    listArea: {
         paddingHorizontal: 20,
         paddingBottom: 40,
-        gap: 12,
+        gap: 16,
     },
-    card: {
-        backgroundColor: "white",
-        borderRadius: 16,
-        padding: 16,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 2,
-        borderWidth: 1,
-        borderColor: "#f3f4f6",
+    recordCard: {
+        padding: 20,
     },
     cardHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#f9fafb",
-        paddingBottom: 8,
+        marginBottom: 16,
     },
     outletBadge: {
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
     },
     outletText: {
-        fontSize: 11,
-        fontWeight: "700",
-        color: "#4b5563",
+        fontSize: 9,
+        fontWeight: "900",
+        color: "#94A3B8",
+        letterSpacing: 1,
     },
     dateText: {
         fontSize: 11,
-        color: "#9ca3af",
+        color: "#64748B",
+        fontWeight: '700',
     },
     cardBody: {
-        gap: 8,
+        gap: 12,
     },
     infoRow: {
         flexDirection: "row",
         justifyContent: "space-between",
+        alignItems: 'center',
     },
-    label: {
-        fontSize: 13,
-        color: "#6b7280",
+    tipeWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    dot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
     },
     value: {
         fontSize: 13,
-        color: "#1f2937",
-        flex: 1,
-        textAlign: "right",
+    },
+    categoryBadge: {
+        fontSize: 9,
+        fontWeight: '900',
+        color: '#3B82F6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 6,
+        letterSpacing: 0.5,
+    },
+    recordDesc: {
+        fontSize: 13,
+        color: "#94A3B8",
+        lineHeight: 18,
     },
     textGreen: {
-        color: "#059669",
+        color: "#4ADE80",
     },
     textRed: {
-        color: "#dc2626",
+        color: "#FF4D4D",
     },
     divider: {
         height: 1,
-        backgroundColor: "#f3f4f6",
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
         marginVertical: 4,
     },
     totalRow: {
@@ -399,98 +412,87 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     totalLabel: {
-        fontWeight: "700",
-        fontSize: 14,
-        color: "#374151"
+        fontWeight: "900",
+        fontSize: 10,
+        color: "#475569",
+        letterSpacing: 1,
     },
     totalValue: {
-        fontWeight: "800",
-        fontSize: 16,
-        color: "#111827"
+        fontWeight: "900",
+        fontSize: 18,
+        color: "#FFFFFF"
     },
     emptyState: {
         alignItems: "center",
         justifyContent: "center",
-        paddingTop: 40,
-    },
-    emptyIcon: {
-        fontSize: 48,
-        marginBottom: 16,
+        paddingTop: 80,
+        gap: 16,
     },
     emptyText: {
         fontSize: 14,
-        color: "#9ca3af",
+        color: "#64748B",
+        fontWeight: "900",
+        letterSpacing: 2,
+    },
+    emptySub: {
+        fontSize: 12,
+        color: "#475569",
+        textAlign: 'center',
+        fontWeight: '600',
     },
     // Modals
     modalOverlay: {
         flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
         justifyContent: "center",
         alignItems: "center",
-        padding: 20,
+        padding: 24,
     },
-    outletModalCard: { // Same as confirmModal but for outlet list
-        backgroundColor: "white",
-        borderRadius: 20,
+    outletModalCard: {
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
         width: "100%",
-        maxWidth: 340,
+        maxWidth: 400,
         maxHeight: "80%",
         overflow: "hidden",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     outletModalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 16,
+        padding: 24,
         borderBottomWidth: 1,
-        borderBottomColor: "#f3f4f6",
+        borderBottomColor: "rgba(255, 255, 255, 0.05)",
     },
     outletModalTitle: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#1f2937",
-    },
-    closeIcon: {
-        fontSize: 18,
-        color: "#6b7280",
-        padding: 4,
+        fontSize: 14,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 2,
     },
     outletList: {
-        padding: 8,
+        padding: 12,
     },
     outletItem: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: 14,
-        borderRadius: 12,
-        marginBottom: 4,
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
     },
     outletName: {
-        fontSize: 15,
-        color: "#374151",
-        fontWeight: "500",
+        fontSize: 13,
+        color: "#F1F5F9",
+        fontWeight: "800",
+        letterSpacing: 0.5,
     },
     selectedOutletText: {
-        color: "#2563eb",
-        fontWeight: "700",
-    },
-    checkIcon: {
-        color: "#2563eb",
-        fontWeight: "bold",
-    },
-    clearBtn: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#fee2e2',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: -4,
-    },
-    clearBtnText: {
-        fontSize: 12,
-        color: '#dc2626',
-        fontWeight: 'bold',
+        color: "#3B82F6",
+        fontWeight: "900",
     },
 });

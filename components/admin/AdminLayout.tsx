@@ -68,50 +68,57 @@ export default function AdminLayout({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#020617",
     },
     headerContent: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        paddingHorizontal: 20,
-        paddingTop: 8,
-        paddingBottom: 16,
+        paddingHorizontal: 24,
+        paddingTop: 12,
+        paddingBottom: 24,
     },
     headerLeft: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: 16,
     },
     backBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "rgba(255,255,255,0.25)",
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: "rgba(255,255,255,0.05)",
         alignItems: "center",
         justifyContent: "center",
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.1)",
     },
     backBtnText: {
-        fontSize: 16,
+        fontSize: 18,
         color: "white",
         fontWeight: "bold",
     },
     headerTitle: {
-        fontSize: 16,
-        fontWeight: "700",
+        fontSize: 18,
+        fontWeight: "900",
         color: "white",
+        letterSpacing: 1.5,
     },
     headerSubtitle: {
         fontSize: 11,
-        color: "rgba(255,255,255,0.85)",
+        color: "#94A3B8",
+        fontWeight: '700',
+        letterSpacing: 1,
         marginTop: 2,
+        textTransform: 'uppercase',
     },
     content: {
         flex: 1,
     },
     scrollContent: {
-        paddingTop: 16,
-        paddingBottom: 40,
-        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 120, // Space for fixed footer
+        paddingHorizontal: 20,
     },
 });
+

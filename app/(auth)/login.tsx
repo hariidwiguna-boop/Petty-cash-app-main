@@ -8,6 +8,7 @@ import {
     Platform,
     StyleSheet,
     ScrollView,
+    Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthStore } from "../../stores/authStore";
@@ -104,10 +105,9 @@ export default function LoginScreen() {
             style={styles.container}
         >
             <LinearGradient
-                colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
-                locations={[0, 0.3, 0.8, 1]}
+                colors={['#0F172A', '#020617']} // Slate-900 to Slate-950
                 start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.gradientBackground}
             >
                 <MessageModal
@@ -118,7 +118,7 @@ export default function LoginScreen() {
                     onClose={() => setModalVisible(false)}
                 />
 
-                <CustomLoading visible={isLoading} text="Masuk..." />
+                <CustomLoading visible={isLoading} text="Initializing..." />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
@@ -126,34 +126,28 @@ export default function LoginScreen() {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.loginCard}>
-                        {/* Logo Section */}
+                        {/* Premium Logo Integration */}
                         <View style={styles.headerWrapper}>
-                            <View style={styles.logoContainer}>
-                                <View style={styles.logoLeft}>
-                                    <View style={styles.logoBar} />
-                                    <View style={styles.logoBar} />
-                                    <View style={styles.logoBar} />
-                                </View>
-                                <View style={styles.logoRight}>
-                                    <View style={styles.logoRectangle} />
-                                    <View style={styles.logoCircle} />
-                                </View>
-                            </View>
+                            <Image
+                                source={require('../../assets/logo.png')}
+                                style={styles.logoImage}
+                                resizeMode="contain"
+                            />
                             <View style={styles.loginHeader}>
-                                <Text style={styles.title}>Petty Cash{"\n"}Management</Text>
-                                <Text style={styles.brandName}>@evrdayplcs</Text>
+                                <Text style={styles.title}>Petty Cash</Text>
+                                <Text style={styles.brandName}>EXECUTIVE SUITE</Text>
                             </View>
                         </View>
 
-                        {/* Login Form */}
+                        {/* High-Performance Login Form */}
                         <View style={styles.form}>
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Username</Text>
+                                <Text style={styles.label}>Access Key (Username)</Text>
                                 <View style={styles.inputWrapper}>
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Masukkan username"
-                                        placeholderTextColor={theme.colors.text.tertiary}
+                                        placeholder="Enter your credential"
+                                        placeholderTextColor="#64748B"
                                         value={username}
                                         onChangeText={setUsername}
                                         autoCapitalize="none"
@@ -163,12 +157,12 @@ export default function LoginScreen() {
                             </View>
 
                             <View style={styles.formGroup}>
-                                <Text style={styles.label}>Password</Text>
+                                <Text style={styles.label}>Security Code (Password)</Text>
                                 <View style={styles.passwordWrapper}>
                                     <TextInput
                                         style={styles.inputPassword}
-                                        placeholder="Masukkan password"
-                                        placeholderTextColor={theme.colors.text.tertiary}
+                                        placeholder="Enter your code"
+                                        placeholderTextColor="#64748B"
                                         value={password}
                                         onChangeText={setPassword}
                                         secureTextEntry={!showPassword}
@@ -176,7 +170,6 @@ export default function LoginScreen() {
                                     <TouchableOpacity
                                         style={styles.passwordToggle}
                                         onPress={() => setShowPassword(!showPassword)}
-                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                                     >
                                         <Text style={styles.passwordToggleText}>
                                             {showPassword ? "Hide" : "Show"}
@@ -193,10 +186,10 @@ export default function LoginScreen() {
                                     <View style={[styles.checkbox, rememberMe && styles.checkboxActive]}>
                                         {rememberMe && <Text style={styles.checkmark}>✓</Text>}
                                     </View>
-                                    <Text style={styles.rememberText}>Ingat saya</Text>
+                                    <Text style={styles.rememberText}>Maintain Session</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity>
-                                    <Text style={styles.forgotLink}>Lupa password?</Text>
+                                    <Text style={styles.forgotLink}>Recovery Access?</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -207,18 +200,20 @@ export default function LoginScreen() {
                                 activeOpacity={0.8}
                             >
                                 <LinearGradient
-                                    colors={['#DC2626', '#B91C1C']}
+                                    colors={['#DC2626', '#991B1B']}
                                     start={{ x: 0, y: 0 }}
-                                    end={{ x: 1, y: 1 }}
+                                    end={{ x: 1, y: 0 }}
                                     style={styles.submitBtnGradient}
                                 >
                                     <Text style={styles.submitBtnText}>
-                                        {isLoading ? "Memproses..." : "Sign In"}
+                                        {isLoading ? "AUTHENTICATING..." : "GRANT ACCESS"}
                                     </Text>
                                 </LinearGradient>
                             </TouchableOpacity>
                         </View>
                     </View>
+
+                    <Text style={styles.footerBranding}>PROPRIETARY SYSTEM • © evrdayplcs</Text>
                 </ScrollView>
             </LinearGradient>
         </KeyboardAvoidingView>
@@ -235,134 +230,116 @@ const styles = StyleSheet.create({
     scrollContent: {
         flexGrow: 1,
         justifyContent: 'center',
-        padding: theme.spacing.xl,
+        padding: 24,
     },
     loginCard: {
-        backgroundColor: 'rgba(255, 255, 255, 0.55)', // More transparent
-        borderRadius: 24,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 32,
         padding: 32,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.2, // Slightly stronger shadow for contrast
-        shadowRadius: 32,
-        elevation: 10,
-        borderWidth: 1.5,
-        borderColor: 'rgba(255, 255, 255, 0.6)', // Crisper border
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(24px)' } : {}), // Stronger blur
+        shadowOffset: { width: 0, height: 20 },
+        shadowOpacity: 0.5,
+        shadowRadius: 40,
+        elevation: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     headerWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: theme.spacing.xl,
-        marginBottom: theme.spacing['4xl'],
+        gap: 16,
+        marginBottom: 48,
     },
-    logoContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    logoLeft: {
-        flexDirection: 'column',
-        gap: 5,
-        justifyContent: 'space-between',
-    },
-    logoBar: {
-        width: 28,
-        height: 10,
-        backgroundColor: '#0A0A0A',
-        borderRadius: 2,
-    },
-    logoRight: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 5,
-        height: 40,
-    },
-    logoRectangle: {
-        width: 10,
-        height: 40,
-        borderWidth: 2,
-        borderColor: '#0A0A0A',
-        borderRadius: 2,
-        backgroundColor: '#FFFFFF',
-    },
-    logoCircle: {
-        width: 18,
-        height: 18,
-        backgroundColor: '#DC2626',
-        borderRadius: 9,
-        marginTop: 0,
+    logoImage: {
+        width: 48,
+        height: 48,
     },
     loginHeader: {
-        alignItems: 'flex-start',
+        flex: 1,
     },
     title: {
-        ...theme.components.header.title,
+        fontSize: 28,
+        fontWeight: '800',
+        color: '#F8FAFC',
+        letterSpacing: -0.5,
     },
     brandName: {
-        fontSize: theme.typography.fontSize.sm,
-        color: '#DC2626',
+        fontSize: 10,
+        color: '#FF3131',
+        letterSpacing: 2,
         marginTop: 2,
-        fontWeight: theme.typography.fontWeight.semibold,
+        fontWeight: '700',
     },
     form: {
-        gap: theme.spacing.xl,
+        gap: 24,
     },
     formGroup: {
-        gap: theme.spacing.sm,
+        gap: 8,
     },
     label: {
-        fontSize: theme.typography.fontSize.base,
-        fontWeight: theme.typography.fontWeight.semibold,
-        color: theme.colors.text.primary,
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#94A3B8',
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     inputWrapper: {
-        ...theme.components.input.base,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        paddingHorizontal: 16,
+        height: 56,
+        justifyContent: 'center',
     },
     input: {
-        fontSize: theme.typography.fontSize.md,
-        color: theme.colors.text.primary,
+        fontSize: 16,
+        color: '#F8FAFC',
+        fontWeight: '500',
     },
     passwordWrapper: {
-        ...theme.components.input.base,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         flexDirection: 'row',
         alignItems: 'center',
-        paddingRight: 0,
+        paddingLeft: 16,
+        height: 56,
     },
     inputPassword: {
         flex: 1,
-        fontSize: theme.typography.fontSize.md,
-        color: theme.colors.text.primary,
+        fontSize: 16,
+        color: '#F8FAFC',
+        fontWeight: '500',
     },
     passwordToggle: {
-        paddingHorizontal: theme.spacing.lg,
-        paddingVertical: theme.spacing.md,
+        paddingHorizontal: 16,
+        height: '100%',
         justifyContent: 'center',
-        alignItems: 'center',
     },
     passwordToggleText: {
-        fontSize: theme.typography.fontSize.sm,
-        fontWeight: theme.typography.fontWeight.semibold,
-        color: '#DC2626',
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#FF3131',
     },
     loginOptions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: theme.spacing.sm,
     },
     rememberMe: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: theme.spacing.sm,
+        gap: 10,
     },
     checkbox: {
-        width: 20,
-        height: 20,
-        borderWidth: 2,
-        borderColor: theme.colors.border.normal,
-        borderRadius: theme.borderRadius.sm,
+        width: 18,
+        height: 18,
+        borderWidth: 1.5,
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 4,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -371,34 +348,50 @@ const styles = StyleSheet.create({
         borderColor: '#DC2626',
     },
     checkmark: {
-        color: theme.colors.text.inverse,
-        fontSize: 12,
-        fontWeight: 'bold' as const,
+        color: '#FFFFFF',
+        fontSize: 10,
+        fontWeight: '900',
     },
     rememberText: {
-        fontSize: theme.typography.fontSize.sm,
-        color: theme.colors.text.secondary,
+        fontSize: 13,
+        color: '#94A3B8',
     },
     forgotLink: {
-        fontSize: theme.typography.fontSize.sm,
-        color: '#DC2626',
-        fontWeight: theme.typography.fontWeight.semibold,
+        fontSize: 13,
+        color: '#FF3131',
+        fontWeight: '600',
     },
     submitBtn: {
-        marginTop: theme.spacing['2xl'],
-        borderRadius: theme.borderRadius.md,
+        marginTop: 12,
+        borderRadius: 12,
         overflow: 'hidden',
-        ...theme.shadows.md,
+        shadowColor: '#FF3131',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 8,
     },
     submitBtnDisabled: {
-        opacity: 0.6,
+        opacity: 0.5,
     },
     submitBtnGradient: {
-        paddingVertical: theme.spacing.lg,
+        height: 60,
         alignItems: 'center',
         justifyContent: 'center',
     },
     submitBtnText: {
-        ...theme.components.button.text.primary,
+        fontSize: 14,
+        fontWeight: '800',
+        color: '#FFFFFF',
+        letterSpacing: 1.5,
+    },
+    footerBranding: {
+        textAlign: 'center',
+        marginTop: 32,
+        fontSize: 10,
+        color: '#475569',
+        letterSpacing: 2,
+        fontWeight: '600',
     },
 });
+

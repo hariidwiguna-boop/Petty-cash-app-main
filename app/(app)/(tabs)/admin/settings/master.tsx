@@ -1,16 +1,17 @@
-
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, ActivityIndicator, Modal } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput, ActivityIndicator, Modal, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../../../../../lib/supabase";
 import MessageModal from "../../../../../components/MessageModal";
-
-type Tab = "items" | "categories";
-
 import AdminLayout from "../../../../../components/admin/AdminLayout";
+import AdminGlassCard from "../../../../../components/admin/AdminGlassCard";
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 
-// ... imports
+// Data types
+type Tab = "items" | "categories";
 
 export default function MasterDataScreen() {
     const router = useRouter();
@@ -109,28 +110,43 @@ export default function MasterDataScreen() {
 
     // Renderers
     const renderItem = ({ item }: { item: any }) => (
-        <View style={styles.listItem}>
+        <AdminGlassCard style={styles.listItem}>
+            <View style={styles.itemIconBg}>
+                <Ionicons name="cube-outline" size={20} color="#3B82F6" />
+            </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.itemName}>{item.nama_bahan}</Text>
-                <Text style={styles.itemMeta}>Satuan: {item.satuan_default || "-"}</Text>
+                <Text style={styles.itemName}>{item.nama_bahan.toUpperCase()}</Text>
+                <Text style={styles.itemMeta}>UNIT: {item.satuan_default?.toUpperCase() || "N/A"}</Text>
             </View>
             <View style={styles.actions}>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => openForm(item)}><Text>✏️</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => handleDelete(item.id, item.nama_bahan)}><Text>🗑️</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => openForm(item)}>
+                    <Ionicons name="pencil-outline" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => handleDelete(item.id, item.nama_bahan)}>
+                    <Ionicons name="trash-outline" size={16} color="#FF4D4D" />
+                </TouchableOpacity>
             </View>
-        </View>
+        </AdminGlassCard>
     );
 
     const renderCategory = ({ item }: { item: any }) => (
-        <View style={styles.listItem}>
+        <AdminGlassCard style={styles.listItem}>
+            <View style={[styles.itemIconBg, { backgroundColor: 'rgba(139, 92, 246, 0.1)' }]}>
+                <Ionicons name="grid-outline" size={20} color="#8B5CF6" />
+            </View>
             <View style={{ flex: 1 }}>
-                <Text style={styles.itemName}>{item.nama_kategori}</Text>
+                <Text style={styles.itemName}>{item.nama_kategori.toUpperCase()}</Text>
+                <Text style={styles.itemMeta}>SYSTEM CATEGORY</Text>
             </View>
             <View style={styles.actions}>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => openForm(item)}><Text>✏️</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.actionBtn} onPress={() => handleDelete(item.id, item.nama_kategori)}><Text>🗑️</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => openForm(item)}>
+                    <Ionicons name="pencil-outline" size={16} color="#94A3B8" />
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]} onPress={() => handleDelete(item.id, item.nama_kategori)}>
+                    <Ionicons name="trash-outline" size={16} color="#FF4D4D" />
+                </TouchableOpacity>
             </View>
-        </View>
+        </AdminGlassCard>
     );
 
     return (
@@ -141,31 +157,53 @@ export default function MasterDataScreen() {
             scrollable={false}
         >
             {/* Tabs */}
-            <View style={styles.tabs}>
-                <TouchableOpacity style={[styles.tab, activeTab === "items" && styles.activeTab]} onPress={() => setActiveTab("items")}>
-                    <Text style={[styles.tabText, activeTab === "items" && styles.activeTabText]}>Item Barang</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.tab, activeTab === "categories" && styles.activeTab]} onPress={() => setActiveTab("categories")}>
-                    <Text style={[styles.tabText, activeTab === "categories" && styles.activeTabText]}>Kategori</Text>
-                </TouchableOpacity>
+            <View style={styles.tabSection}>
+                <View style={styles.tabContainer}>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === "items" && styles.activeTab]}
+                        onPress={() => setActiveTab("items")}
+                    >
+                        <Ionicons name="cube" size={14} color={activeTab === "items" ? "#FFFFFF" : "#475569"} />
+                        <Text style={[styles.tabText, activeTab === "items" && styles.activeTabText]}>INVENTORY</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === "categories" && styles.activeTab]}
+                        onPress={() => setActiveTab("categories")}
+                    >
+                        <Ionicons name="grid" size={14} color={activeTab === "categories" ? "#FFFFFF" : "#475569"} />
+                        <Text style={[styles.tabText, activeTab === "categories" && styles.activeTabText]}>CATEGORIES</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Content */}
             <View style={styles.content}>
                 <View style={styles.toolbar}>
-                    <TextInput
-                        style={styles.search}
-                        placeholder={`Cari ${activeTab === "items" ? "Barang" : "Kategori"}...`}
-                        value={search}
-                        onChangeText={setSearch}
-                    />
+                    <View style={styles.searchContainer}>
+                        <Ionicons name="search" size={18} color="#64748B" style={styles.searchIcon} />
+                        <TextInput
+                            style={styles.search}
+                            placeholderTextColor="#475569"
+                            placeholder={`SEARCH ${activeTab === "items" ? "CATALOG" : "CATEGORIES"}...`}
+                            value={search}
+                            onChangeText={setSearch}
+                        />
+                    </View>
                     <TouchableOpacity style={styles.addBtn} onPress={() => openForm()}>
-                        <Text style={styles.addBtnText}>+ Tambah</Text>
+                        <LinearGradient
+                            colors={['#FF3131', '#D00000']}
+                            style={styles.addGradient}
+                        >
+                            <Ionicons name="add" size={20} color="white" />
+                        </LinearGradient>
                     </TouchableOpacity>
                 </View>
 
                 {isLoading ? (
-                    <ActivityIndicator style={{ marginTop: 20 }} color="#C94C4C" />
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator color="#FF3131" />
+                        <Text style={styles.loadingText}>SYNCING CATALOGUE...</Text>
+                    </View>
                 ) : (
                     <FlatList
                         data={activeTab === "items"
@@ -174,50 +212,65 @@ export default function MasterDataScreen() {
                         }
                         keyExtractor={i => i.id}
                         renderItem={activeTab === "items" ? renderItem : renderCategory}
-                        ListEmptyComponent={<Text style={styles.empty}>Belum ada data</Text>}
-                        contentContainerStyle={{ paddingBottom: 80 }}
+                        ListEmptyComponent={
+                            <View style={styles.emptyState}>
+                                <Ionicons name="layers-outline" size={48} color="rgba(255,255,255,0.05)" />
+                                <Text style={styles.empty}>NO DATA FOUND</Text>
+                            </View>
+                        }
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        showsVerticalScrollIndicator={false}
                     />
                 )}
             </View>
 
             {/* Form Modal */}
-            <Modal visible={formVisible} transparent animationType="slide">
+            <Modal visible={formVisible} transparent animationType="fade">
                 <View style={styles.modalBg}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>{editData ? "Edit" : "Tambah"} {activeTab === "items" ? "Barang" : "Kategori"}</Text>
+                        <Text style={styles.modalTitle}>
+                            {editData ? "EDIT" : "ENROLL"} {activeTab === "items" ? "PRODUCT" : "CATEGORY"}
+                        </Text>
 
                         {activeTab === "items" ? (
                             <>
-                                <Text style={styles.label}>Nama Barang</Text>
+                                <Text style={styles.inputLabel}>PRODUCT DESIGNATION</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={formData.nama_bahan}
                                     onChangeText={v => setFormData({ ...formData, nama_bahan: v })}
-                                    placeholder="Contoh: Kertas A4"
+                                    placeholder="e.g. Office Supplies"
+                                    placeholderTextColor="#475569"
                                 />
-                                <Text style={styles.label}>Satuan Default</Text>
+                                <Text style={styles.inputLabel}>STANDARD UNIT OF MEASURE</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={formData.satuan_default}
                                     onChangeText={v => setFormData({ ...formData, satuan_default: v })}
                                     placeholder="Pcs/Pack/Rim"
+                                    placeholderTextColor="#475569"
                                 />
                             </>
                         ) : (
                             <>
-                                <Text style={styles.label}>Nama Kategori</Text>
+                                <Text style={styles.inputLabel}>CATEGORY NOMENCLATURE</Text>
                                 <TextInput
                                     style={styles.input}
                                     value={formData.nama_kategori}
                                     onChangeText={v => setFormData({ ...formData, nama_kategori: v })}
-                                    placeholder="Contoh: Operasional"
+                                    placeholder="e.g. Operational Expenses"
+                                    placeholderTextColor="#475569"
                                 />
                             </>
                         )}
 
                         <View style={styles.modalActions}>
-                            <TouchableOpacity style={styles.btnSec} onPress={() => setFormVisible(false)}><Text>Batal</Text></TouchableOpacity>
-                            <TouchableOpacity style={styles.btnPri} onPress={handleSave}><Text style={{ color: "white", fontWeight: "bold" }}>Simpan</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.btnSec} onPress={() => setFormVisible(false)}>
+                                <Text style={styles.btnSecText}>DISCARD</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.btnPri} onPress={handleSave}>
+                                <Text style={styles.btnPriText}>COMMIT</Text>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -238,29 +291,189 @@ export default function MasterDataScreen() {
 }
 
 const styles = StyleSheet.create({
-    tabs: { flexDirection: "row", backgroundColor: "white", paddingHorizontal: 20 },
-    tab: { paddingVertical: 12, marginRight: 24, borderBottomWidth: 2, borderBottomColor: "transparent" },
-    activeTab: { borderBottomColor: "#C94C4C" },
-    tabText: { fontSize: 15, color: "#666", fontWeight: "600" },
-    activeTabText: { color: "#C94C4C" },
-    content: { flex: 1, padding: 20 },
-    toolbar: { flexDirection: "row", gap: 10, marginBottom: 16 },
-    search: { flex: 1, backgroundColor: "white", borderRadius: 10, padding: 10, fontSize: 14 },
-    addBtn: { backgroundColor: "#C94C4C", borderRadius: 10, paddingHorizontal: 16, justifyContent: "center" },
-    addBtnText: { color: "white", fontWeight: "700" },
-    listItem: { backgroundColor: "white", padding: 16, borderRadius: 12, marginBottom: 10, flexDirection: "row", alignItems: "center" },
-    itemName: { fontSize: 16, fontWeight: "700", color: "#1a1a1a" },
-    itemMeta: { fontSize: 12, color: "#666", marginTop: 4 },
+    tabSection: {
+        paddingHorizontal: 20,
+        paddingBottom: 24,
+    },
+    tabContainer: {
+        flexDirection: "row",
+        backgroundColor: "rgba(255, 255, 255, 0.03)",
+        borderRadius: 16,
+        padding: 6,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    tab: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        borderRadius: 12,
+        gap: 8,
+    },
+    activeTab: {
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    tabText: { fontSize: 10, color: "#475569", fontWeight: "900", letterSpacing: 1 },
+    activeTabText: { color: "#FFFFFF" },
+    content: { flex: 1, paddingHorizontal: 20 },
+    toolbar: { flexDirection: "row", gap: 12, marginBottom: 24, alignItems: 'center' },
+    searchContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.05)",
+        paddingHorizontal: 16,
+    },
+    searchIcon: { marginRight: 10 },
+    search: {
+        flex: 1,
+        paddingVertical: 12,
+        fontSize: 12,
+        color: '#FFFFFF',
+        fontWeight: '700',
+        letterSpacing: 0.5,
+    },
+    addBtn: { borderRadius: 12, overflow: 'hidden' },
+    addGradient: {
+        padding: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    listItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 16,
+        marginBottom: 12,
+    },
+    itemIconBg: {
+        width: 44,
+        height: 44,
+        borderRadius: 14,
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    itemName: {
+        fontSize: 13,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        letterSpacing: 0.5,
+    },
+    itemMeta: {
+        fontSize: 10,
+        color: "#475569",
+        marginTop: 4,
+        fontWeight: '900',
+        letterSpacing: 0.5,
+    },
     actions: { flexDirection: "row", gap: 8 },
-    actionBtn: { padding: 8, backgroundColor: "#f1f5f9", borderRadius: 8 },
-    empty: { textAlign: "center", marginTop: 40, color: "#999" },
+    actionBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        backgroundColor: 'rgba(255, 255, 255, 0.03)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    deleteBtn: {
+        backgroundColor: 'rgba(239, 68, 68, 0.03)',
+        borderColor: 'rgba(239, 68, 68, 0.1)',
+    },
+    loadingContainer: {
+        paddingVertical: 40,
+        alignItems: 'center',
+        gap: 12,
+    },
+    loadingText: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#475569',
+        letterSpacing: 2,
+    },
+    emptyState: {
+        paddingVertical: 100,
+        alignItems: 'center',
+        gap: 16,
+    },
+    empty: {
+        textAlign: "center",
+        fontSize: 12,
+        color: "#475569",
+        fontWeight: '900',
+        letterSpacing: 1,
+    },
     // Modal
-    modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 20 },
-    modalContent: { backgroundColor: "white", borderRadius: 16, padding: 20 },
-    modalTitle: { fontSize: 18, fontWeight: "800", marginBottom: 16, textAlign: "center" },
-    label: { fontSize: 12, fontWeight: "700", marginBottom: 6 },
-    input: { backgroundColor: "#f9fafb", borderWidth: 1, borderColor: "#e5e7eb", borderRadius: 10, padding: 12, marginBottom: 16 },
-    modalActions: { flexDirection: "row", gap: 10, marginTop: 10 },
-    btnSec: { flex: 1, backgroundColor: "#f1f5f9", padding: 14, borderRadius: 10, alignItems: "center" },
-    btnPri: { flex: 1, backgroundColor: "#C94C4C", padding: 14, borderRadius: 10, alignItems: "center" }
+    modalBg: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.85)",
+        justifyContent: "center",
+        padding: 24
+    },
+    modalContent: {
+        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        borderRadius: 32,
+        padding: 32,
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
+    },
+    modalTitle: {
+        fontSize: 14,
+        fontWeight: "900",
+        color: "#FFFFFF",
+        marginBottom: 32,
+        textAlign: "center",
+        letterSpacing: 2,
+    },
+    inputLabel: {
+        fontSize: 10,
+        fontWeight: "900",
+        color: "#475569",
+        letterSpacing: 1,
+        marginBottom: 8,
+        marginLeft: 4,
+    },
+    input: {
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        borderWidth: 1,
+        borderColor: "rgba(255, 255, 255, 0.1)",
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        color: '#FFFFFF',
+        fontWeight: '600',
+        marginBottom: 20
+    },
+    modalActions: { flexDirection: "row", gap: 12, marginTop: 12 },
+    btnSec: {
+        flex: 1,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    btnSecText: { fontWeight: "900", color: "#94A3B8", fontSize: 11, letterSpacing: 1 },
+    btnPri: {
+        flex: 1,
+        backgroundColor: "#FF3131",
+        paddingVertical: 16,
+        borderRadius: 16,
+        alignItems: "center",
+        justifyContent: 'center',
+    },
+    btnPriText: { color: "white", fontWeight: "900", fontSize: 11, letterSpacing: 1 },
 });
