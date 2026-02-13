@@ -4,103 +4,46 @@
  */
 
 export const colors = {
-    // Brand Colors
+    // Brand Colors (Mockup 100% Fidelity)
     brand: {
-        red: '#DC2626',
-        redLight: '#EF4444',
-        redDark: '#B91C1C',
-        redGradientStart: '#DC2626',
-        redGradientEnd: '#991B1B',
+        red: '#FF0000',           // Pure Vibrant Red
+        redDeep: '#D00000',       // Button Shadow/Shadow Red
+        redSoft: '#FF3131',       // Light Red Accent
+        blue: '#2563EB',          // Saldo Blue
+        green: '#22C55E',         // Success/Masuk Green
         white: '#FFFFFF',
-        whiteSoft: '#F8FAFC',
-        whiteWarm: '#FEF2F2',
-        gray: '#64748B',
+        black: '#000000',
+        gray: '#475569',
         grayLight: '#94A3B8',
+        grayGlass: 'rgba(0, 0, 0, 0.4)', // Login Input Glass
     },
 
-    // Primary (Red accent)
-    primary: {
-        50: '#fef2f2',
-        100: '#fee2e2',
-        200: '#fecaca',
-        300: '#fca5a5',
-        400: '#f87171',
-        500: '#DC2626', // Main Red
-        600: '#dc2626',
-        700: '#b91c1c',
-        800: '#991b1b',
-        900: '#7f1d1d',
+    // Gradient Master
+    gradients: {
+        background: ['#FF0000', '#FFFFFF'], // Vertical Red to White
+        submitButton: ['#FF0000', '#D00000'],
+        cancelButton: ['#9A9A9A', '#7A7A7A'],
+        green: ['#22C55E', '#166534'],
     },
 
-    // Background (Executive Dark Slate)
-    background: {
-        start: '#0F172A',      // Slate-900 (Deep)
-        end: '#020617',        // Slate-950 (Absolute depth)
-        alternative: {
-            start: '#1E293B',  // Slate-800
-            end: '#0F172A',
-        },
-        redGradient: {
-            start: '#DC2626', // Brand Red
-            end: '#7F1D1D',   // Dark Maroon
-        },
-    },
-
-    // Glass Surface Colors (Executive Glass 2.0)
+    // UI Surface Levels
     surface: {
-        white: '#FFFFFF',
-        whiteGlass: 'rgba(255, 255, 255, 0.08)',
-        whiteGlassLight: 'rgba(255, 255, 255, 0.04)',
-        whiteGlassMedium: 'rgba(255, 255, 255, 0.12)',
-        redGlass: 'rgba(220, 38, 38, 0.15)',
-        redGlassMedium: 'rgba(220, 38, 38, 0.25)',
-        redGlassStrong: 'rgba(220, 38, 38, 0.4)',
+        glassLight: 'rgba(255, 255, 255, 0.7)',
+        glassMedium: 'rgba(255, 255, 255, 0.4)',
+        glassDark: 'rgba(0, 0, 0, 0.4)',
+        border: 'rgba(255, 255, 255, 0.5)',
     },
 
-    // Text Colors (Premium Contrast)
+    // Text Colors
     text: {
-        primary: '#F8FAFC',       // Slate-50 (Near White)
-        secondary: '#94A3B8',     // Slate-400 (Gray)
-        tertiary: '#64748B',      // Slate-500
-        inverse: '#FFFFFF',       // Full White
-        accent: '#FF3131',        // Neon Red Accent
-        link: '#dc2626',          // Red
+        primary: '#000000',
+        secondary: '#475569',
+        inverse: '#FFFFFF',
+        brand: '#FF0000',
+        blue: '#2563EB',
+        green: '#22C55E',
+        red: '#EF4444',
     },
-
-    // Semantic Colors
-    success: {
-        light: '#d1fae5',
-        main: '#10b981',
-        dark: '#059669',
-    },
-    error: {
-        light: '#fee2e2',
-        main: '#DC2626',
-        dark: '#B91C1C',
-    },
-    warning: {
-        light: '#fef3c7',
-        main: '#f59e0b',
-        dark: '#d97706',
-    },
-    info: {
-        light: '#dbeafe',
-        main: '#3b82f6',
-        dark: '#2563eb',
-    },
-
-    // Border Colors
-    border: {
-        light: 'rgba(0, 0, 0, 0.05)',
-        normal: 'rgba(0, 0, 0, 0.08)',
-        strong: 'rgba(0, 0, 0, 0.12)',
-        red: 'rgba(220, 38, 38, 0.2)',
-        redStrong: 'rgba(220, 38, 38, 0.35)',
-    },
-
-    // Overlay
-    overlay: 'rgba(0, 0, 0, 0.3)',
-    overlayRed: 'rgba(220, 38, 38, 0.1)',
 };
 
 export type Colors = typeof colors;

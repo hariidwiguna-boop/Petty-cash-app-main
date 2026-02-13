@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { useAuthStore } from '../../stores/authStore';
-import { useResponsive } from '../../src/hooks/useResponsive';
-import { theme } from '../../src/design-system/theme';
+import { Ionicons } from '@expo/vector-icons';
+import BrandLogo from '../../src/design-system/components/BrandLogo';
 
 interface DashboardHeaderProps {
     onSettingsPress: () => void;
@@ -16,174 +15,80 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     onAdminMenuPress,
     onLogoutPress,
 }) => {
-    const { profile, isAdmin } = useAuthStore();
-    const { fontScale, horizontalScale, isTablet } = useResponsive();
-
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 11) return "Selamat Pagi";
-        if (hour < 15) return "Selamat Siang";
-        if (hour < 18) return "Selamat Sore";
-        return "Selamat Malam";
-    };
+    const { profile, outlet } = useAuthStore();
 
     return (
-        <View style={styles.headerContainer}>
-            <View style={styles.leftContainer}>
-                {/* Official Logo Integration */}
-                <View style={styles.logoCard}>
-                    <Image
-                        source={require('../../assets/logo.png')}
-                        style={styles.logoImage}
-                        resizeMode="contain"
-                    />
-                </View>
+        <View style={styles.container}>
+            {/* Top Outlet Label */}
+            <Text style={styles.outletLabel}>{outlet?.nama_outlet || "Petty Cash Shop"}</Text>
 
-                {/* Vertical Divider */}
-                <View style={styles.divider} />
-
-                <View style={styles.userInfo}>
-                    {/* Avatar with ring glow */}
-                    <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>
-                            {profile?.nama?.charAt(0) || "U"}
-                        </Text>
-                    </View>
-
-                    <View>
-                        <Text style={[styles.greetingText, { fontSize: fontScale(11) }]}>{getGreeting()},</Text>
-                        <Text style={[styles.userNameText, { fontSize: fontScale(14) }]}>{profile?.nama || "User"}</Text>
+            <View style={styles.headerRow}>
+                {/* Logo + Greeting */}
+                <View style={styles.leftSection}>
+                    <BrandLogo size={60} showText={false} variant="dark" />
+                    <View style={styles.textColumn}>
+                        <Text style={styles.welcomeText}>Wellcome Back</Text>
+                        <Text style={styles.userName}>{profile?.nama || "User"}</Text>
                     </View>
                 </View>
+
+                {/* Power Button */}
+                <TouchableOpacity style={styles.powerBtn} onPress={onLogoutPress}>
+                    <Ionicons name="power" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
             </View>
-
-            {isAdmin ? (
-                <TouchableOpacity
-                    style={styles.headerAdminBtn}
-                    onPress={onAdminMenuPress}
-                    activeOpacity={0.8}
-                >
-                    <LinearGradient
-                        colors={[theme.colors.brand.red, theme.colors.brand.redDark]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.adminBtnGradient}
-                    >
-                        <Text style={styles.headerAdminBtnText}>👑 Admin</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-            ) : (
-                <TouchableOpacity
-                    onPress={onLogoutPress}
-                    style={styles.logoutBtn}
-                >
-                    <Text style={styles.logoutIcon}>⏻</Text>
-                </TouchableOpacity>
-            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    headerContainer: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+    container: {
         paddingHorizontal: 20,
-        paddingVertical: 12,
-        marginBottom: 10,
+        paddingTop: Platform.OS === 'ios' ? 20 : 10,
+        marginBottom: 20,
     },
-    leftContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
+    outletLabel: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: '#8B1E1E', // Dark Blood Red
+        marginBottom: 8,
     },
-    logoCard: {
-        width: 44,
-        height: 44,
-        borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.08)",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.15)",
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
     },
-    logoImage: {
-        width: 32,
-        height: 32,
-    },
-    divider: {
-        width: 1,
-        height: 24,
-        backgroundColor: "rgba(255, 255, 255, 0.15)",
-    },
-    userInfo: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 10,
-    },
-    avatar: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1.5,
-        borderColor: "rgba(220, 38, 38, 0.4)", // Neon red ring
-    },
-    avatarText: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#F8FAFC",
-    },
-    greetingText: {
-        color: "#94A3B8",
-        fontWeight: "600",
-    },
-    userNameText: {
-        fontWeight: "700",
-        color: "#F8FAFC",
-        letterSpacing: 0.5,
-    },
-    headerAdminBtn: {
-        borderRadius: 20,
-        overflow: 'hidden',
-        shadowColor: "rgba(220, 38, 38, 0.4)",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 1,
-        shadowRadius: 8,
-        elevation: 6,
-    },
-    adminBtnGradient: {
-        paddingHorizontal: 16,
-        paddingVertical: 8,
+    leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    headerAdminBtnText: {
-        fontSize: 12,
-        fontWeight: "800",
-        color: "#FFFFFF",
+    textColumn: {
+        marginLeft: 12,
     },
-    logoutBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.08)",
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.15)",
+    welcomeText: {
+        fontSize: 16,
+        color: '#8B1E1E',
+        fontStyle: 'italic',
+        fontWeight: '500',
     },
-    logoutIcon: {
-        fontSize: 18,
-        color: "#FF3131", // Neon red exit
-        fontWeight: 'bold',
+    userName: {
+        fontSize: 22,
+        color: '#8B1E1E',
+        fontWeight: '900',
+        marginTop: -4,
+        letterSpacing: 0.5,
+    },
+    powerBtn: {
+        width: 44,
+        height: 44,
+        backgroundColor: '#E61E28',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
+        elevation: 5,
     },
 });

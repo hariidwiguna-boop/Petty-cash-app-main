@@ -6,8 +6,9 @@ import {
     StyleSheet,
     TouchableOpacity,
     Dimensions,
-    Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 interface MessageModalProps {
     visible: boolean;
@@ -29,84 +30,57 @@ export default function MessageModal({
     type = "info",
     onClose,
     onConfirm,
-    confirmText = "Ya, Lanjutkan",
-    cancelText = "Batal",
+    confirmText = "Continue",
+    cancelText = "Cancel",
 }: MessageModalProps) {
     if (!visible) return null;
 
     const getIcon = () => {
         switch (type) {
-            case "success": return "✅";
-            case "error": return "❌";
-            case "warning": return "⚠️";
-            case "confirm": return "🤔";
-            default: return "ℹ️";
+            case "success": return "checkmark-circle";
+            case "error": return "alert-circle";
+            case "warning": return "warning";
+            case "confirm": return "help-circle";
+            default: return "information-circle";
         }
     };
 
-    const getColor = () => {
+    const getColors = (): readonly [string, string, ...string[]] => {
         switch (type) {
-            case "success": return "#16a34a"; // green-600
-            case "error": return "#dc2626"; // red-600
-            case "warning": return "#f59e0b"; // amber-500
-            case "confirm": return "#2563eb"; // blue-600
-            default: return "#4b5563"; // gray-600
+            case "success": return ['#22C55E', '#16A34A'];
+            case "error": return ['#FF0000', '#D00000'];
+            case "warning": return ['#F59E0B', '#D97706'];
+            default: return ['#3B82F6', '#2563EB'];
         }
     };
 
-    const getBgColor = () => {
-        switch (type) {
-            case "success": return "#dcfce7"; // green-100
-            case "error": return "#fee2e2"; // red-100
-            case "warning": return "#fef3c7"; // amber-100
-            case "confirm": return "#dbeafe"; // blue-100
-            default: return "#f3f4f6"; // gray-100
-        }
-    };
+    const primaryColor = getColors()[0];
 
     return (
-        <Modal
-            transparent
-            visible={visible}
-            animationType="fade"
-            onRequestClose={onClose}
-        >
+        <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
             <View style={styles.overlay}>
                 <View style={styles.container}>
-                    {/* Icon Header */}
-                    <View style={[styles.iconContainer, { backgroundColor: getBgColor() }]}>
-                        <Text style={styles.icon}>{getIcon()}</Text>
-                    </View>
+                    <LinearGradient colors={getColors()} style={styles.headerGradient}>
+                        <Ionicons name={getIcon() as any} size={48} color="#FFFFFF" />
+                    </LinearGradient>
 
-                    {/* Content */}
-                    <Text style={styles.title}>{title || type.toUpperCase()}</Text>
-                    <Text style={styles.message}>{message}</Text>
+                    <View style={styles.content}>
+                        <Text style={styles.title}>{title || type.toUpperCase()}</Text>
+                        <Text style={styles.message}>{message}</Text>
 
-                    {/* Buttons */}
-                    <View style={styles.buttonContainer}>
-                        {type === "confirm" ? (
-                            <>
-                                <TouchableOpacity
-                                    style={[styles.button, styles.cancelButton]}
-                                    onPress={onClose}
-                                >
+                        <View style={styles.buttonRow}>
+                            {type === "confirm" && (
+                                <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
                                     <Text style={styles.cancelText}>{cancelText}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.button, { backgroundColor: getColor() }]}
-                                    onPress={onConfirm}
-                                >
-                                    <Text style={styles.confirmText}>{confirmText}</Text>
-                                </TouchableOpacity>
-                            </>
-                        ) : (
+                            )}
                             <TouchableOpacity
-                                style={[styles.button, { backgroundColor: getColor() }]}
-                                onPress={onClose}
+                                style={[styles.mainBtn, { backgroundColor: primaryColor }]}
+                                onPress={type === "confirm" ? onConfirm : onClose}
                             >
-                                <Text style={styles.confirmText}>OK</Text>
+                                <Text style={styles.mainBtnText}>{confirmText === "Continue" && type !== "confirm" ? "OK" : confirmText}</Text>
                             </TouchableOpacity>
-                        )}
+                        </View>
                     </View>
                 </View>
             </View>
@@ -117,74 +91,76 @@ export default function MessageModal({
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
         justifyContent: "center",
         alignItems: "center",
-        padding: 24,
+        padding: 25,
     },
     container: {
-        width: Math.min(width - 48, 340),
-        backgroundColor: "white",
-        borderRadius: 24,
-        padding: 24,
-        alignItems: "center",
+        width: Math.min(width - 50, 340),
+        backgroundColor: "#FFFFFF",
+        borderRadius: 30,
+        overflow: 'hidden',
         shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 8,
+        shadowOffset: { width: 0, height: 15 },
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
+        elevation: 15,
     },
-    iconContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 16,
+    headerGradient: {
+        height: 120,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    icon: {
-        fontSize: 32,
+    content: {
+        padding: 25,
+        alignItems: 'center',
     },
     title: {
         fontSize: 18,
-        fontWeight: "800",
-        color: "#1f2937",
-        marginBottom: 8,
-        textAlign: "center",
+        fontWeight: '900',
+        color: '#1E293B',
+        marginBottom: 10,
+        textAlign: 'center',
+        letterSpacing: 0.5,
     },
     message: {
         fontSize: 14,
-        color: "#4b5563",
-        textAlign: "center",
-        lineHeight: 20,
-        marginBottom: 24,
+        color: '#64748B',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 25,
+        fontWeight: '500',
     },
-    buttonContainer: {
-        flexDirection: "row",
+    buttonRow: {
+        flexDirection: 'row',
         gap: 12,
-        width: "100%",
+        width: '100%',
     },
-    button: {
+    mainBtn: {
         flex: 1,
-        paddingVertical: 12,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
+        paddingVertical: 15,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    cancelButton: {
-        backgroundColor: "#f3f4f6",
-    },
-    confirmText: {
-        color: "white",
+    mainBtnText: {
+        color: '#FFFFFF',
         fontSize: 14,
-        fontWeight: "700",
+        fontWeight: '900',
+        letterSpacing: 1,
+    },
+    cancelBtn: {
+        flex: 1,
+        paddingVertical: 15,
+        borderRadius: 16,
+        backgroundColor: '#F1F5F9',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     cancelText: {
-        color: "#4b5563",
+        color: '#64748B',
         fontSize: 14,
-        fontWeight: "600",
+        fontWeight: '800',
     },
 });

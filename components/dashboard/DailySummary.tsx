@@ -2,7 +2,7 @@ import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { useResponsive } from '../../src/hooks/useResponsive';
 import { Transaction, TransactionItem } from '../../lib/supabase';
-import { theme } from '../../src/design-system/theme';
+import GlassCard from '../../src/design-system/components/glass/GlassCard';
 
 interface DailySummaryProps {
     data: {
@@ -14,17 +14,16 @@ interface DailySummaryProps {
 }
 
 export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
-    const { fontScale, isTablet } = useResponsive();
+    const { fontScale } = useResponsive();
     const formatCurrency = (amount: number) => {
         return "Rp " + amount.toLocaleString("id-ID");
     };
 
     return (
-        <View style={styles.dailySummaryCard}>
+        <GlassCard elevation="heavy" radius="2xl" style={styles.dailySummaryCard} reflection={true}>
             <View style={styles.dailyHeader}>
-                <View style={styles.accentBar} />
                 <View>
-                    <Text style={[styles.dailyTitle, { fontSize: fontScale(15) }]}>TODAY'S OPERATIONS</Text>
+                    <Text style={[styles.dailyTitle, { fontSize: fontScale(14) }]}>TODAY'S OPERATIONS</Text>
                     <Text style={[styles.dailyDate, { fontSize: fontScale(10) }]}>{today.toUpperCase()}</Text>
                 </View>
             </View>
@@ -43,7 +42,7 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
                                     <View key={i} style={styles.itemLine}>
                                         <View style={styles.dot} />
                                         <Text style={styles.itemDesc} numberOfLines={1}>
-                                            {item.deskripsi} {item.qty ? `(${item.qty})` : ''}
+                                            {item.deskripsi}
                                         </Text>
                                         <Text style={styles.itemValue}>
                                             {formatCurrency(Number(item.total_harga))}
@@ -66,10 +65,10 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
                 )}
             </View>
 
-            <View style={styles.progressSection}>
+            <GlassCard elevation="none" radius="md" style={styles.progressSection}>
                 <View style={styles.progressLabel}>
                     <Text style={styles.progressLabelText}>BUDGET UTILIZATION</Text>
-                    <Text style={[styles.progressPercent, data.usagePercent > 80 && styles.textRed]}>
+                    <Text style={styles.progressPercent}>
                         {data.usagePercent}%
                     </Text>
                 </View>
@@ -79,55 +78,35 @@ export const DailySummary: React.FC<DailySummaryProps> = ({ data, today }) => {
                             styles.progressFill,
                             { width: `${data.usagePercent}%` },
                             data.usagePercent > 80 && styles.progressDanger,
-                            data.usagePercent > 50 && data.usagePercent <= 80 && styles.progressWarning,
                         ]}
                     />
                 </View>
                 <View style={styles.progressFooter}>
                     <Text style={styles.progressHint}>LIMIT: {formatCurrency(data.saldoLimit)}</Text>
                 </View>
-            </View>
-        </View>
+            </GlassCard>
+        </GlassCard>
     );
 };
 
 const styles = StyleSheet.create({
     dailySummaryCard: {
-        backgroundColor: "rgba(255, 255, 255, 0.03)",
-        borderRadius: 24,
         padding: 24,
         marginHorizontal: 20,
         marginBottom: 20,
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.08)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 16 },
-        shadowOpacity: 0.4,
-        shadowRadius: 24,
-        elevation: 12,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
     },
     dailyHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        marginBottom: 20,
-    },
-    accentBar: {
-        width: 4,
-        height: 32,
-        backgroundColor: '#FF3131',
-        borderRadius: 2,
+        marginBottom: 24,
     },
     dailyTitle: {
-        fontWeight: "900",
-        color: "#F8FAFC",
-        letterSpacing: 1.5,
+        fontWeight: "800",
+        color: "black",
+        letterSpacing: 0.5,
     },
     dailyDate: {
-        color: "#64748B",
+        color: "rgba(0, 0, 0, 0.5)",
         fontWeight: "700",
-        letterSpacing: 2,
+        letterSpacing: 1,
         marginTop: 2,
     },
     dailyStats: {
@@ -136,12 +115,11 @@ const styles = StyleSheet.create({
     },
     emptyState: {
         paddingVertical: 12,
-        alignItems: 'center',
     },
     emptyText: {
-        color: '#475569',
+        color: 'rgba(0, 0, 0, 0.4)',
         fontSize: 13,
-        fontStyle: 'italic',
+        fontWeight: '500',
     },
     txRow: {
         gap: 8,
@@ -156,26 +134,25 @@ const styles = StyleSheet.create({
         width: 4,
         height: 4,
         borderRadius: 2,
-        backgroundColor: '#475569',
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
         marginRight: 8,
     },
     itemDesc: {
         fontSize: 13,
-        color: "#94A3B8",
+        color: "rgba(0, 0, 0, 0.6)",
         flex: 1,
         fontWeight: '500',
     },
     itemValue: {
         fontSize: 13,
         fontWeight: '800',
-        color: "#F1F5F9",
+        color: "black",
     },
     progressSection: {
-        backgroundColor: "rgba(255, 255, 255, 0.02)",
-        borderRadius: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
         padding: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.05)',
+        borderColor: 'rgba(255, 255, 255, 0.8)',
     },
     progressLabel: {
         flexDirection: "row",
@@ -185,41 +162,35 @@ const styles = StyleSheet.create({
     },
     progressLabelText: {
         fontSize: 10,
-        color: "#64748B",
+        color: "rgba(0, 0, 0, 0.5)",
         fontWeight: "800",
         letterSpacing: 1,
     },
     progressPercent: {
         fontSize: 14,
         fontWeight: "900",
-        color: "#F8FAFC",
-    },
-    textRed: {
-        color: '#FF3131',
+        color: "black",
     },
     progressBar: {
-        height: 6,
-        backgroundColor: "rgba(255, 255, 255, 0.05)",
-        borderRadius: 3,
+        height: 4,
+        backgroundColor: "rgba(0, 0, 0, 0.05)",
+        borderRadius: 2,
         overflow: "hidden",
     },
     progressFill: {
         height: "100%",
-        backgroundColor: "#22C55E",
-        borderRadius: 3,
-    },
-    progressWarning: {
-        backgroundColor: "#F59E0B",
+        backgroundColor: "#E61E28",
+        borderRadius: 2,
     },
     progressDanger: {
-        backgroundColor: "#FF3131",
+        backgroundColor: "#E61E28",
     },
     progressFooter: {
         marginTop: 10,
     },
     progressHint: {
         fontSize: 10,
-        color: "#475569",
+        color: "rgba(0, 0, 0, 0.4)",
         fontWeight: '700',
         letterSpacing: 1,
         textAlign: "right",

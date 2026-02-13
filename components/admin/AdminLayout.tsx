@@ -31,10 +31,9 @@ export default function AdminLayout({
         <View style={styles.container}>
             {/* Background Gradient - Red to White */}
             <LinearGradient
-                colors={['#991B1B', '#DC2626', '#FEE2E2', '#FFFFFF']}
-                locations={[0, 0.15, 0.4, 1]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
+                colors={['#E61E28', '#FFFFFF']}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
             />
 
@@ -84,29 +83,29 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     backBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: "rgba(255,255,255,0.05)",
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.5)",
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.1)",
+        borderColor: "rgba(255, 255, 255, 0.8)",
     },
     backBtnText: {
-        fontSize: 18,
-        color: "white",
+        fontSize: 20,
+        color: "black",
         fontWeight: "bold",
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: "900",
-        color: "white",
+        color: "black",
         letterSpacing: 1.5,
     },
     headerSubtitle: {
         fontSize: 11,
-        color: "#94A3B8",
+        color: "rgba(0, 0, 0, 0.5)",
         fontWeight: '700',
         letterSpacing: 1,
         marginTop: 2,

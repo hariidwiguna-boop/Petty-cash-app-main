@@ -123,23 +123,23 @@ export const glassmorphism = {
 // Glass gradients
 export const glassGradients = {
   primary: {
-    start: 'rgba(255, 255, 255, 0.25)',
-    end: 'rgba(255, 255, 255, 0.05)',
+    start: 'rgba(255, 255, 255, 0.4)',
+    end: 'rgba(255, 255, 255, 0.1)',
     angle: 135,
   },
   subtle: {
-    start: 'rgba(255, 255, 255, 0.15)',
-    end: 'rgba(255, 255, 255, 0.03)',
+    start: 'rgba(255, 255, 255, 0.25)',
+    end: 'rgba(255, 255, 255, 0.05)',
     angle: 90,
   },
   prominent: {
-    start: 'rgba(255, 255, 255, 0.35)',
-    end: 'rgba(255, 255, 255, 0.08)',
+    start: 'rgba(255, 255, 255, 0.55)',
+    end: 'rgba(255, 255, 255, 0.15)',
     angle: 145,
   },
   shimmer: {
-    colors: ['transparent', 'rgba(255,255,255,0.4)', 'transparent'],
-    locations: [0, 0.5, 1],
+    colors: ['transparent', 'rgba(255,255,255,0.6)', 'transparent'],
+    locations: [0, 0.45, 0.65, 1], // Diagonal reflection effect
   },
 };
 

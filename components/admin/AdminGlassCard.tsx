@@ -34,9 +34,9 @@ export default function AdminGlassCard({
     intensity = 'medium',
 }: AdminGlassCardProps) {
     const intensityValues = {
-        light: { blur: 15, opacity: 0.04 },
-        medium: { blur: 30, opacity: 0.06 },
-        heavy: { blur: 50, opacity: 0.1 },
+        light: { blur: 15, opacity: 0.1 },
+        medium: { blur: 30, opacity: 0.15 },
+        heavy: { blur: 50, opacity: 0.25 },
     };
 
     const { blur, opacity } = intensityValues[intensity];
@@ -55,7 +55,7 @@ export default function AdminGlassCard({
             {Platform.OS !== 'web' && (
                 <BlurView
                     intensity={blur}
-                    tint="dark"
+                    tint="light"
                     style={StyleSheet.absoluteFillObject}
                 />
             )}

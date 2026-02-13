@@ -1,132 +1,118 @@
 import * as React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useResponsive } from '../../src/hooks/useResponsive';
-import { theme } from '../../src/design-system/theme';
+import { Ionicons } from '@expo/vector-icons';
 
 export const ActionButtons: React.FC = () => {
     const router = useRouter();
-    const { fontScale, isTablet, getResponsiveValue } = useResponsive();
 
     return (
-        <View style={styles.bottomNavContainer}>
-            {/* Background Glass Layer (Executive Dark Glass) */}
-            <View style={styles.glassBackground} />
-
-            {/* Left Items */}
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/reimburse")}>
-                <Text style={styles.navIcon}>📤</Text>
-                <Text style={styles.navLabel}>Request</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/status")}>
-                <Text style={styles.navIcon}>⚡</Text>
-                <Text style={styles.navLabel}>Status</Text>
-            </TouchableOpacity>
-
-            {/* Center FAB - Premium Red Action */}
-            <View style={styles.centerFabContainer}>
-                <TouchableOpacity
-                    style={styles.centerFab}
-                    onPress={() => router.push("/(app)/(tabs)/input")}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.fabIcon}>+</Text>
+        <View style={styles.wrapper}>
+            <View style={styles.container}>
+                {/* REQUEST */}
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/reimburse")}>
+                    <Ionicons name="cash-outline" size={32} color="rgba(0,0,0,0.5)" />
+                    <Text style={styles.label}>REQUEST</Text>
                 </TouchableOpacity>
-                <Text style={styles.fabLabel}>LOG</Text>
+
+                {/* STATUS */}
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/status")}>
+                    <Ionicons name="checkmark-done-outline" size={32} color="rgba(0,0,0,0.5)" />
+                    <Text style={styles.label}>STATUS</Text>
+                </TouchableOpacity>
+
+                {/* FAB Placeholder (Spacing) */}
+                <View style={styles.fabSpace} />
+
+                {/* RIWAYAT */}
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/history")}>
+                    <Ionicons name="time-outline" size={32} color="rgba(0,0,0,0.5)" />
+                    <Text style={styles.label}>RIWAYAT</Text>
+                </TouchableOpacity>
+
+                {/* LAPORAN */}
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/daily-report")}>
+                    <Ionicons name="newspaper-outline" size={32} color="rgba(0,0,0,0.5)" />
+                    <Text style={styles.label}>LAPORAN</Text>
+                </TouchableOpacity>
             </View>
 
-            {/* Right Items */}
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/history")}>
-                <Text style={styles.navIcon}>🕒</Text>
-                <Text style={styles.navLabel}>History</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.navItem} onPress={() => router.push("/(app)/(tabs)/daily-report")}>
-                <Text style={styles.navIcon}>📑</Text>
-                <Text style={styles.navLabel}>Report</Text>
-            </TouchableOpacity>
+            {/* Floating Red Action Button */}
+            <View style={styles.fabContainer}>
+                <TouchableOpacity
+                    style={styles.fab}
+                    onPress={() => router.push("/(app)/(tabs)/input")}
+                    activeOpacity={0.9}
+                >
+                    <Ionicons name="add" size={48} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.fabLabel}>CATAT{"\n"}TRANSAKSI</Text>
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    bottomNavContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        paddingHorizontal: 12,
-        paddingBottom: Platform.OS === 'ios' ? 24 : 16,
-        paddingTop: 12,
+    wrapper: {
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
-        backgroundColor: 'transparent',
+        height: 110,
+        alignItems: 'center',
     },
-    glassBackground: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: "rgba(15, 23, 42, 0.9)", // Deep slate glass
+    container: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        height: 80,
+        width: '100%',
+        position: 'absolute',
+        bottom: 0,
         borderTopWidth: 1,
-        borderTopColor: "rgba(255, 255, 255, 0.08)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -12 },
-        shadowOpacity: 0.5,
-        shadowRadius: 24,
-        elevation: 20,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
+        borderTopColor: '#E2E8F0',
+        paddingHorizontal: 10,
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     navItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        height: 56,
-        zIndex: 10,
     },
-    navIcon: {
-        fontSize: 20,
-        color: '#F8FAFC',
+    fabSpace: {
+        width: 80,
     },
-    navLabel: {
+    label: {
         fontSize: 10,
-        fontWeight: '800',
-        color: '#64748B',
-        marginTop: 4,
-        letterSpacing: 1,
-        textTransform: 'uppercase',
+        fontWeight: '700',
+        color: 'rgba(0,0,0,0.8)',
+        marginTop: 2,
     },
-    centerFabContainer: {
-        flex: 1,
+    fabContainer: {
+        position: 'absolute',
+        top: 0,
         alignItems: 'center',
-        justifyContent: 'flex-end',
-        zIndex: 20,
-        top: -24,
     },
-    centerFab: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#DC2626',
+    fab: {
+        width: 76,
+        height: 76,
+        borderRadius: 38,
+        backgroundColor: '#E61E28',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#FF3131',
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.5,
-        shadowRadius: 16,
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
         elevation: 10,
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.2)',
-    },
-    fabIcon: {
-        fontSize: 32,
-        color: 'white',
-        fontWeight: 'bold',
+        borderWidth: 4,
+        borderColor: '#FFFFFF',
     },
     fabLabel: {
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: '900',
-        color: '#F8FAFC',
-        marginTop: 6,
-        letterSpacing: 2,
+        color: 'rgba(0,0,0,0.8)',
+        textAlign: 'center',
+        marginTop: 4,
     },
 });

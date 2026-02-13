@@ -12,7 +12,7 @@ export const transparentPalette = {
     visible: 'rgba(255, 255, 255, 0.18)',     // Clearly visible
     solid: 'rgba(255, 255, 255, 0.25)',       // Solid-ish
   },
-  
+
   // Glass opacity levels
   glass: {
     minimal: 'rgba(255, 255, 255, 0.08)',      // Minimal glass
@@ -21,7 +21,7 @@ export const transparentPalette = {
     heavy: 'rgba(255, 255, 255, 0.25)',        // Heavy glass
     solid: 'rgba(255, 255, 255, 0.35)',        // Solid glass
   },
-  
+
   // Text colors for transparent backgrounds
   text: {
     primary: 'rgba(17, 24, 39, 0.95)',         // Almost black
@@ -31,9 +31,14 @@ export const transparentPalette = {
     muted: 'rgba(209, 213, 219, 0.7)',         // Very light gray
     ghost: 'rgba(243, 244, 246, 0.6)',        // Almost white
   },
-  
+
   // Transparent gradients
   gradients: {
+    brand: {
+      colors: ['#E61E28', '#FFFFFF'],
+      locations: [0, 1],
+      angle: 180,
+    },
     glassToClear: {
       colors: ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)'],
       locations: [0, 1],
@@ -60,7 +65,7 @@ export const transparentPalette = {
       angle: 180,
     },
   },
-  
+
   // Semantic colors with transparency
   semantic: {
     success: {
@@ -88,7 +93,7 @@ export const transparentPalette = {
       glow: 'rgba(59, 130, 246, 0.2)',
     },
   },
-  
+
   // Glass border variations
   borders: {
     subtle: 'rgba(255, 255, 255, 0.12)',
@@ -98,7 +103,7 @@ export const transparentPalette = {
     glow: 'rgba(255, 255, 255, 0.25)',
     rainbow: 'linear-gradient(90deg, rgba(255,255,255,0.3), rgba(147,197,253,0.3), rgba(167,243,208,0.3), rgba(255,255,255,0.3))',
   },
-  
+
   // Shadow colors with transparency
   shadows: {
     light: 'rgba(31, 38, 135, 0.1)',
@@ -109,7 +114,7 @@ export const transparentPalette = {
     warm: 'rgba(245, 158, 11, 0.15)',
     cool: 'rgba(16, 185, 129, 0.15)',
   },
-  
+
   // Platform-specific adjustments
   platform: {
     web: {

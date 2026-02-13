@@ -7,12 +7,14 @@ import {
     TouchableOpacity,
     StyleSheet,
     Platform,
+    ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
 import { supabase } from "../../../lib/supabase";
 import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
 interface ReimburseRequest {
     id: string;
@@ -33,8 +35,6 @@ export default function StatusScreen() {
 
     const fetchRequests = async () => {
         const activeOutlet = isAdmin ? (adminSelectedOutlet || outlet) : outlet;
-
-        // Regular user must have outlet
         if (!isAdmin && !activeOutlet) return;
 
         try {
@@ -48,7 +48,6 @@ export default function StatusScreen() {
             }
 
             const { data, error } = await query;
-
             if (error) throw error;
             setRequests(data || []);
         } catch (error) {
@@ -67,7 +66,7 @@ export default function StatusScreen() {
     };
 
     const formatCurrency = (amount: number) => {
-        return "Rp " + amount.toLocaleString("id-ID");
+        return "Rp . " + amount.toLocaleString("id-ID").replace(/\s/g, '');
     };
 
     const formatDate = (dateStr: string) => {
@@ -79,279 +78,290 @@ export default function StatusScreen() {
         });
     };
 
-    const getStatusStyle = (status: string) => {
+    const getStatusInfo = (status: string) => {
         switch (status) {
             case "Disetujui":
             case "Approved":
-                return { bg: "#dcfce7", text: "#16a34a", icon: "✅", label: "Approved" };
+                return { color: "#22C55E", label: "APPROVED", icon: "checkmark-circle" };
             case "Ditolak":
             case "Rejected":
-                return { bg: "#fee2e2", text: "#dc2626", icon: "❌", label: "Rejected" };
-            case "Diajukan":
-            case "Pending":
+                return { color: "#FF0000", label: "REJECTED", icon: "close-circle" };
             default:
-                return { bg: "#fef3c7", text: "#d97706", icon: "⏳", label: "Pending" };
+                return { color: "#F59E0B", label: "PENDING", icon: "time" };
         }
     };
 
     return (
-        <LinearGradient
-            colors={['#991B1B', '#DC2626', '#FFFFFF', '#FFFFFF']}
-            locations={[0, 0.3, 0.8, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={styles.gradientBackground}
-        >
-            <SafeAreaView style={styles.container} edges={["top"]}>
-                <View style={styles.glassCard}>
-                    {/* Modal Header */}
-                    <View style={styles.modalHeader}>
-                        <View>
-                            <Text style={styles.modalTitle}>📊 Status Reimburse</Text>
-                            <Text style={styles.modalSubtitle}>
-                                Tracking pengajuan reimburse
-                            </Text>
-                        </View>
-                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                            <Text style={styles.closeBtnText}>✕</Text>
-                        </TouchableOpacity>
-                    </View>
+        <View style={styles.container}>
+            <LinearGradient colors={['#FF0000', '#FFFFFF']} style={StyleSheet.absoluteFill} />
 
-                    {/* Content */}
-                    <ScrollView
-                        style={styles.modalContent}
-                        refreshControl={
-                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        }
-                    >
-                        {requests.length === 0 ? (
-                            <View style={styles.emptyState}>
-                                <Text style={styles.emptyIcon}>📭</Text>
-                                <Text style={styles.emptyText}>Belum ada pengajuan reimburse</Text>
+            {/* Header Area */}
+            <View style={styles.headerArea}>
+                <LinearGradient colors={['#FF0000', '#FF3131']} style={styles.headerGradient}>
+                    <SafeAreaView edges={['top']} style={styles.headerContent}>
+                        <View style={styles.topRow}>
+                            <View style={styles.titleCol}>
+                                <Text style={styles.headerTitle}>STATUS REQUEST</Text>
+                                <Text style={styles.headerSubtitle}>Pantau status pengajuan reimburse</Text>
                             </View>
-                        ) : (
-                            requests.map((req) => {
-                                const statusStyle = getStatusStyle(req.status);
-                                return (
-                                    <View key={req.id} style={styles.requestCard}>
-                                        <View style={styles.requestHeader}>
-                                            <View style={styles.requestInfo}>
-                                                <Text style={styles.requestPeriod}>
-                                                    {formatDate(req.start_date)} - {formatDate(req.end_date)}
-                                                </Text>
-                                                <Text style={styles.requestDate}>
-                                                    Diajukan: {formatDate(req.created_at)}
-                                                </Text>
-                                                {(req.status === "Approved" || req.status === "Disetujui") && req.approved_at && (
-                                                    <Text style={[styles.requestDate, { color: "#16a34a", fontWeight: "600" }]}>
-                                                        Disetujui: {formatDate(req.approved_at)}
-                                                    </Text>
-                                                )}
-                                            </View>
-                                            <View
-                                                style={[
-                                                    styles.statusBadge,
-                                                    { backgroundColor: statusStyle.bg },
-                                                ]}
-                                            >
-                                                <Text style={styles.statusIcon}>{statusStyle.icon}</Text>
-                                                <Text style={[styles.statusText, { color: statusStyle.text }]}>
-                                                    {statusStyle.label}
-                                                </Text>
-                                            </View>
-                                        </View>
-                                        <View style={styles.requestBody}>
-                                            <Text style={styles.requestAmount}>
-                                                {formatCurrency(req.total_amount)}
-                                            </Text>
-                                            {req.notes && (
-                                                <View style={styles.catatanBox}>
-                                                    <Text style={styles.catatanLabel}>Catatan:</Text>
-                                                    <Text style={styles.catatanText}>{req.notes}</Text>
-                                                </View>
-                                            )}
-                                        </View>
-                                    </View>
-                                );
-                            })
-                        )}
-                    </ScrollView>
+                            <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                                <Ionicons name="close" size={28} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        </View>
 
-                    {/* Footer */}
-                    <View style={styles.modalFooter}>
-                        <TouchableOpacity
-                            style={styles.btnSecondary}
-                            onPress={() => router.back()}
-                        >
-                            <Text style={styles.btnSecondaryText}>Tutup</Text>
-                        </TouchableOpacity>
+                        {/* Summary Box */}
+                        <View style={styles.summaryBox}>
+                            <View style={styles.summaryItem}>
+                                <Text style={styles.summaryLabel}>TOTAL REQUEST</Text>
+                                <Text style={styles.summaryValue}>{requests.length}</Text>
+                            </View>
+                            <View style={styles.summaryDivider} />
+                            <View style={styles.summaryItem}>
+                                <Text style={styles.summaryLabel}>PENDING</Text>
+                                <Text style={[styles.summaryValue, { color: '#F59E0B' }]}>
+                                    {requests.filter(r => r.status === 'Pending' || r.status === 'Diajukan').length}
+                                </Text>
+                            </View>
+                        </View>
+                    </SafeAreaView>
+                    <View style={styles.headerCurve} />
+                </LinearGradient>
+            </View>
+
+            <ScrollView
+                style={styles.body}
+                contentContainerStyle={styles.bodyScroll}
+                showsVerticalScrollIndicator={false}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF0000" />}
+            >
+                {requests.length === 0 ? (
+                    <View style={styles.emptyState}>
+                        <Ionicons name="documents-outline" size={64} color="#E2E8F0" />
+                        <Text style={styles.emptyText}>Belum ada riwayat pengajuan</Text>
                     </View>
-                </View>
-            </SafeAreaView>
-        </LinearGradient>
+                ) : (
+                    requests.map((req) => {
+                        const info = getStatusInfo(req.status);
+                        return (
+                            <TouchableOpacity key={req.id} style={styles.requestCard}>
+                                <View style={styles.cardHeader}>
+                                    <View style={[styles.statusBadge, { backgroundColor: info.color + '15' }]}>
+                                        <Ionicons name={info.icon as any} size={14} color={info.color} />
+                                        <Text style={[styles.statusText, { color: info.color }]}>{info.label}</Text>
+                                    </View>
+                                    <Text style={styles.requestDate}>{formatDate(req.created_at)}</Text>
+                                </View>
+
+                                <View style={styles.cardBody}>
+                                    <View style={styles.amountBox}>
+                                        <Text style={styles.amountLabel}>Total Reimburse</Text>
+                                        <Text style={styles.amountValue}>{formatCurrency(req.total_amount)}</Text>
+                                    </View>
+                                    <View style={styles.periodBox}>
+                                        <Text style={styles.periodLabel}>Periode</Text>
+                                        <Text style={styles.periodValue}>
+                                            {formatDate(req.start_date)} - {formatDate(req.end_date)}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                <View style={styles.cardFooter}>
+                                    <Text style={styles.viewDetailText}>Lihat Detail Transaksi</Text>
+                                    <Ionicons name="chevron-forward" size={16} color="#94A3B8" />
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })
+                )}
+            </ScrollView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    gradientBackground: {
-        flex: 1,
-    },
     container: {
         flex: 1,
+        backgroundColor: '#FFFFFF',
     },
-    glassCard: {
+    headerArea: {
+        height: 240,
+        zIndex: 10,
+    },
+    headerGradient: {
         flex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.55)", // Transparent White
-        margin: 16,
-        borderRadius: 24,
-        overflow: "hidden",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 20,
-        elevation: 10,
-        borderWidth: 1.5,
-        borderColor: "rgba(255, 255, 255, 0.6)",
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(20px)' } : {}),
+        paddingHorizontal: 25,
     },
-    modalHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        padding: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(0,0,0,0.05)",
+    headerContent: {
+        flex: 1,
+        paddingTop: 10,
     },
-    modalTitle: {
+    topRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    titleCol: {
+        flex: 1,
+    },
+    headerTitle: {
         fontSize: 20,
-        fontWeight: "800",
-        color: "#1E293B",
+        fontWeight: '900',
+        color: '#FFFFFF',
+        letterSpacing: 2,
     },
-    modalSubtitle: {
-        fontSize: 13,
-        color: "#475569",
-        marginTop: 2,
+    headerSubtitle: {
+        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.7)',
+        fontWeight: '600',
+        marginTop: 4,
     },
     closeBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "rgba(255,255,255,0.5)",
-        alignItems: "center",
-        justifyContent: "center",
-        borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.05)",
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    closeBtnText: {
-        fontSize: 16,
-        color: "#64748b",
+    summaryBox: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        paddingVertical: 15,
+        paddingHorizontal: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 15,
+        elevation: 10,
     },
-    modalContent: {
+    summaryItem: {
         flex: 1,
-        padding: 16,
+        alignItems: 'center',
+    },
+    summaryDivider: {
+        width: 1,
+        height: '60%',
+        backgroundColor: '#F1F5F9',
+    },
+    summaryLabel: {
+        fontSize: 10,
+        fontWeight: '900',
+        color: '#94A3B8',
+        letterSpacing: 1.5,
+        marginBottom: 4,
+    },
+    summaryValue: {
+        fontSize: 20,
+        fontWeight: '900',
+        color: '#1E293B',
+    },
+    headerCurve: {
+        position: 'absolute',
+        bottom: -40,
+        left: 0,
+        right: 0,
+        height: 80,
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+    },
+    body: {
+        flex: 1,
+        marginTop: -30,
+    },
+    bodyScroll: {
+        paddingHorizontal: 25,
+        paddingBottom: 100,
     },
     emptyState: {
-        alignItems: "center",
-        paddingVertical: 60,
-    },
-    emptyIcon: {
-        fontSize: 48,
-        marginBottom: 12,
+        paddingTop: 60,
+        alignItems: 'center',
+        gap: 15,
     },
     emptyText: {
-        fontSize: 14,
-        color: "#64748b",
+        fontSize: 15,
+        fontWeight: '700',
+        color: '#94A3B8',
     },
-    // Request Card
     requestCard: {
-        backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent
+        backgroundColor: '#F8FAFC',
+        borderRadius: 24,
         borderWidth: 1,
-        borderColor: "rgba(255,255,255,0.9)",
-        borderRadius: 14,
-        marginBottom: 12,
-        overflow: "hidden",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        borderColor: '#F1F5F9',
+        padding: 20,
+        marginBottom: 16,
     },
-    requestHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        padding: 14,
-        backgroundColor: "rgba(249, 250, 251, 0.5)", // Transparent gray
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(0,0,0,0.05)",
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
     },
-    requestInfo: {},
-    requestPeriod: {
-        fontSize: 14,
-        fontWeight: "700",
-        color: "#1E293B",
+    statusBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 10,
+        gap: 6,
+    },
+    statusText: {
+        fontSize: 10,
+        fontWeight: '900',
+        letterSpacing: 1,
     },
     requestDate: {
         fontSize: 11,
-        color: "#64748b",
-        marginTop: 2,
+        fontWeight: '700',
+        color: '#94A3B8',
     },
-    statusBadge: {
-        flexDirection: "row",
-        alignItems: "center",
+    cardBody: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+        paddingBottom: 15,
+        marginBottom: 12,
+    },
+    amountBox: {
         gap: 4,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 12,
     },
-    statusIcon: {
+    amountLabel: {
+        fontSize: 10,
+        fontWeight: '800',
+        color: '#94A3B8',
+    },
+    amountValue: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: '#1E293B',
+    },
+    periodBox: {
+        alignItems: 'flex-end',
+        gap: 4,
+    },
+    periodLabel: {
+        fontSize: 10,
+        fontWeight: '800',
+        color: '#94A3B8',
+    },
+    periodValue: {
         fontSize: 12,
+        fontWeight: '700',
+        color: '#1E293B',
     },
-    statusText: {
-        fontSize: 11,
-        fontWeight: "700",
+    cardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
-    requestBody: {
-        padding: 14,
-    },
-    requestAmount: {
-        fontSize: 22,
-        fontWeight: "900",
-        color: "#1d4ed8",
-    },
-    catatanBox: {
-        backgroundColor: "#fef3c7",
-        borderRadius: 8,
-        padding: 10,
-        marginTop: 10,
-    },
-    catatanLabel: {
-        fontSize: 11,
-        color: "#92400e",
-        fontWeight: "600",
-    },
-    catatanText: {
+    viewDetailText: {
         fontSize: 12,
-        color: "#78350f",
-        marginTop: 2,
-    },
-    // Footer
-    modalFooter: {
-        padding: 20,
-        borderTopWidth: 1,
-        borderTopColor: "rgba(0,0,0,0.05)",
-    },
-    btnSecondary: {
-        backgroundColor: "rgba(255,255,255,0.6)",
-        borderRadius: 12,
-        paddingVertical: 14,
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "rgba(0,0,0,0.05)",
-    },
-    btnSecondaryText: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: "#64748b",
+        fontWeight: '700',
+        color: '#94A3B8',
     },
 });

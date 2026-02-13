@@ -1,17 +1,41 @@
-import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator, Modal } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, StyleSheet, Modal, Animated, Easing } from "react-native";
 
 interface CustomLoadingProps {
     visible: boolean;
-    text?: string;
 }
 
-export default function CustomLoading({ visible, text = "Memproses..." }: CustomLoadingProps) {
+export default function CustomLoading({ visible }: CustomLoadingProps) {
+    const fadeAnim = useRef(new Animated.Value(0.3)).current;
+
+    useEffect(() => {
+        if (visible) {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(fadeAnim, {
+                        toValue: 1,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(fadeAnim, {
+                        toValue: 0.3,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+        } else {
+            fadeAnim.stopAnimation();
+        }
+    }, [visible]);
+
     return (
         <Modal visible={visible} transparent animationType="fade">
             <View style={styles.overlay}>
-                <View style={styles.container}>
-                    {/* Logo Section */}
+                <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+                    {/* Brand Logo - Geometric Design based on @evrdayplcs */}
                     <View style={styles.logoContainer}>
                         <View style={styles.logoLeft}>
                             <View style={styles.logoBar} />
@@ -23,13 +47,7 @@ export default function CustomLoading({ visible, text = "Memproses..." }: Custom
                             <View style={styles.logoCircle} />
                         </View>
                     </View>
-
-                    {/* Spinner */}
-                    <ActivityIndicator size="large" color="#C94C4C" style={styles.spinner} />
-
-                    {/* Text */}
-                    <Text style={styles.text}>{text}</Text>
-                </View>
+                </Animated.View>
             </View>
         </Modal>
     );
@@ -38,61 +56,46 @@ export default function CustomLoading({ visible, text = "Memproses..." }: Custom
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: "rgba(255, 255, 255, 0.9)", // White-ish semi-transparent
+        backgroundColor: "#FFFFFF",
         alignItems: "center",
         justifyContent: "center",
     },
     container: {
         alignItems: "center",
         justifyContent: "center",
-        gap: 16,
     },
-    // Logo Styles (Scaled up 1.5x)
     logoContainer: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 9,
-        transform: [{ scale: 1.5 }],
-        marginBottom: 20,
+        gap: 12,
+        transform: [{ scale: 2 }],
     },
     logoLeft: {
         flexDirection: "column",
-        gap: 6,
+        gap: 8,
     },
     logoBar: {
-        width: 42,
-        height: 12,
-        backgroundColor: "#1a1a1a",
-        borderRadius: 0, // Sharp
+        width: 50,
+        height: 15,
+        backgroundColor: "#1E293B",
     },
     logoRight: {
         flexDirection: "row",
         alignItems: "flex-start",
-        gap: 6,
-        height: 48,
+        gap: 8,
+        height: 61,
     },
     logoRectangle: {
-        width: 12,
-        height: 48,
-        borderWidth: 3,
-        borderColor: "#1a1a1a",
-        borderRadius: 0, // Sharp
+        width: 15,
+        height: 61,
+        borderWidth: 4,
+        borderColor: "#1E293B",
         backgroundColor: "transparent",
     },
     logoCircle: {
-        width: 15,
-        height: 15,
-        backgroundColor: "#C94C4C",
-        borderRadius: 7.5, // Round
-        marginTop: 0,
+        width: 20,
+        height: 20,
+        backgroundColor: "#FF0000",
+        borderRadius: 10,
     },
-    spinner: {
-        marginTop: 10,
-    },
-    text: {
-        fontSize: 16,
-        fontWeight: "700",
-        color: "#C94C4C",
-        letterSpacing: 0.5,
-    }
 });

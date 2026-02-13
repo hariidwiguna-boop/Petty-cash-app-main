@@ -21,8 +21,10 @@ import { theme } from "../../../src/design-system/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useCallback } from "react";
 
+import MainDashboardLayout from "../../../src/design-system/components/MainDashboardLayout";
+
 export default function DashboardScreen() {
-    const { profile, outlet, isAdmin, adminSelectedOutlet, setAdminSelectedOutlet } = useAuthStore();
+    const { profile, outlet, isAdmin, signOut } = useAuthStore();
     const router = useRouter();
     const [refreshing, setRefreshing] = useState(false);
 
@@ -35,80 +37,32 @@ export default function DashboardScreen() {
         }, [isAdmin])
     );
 
-    // If admin, don't render anything while redirecting
     if (isAdmin) return null;
-
-    // Admin Outlet Filter State
-    // Default to adminSelectedOutlet, fallback to user's outlet
-    const selectedOutlet = outlet;
-
-    const [outletsList, setOutletsList] = useState<any[]>([]);
-    const [showOutletModal, setShowOutletModal] = useState(false);
-    const [showAdminMenu, setShowAdminMenu] = useState(false);
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // Custom Logout Modal State
-    const [isLowBalanceDismissed, setIsLowBalanceDismissed] = useState(false); // Custom Low Balance Popup State
 
     const [dashboardData, setDashboardData] = useState({
         saldoSekarang: 0,
-        saldoAwal: 0,
         kasAwalHariIni: 0,
         kasMasukHariIni: 0,
         kasKeluarHariIni: 0,
-        totalKeluar: 0,
-        totalMasuk: 0,
-        txCountToday: 0,
-        biggestExpense: "-",
-        recentTransactions: [] as Transaction[],
         todayTransactions: [] as (Transaction & { transaction_items: any[] })[],
     });
 
-    useEffect(() => {
-        // Fetch logic only for non-admin (since admin is redirected)
-        // ... existing logic but since we return null above, this effect might not be needed for admin
-        // keeping specific dependency logic safe
-    }, [outlet]);
-
-    const fetchOutlets = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("outlets")
-                .select("*")
-                .order("nama_outlet");
-            if (!error && data) {
-                setOutletsList(data);
-            }
-        } catch (error) {
-            console.error("Fetch outlets error", error);
-        }
-    };
-
     const fetchDashboardData = async () => {
-        const currentOutlet = selectedOutlet || outlet;
-        if (!currentOutlet) return;
-
+        if (!outlet) return;
         try {
-            // Fix: Use local date for 'today' instead of UTC to match user timezone (WIB)
-            // Construct YYYY-MM-DD based on local time
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const today = `${year}-${month}-${day}`;
+            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
             const { data: transactions, error: txError } = await supabase
                 .from("transactions")
                 .select("*, transaction_items(*)")
-                .eq("outlet_id", currentOutlet.id)
+                .eq("outlet_id", outlet.id)
                 .order("tanggal", { ascending: false });
 
             if (txError) throw txError;
 
             let totalKeluar = 0;
-            // let totalMasuk = 0; // Unused
             let kasKeluarHariIni = 0;
-            let txCountToday = 0;
-            let biggestToday = 0;
-            let biggestName = "-";
             const todayTxList: any[] = [];
 
             const allTx = transactions || [];
@@ -118,22 +72,15 @@ export default function DashboardScreen() {
                     totalKeluar += amount;
                     if (tx.tanggal === today) {
                         kasKeluarHariIni += amount;
-                        txCountToday++;
-                        todayTxList.push(tx); // Collect today's transactions
-                        if (amount > biggestToday) {
-                            biggestToday = amount;
-                            biggestName = formatCurrency(amount);
-                        }
+                        todayTxList.push(tx);
                     }
-                } else {
-                    // totalMasuk += amount;
                 }
             });
 
             const { data: kasMasuk } = await supabase
                 .from("kas_masuk")
                 .select("*")
-                .eq("outlet_id", currentOutlet.id);
+                .eq("outlet_id", outlet.id);
 
             let kasMasukTotal = 0;
             let kasMasukHariIni = 0;
@@ -145,21 +92,15 @@ export default function DashboardScreen() {
                 }
             });
 
-            const saldoAwal = currentOutlet.saldo_awal || 0;
+            const saldoAwal = outlet.saldo_awal || 0;
             const saldoSekarang = saldoAwal + kasMasukTotal - totalKeluar;
             const kasAwalHariIni = saldoSekarang + kasKeluarHariIni - kasMasukHariIni;
 
             setDashboardData({
                 saldoSekarang,
-                saldoAwal,
                 kasAwalHariIni,
                 kasMasukHariIni,
                 kasKeluarHariIni,
-                totalKeluar,
-                totalMasuk: kasMasukTotal,
-                txCountToday,
-                biggestExpense: biggestName,
-                recentTransactions: allTx.slice(0, 5),
                 todayTransactions: todayTxList,
             });
         } catch (error) {
@@ -167,15 +108,10 @@ export default function DashboardScreen() {
         }
     };
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, [selectedOutlet]);
-
-    // Auto-refresh when screen comes into focus
     useFocusEffect(
         useCallback(() => {
             fetchDashboardData();
-        }, [selectedOutlet])
+        }, [outlet])
     );
 
     const onRefresh = async () => {
@@ -184,301 +120,262 @@ export default function DashboardScreen() {
         setRefreshing(false);
     };
 
-    const formatCurrency = (amount: number) => {
-        return "Rp " + amount.toLocaleString("id-ID");
-    };
-
-    const saldoLimit = selectedOutlet?.saldo_limit || 200000;
+    const saldoLimit = outlet?.saldo_limit || 200000;
     const isLowBalance = dashboardData.saldoSekarang <= saldoLimit;
-    const usagePercent = Math.min(
-        100,
-        Math.round((dashboardData.kasKeluarHariIni / (saldoLimit || 1)) * 100)
-    );
-
-    const today = new Date().toLocaleDateString("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-    });
-
-    const openSettings = () => {
-        router.push("/(app)/(tabs)/profile");
-    };
-
-    const handleSelectOutlet = (item: any) => {
-        setAdminSelectedOutlet(item);
-        setShowOutletModal(false);
-    };
-
-    const getGreeting = () => {
-        const hour = new Date().getHours();
-        if (hour < 11) return "Selamat Pagi";
-        if (hour < 15) return "Selamat Siang";
-        if (hour < 18) return "Selamat Sore";
-        return "Selamat Malam";
-    };
-
-    // confirmLogout replaced by direct modal state setter
-    const handleLogoutPress = () => {
-        setShowAdminMenu(false);
-        setTimeout(() => setShowLogoutConfirm(true), 300);
-    };
+    const [isLowBalanceDismissed, setIsLowBalanceDismissed] = useState(false);
 
     return (
-        <LinearGradient
-            colors={['#0F172A', '#020617']} // Slate-900 to Slate-950
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-            style={{ flex: 1 }}
+        <MainDashboardLayout
+            userName={profile?.nama}
+            outletName={outlet?.nama_outlet}
+            onLogout={() => signOut()}
         >
-            <SafeAreaView style={styles.container} edges={["top"]}>
-                {/* Fixed Header Component */}
-                <DashboardHeader
-                    onSettingsPress={openSettings}
-                    onAdminMenuPress={() => setShowAdminMenu(true)}
-                    onLogoutPress={handleLogoutPress}
-                />
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                }
+                showsVerticalScrollIndicator={false}
+            >
+                {/* KPI Cards (Saldo Saat Ini + Grid) */}
+                <KpiCards data={{
+                    saldoSekarang: dashboardData.saldoSekarang,
+                    kasAwalHariIni: dashboardData.kasAwalHariIni,
+                    kasMasukHariIni: dashboardData.kasMasukHariIni,
+                    kasKeluarHariIni: dashboardData.kasKeluarHariIni,
+                }} />
 
-                <ScrollView
-                    style={styles.scrollView}
-                    contentContainerStyle={styles.scrollContent}
-                    refreshControl={
-                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                    }
+                {/* Recently Transactions Today */}
+                <RecentTransactions transactions={dashboardData.todayTransactions} />
+
+                {/* Padding for Bottom Nav */}
+                <View style={{ height: 120 }} />
+            </ScrollView>
+
+            {/* Low Balance Alert Modal */}
+            {isLowBalance && !isLowBalanceDismissed && (
+                <View style={styles.alertOverlay}>
+                    {/* Simplified Alert implementation for now, will refine to Mockup 8 later */}
+                </View>
+            )}
+
+            <ActionButtons />
+        </MainDashboardLayout>
+    );
+}
+
+{/* Custom Big Box Low Balance Popup */ }
+{
+    isLowBalance && !isLowBalanceDismissed && (
+        <View style={styles.bigPopupOverlay}>
+            <View style={styles.bigPopupBackdrop} />
+            <View style={styles.bigPopupCard}>
+                <TouchableOpacity
+                    style={styles.bigPopupCloseBtn}
+                    onPress={() => setIsLowBalanceDismissed(true)}
                 >
+                    <Text style={styles.bigPopupCloseText}>✕</Text>
+                </TouchableOpacity>
 
-                    {/* KPI Cards Component */}
-                    <KpiCards data={{
-                        saldoSekarang: dashboardData.saldoSekarang,
-                        kasAwalHariIni: dashboardData.kasAwalHariIni,
-                        kasMasukHariIni: dashboardData.kasMasukHariIni,
-                        kasKeluarHariIni: dashboardData.kasKeluarHariIni,
-                    }} />
+                <View style={styles.bigPopupIconContainer}>
+                    <Text style={styles.bigPopupIcon}>⚠️</Text>
+                </View>
 
-                    {/* Daily Summary Component */}
-                    <DailySummary
-                        data={{
-                            todayTransactions: dashboardData.todayTransactions,
-                            usagePercent,
-                            saldoLimit,
-                        }}
-                        today={today}
-                    />
+                <Text style={styles.bigPopupTitle}>LOW BALANCE ALERT</Text>
+                <Text style={styles.bigPopupMessage}>
+                    Your current balance is <Text style={{ fontWeight: 'bold', color: '#F8FAFC' }}>{formatCurrency(dashboardData.saldoSekarang)}</Text>.{'\n'}
+                    Please request reimbursement to ensure operational continuity.
+                </Text>
 
-                    {/* Spacing for bottom scrolling to clear fixed footer */}
-                    <View style={{ height: 100 }} />
-                </ScrollView>
-
-                {/* Custom Big Box Low Balance Popup */}
-                {isLowBalance && !isLowBalanceDismissed && (
-                    <View style={styles.bigPopupOverlay}>
-                        <View style={styles.bigPopupBackdrop} />
-                        <View style={styles.bigPopupCard}>
-                            <TouchableOpacity
-                                style={styles.bigPopupCloseBtn}
-                                onPress={() => setIsLowBalanceDismissed(true)}
-                            >
-                                <Text style={styles.bigPopupCloseText}>✕</Text>
-                            </TouchableOpacity>
-
-                            <View style={styles.bigPopupIconContainer}>
-                                <Text style={styles.bigPopupIcon}>⚠️</Text>
-                            </View>
-
-                            <Text style={styles.bigPopupTitle}>LOW BALANCE ALERT</Text>
-                            <Text style={styles.bigPopupMessage}>
-                                Your current balance is <Text style={{ fontWeight: 'bold', color: '#F8FAFC' }}>{formatCurrency(dashboardData.saldoSekarang)}</Text>.{'\n'}
-                                Please request reimbursement to ensure operational continuity.
-                            </Text>
-
-                            <TouchableOpacity
-                                style={styles.bigPopupActionBtn}
-                                onPress={() => {
-                                    setIsLowBalanceDismissed(true);
-                                    router.push("/(app)/(tabs)/reimburse");
-                                }}
-                            >
-                                <LinearGradient
-                                    colors={['#DC2626', '#991B1B']}
-                                    style={styles.bigPopupActionGradient}
-                                >
-                                    <Text style={styles.bigPopupActionText}>SUBMIT REQUEST</Text>
-                                </LinearGradient>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                )}
-
-
-
-                {/* Fixed Bottom Navigation */}
-                <ActionButtons />
-
-                {/* Admin Menu Modal - Fullscreen */}
-                <Modal
-                    visible={showAdminMenu}
-                    animationType="slide"
-                    transparent={false}
-                    onRequestClose={() => setShowAdminMenu(false)}
+                <TouchableOpacity
+                    style={styles.bigPopupActionBtn}
+                    onPress={() => {
+                        setIsLowBalanceDismissed(true);
+                        router.push("/(app)/(tabs)/reimburse");
+                    }}
                 >
-                    <View style={styles.adminMenuFullscreen}>
-                        {/* Header with Emerald Gradient */}
-                        <LinearGradient
-                            colors={['#FF3131', '#991B1B']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 1 }}
-                            style={styles.adminMenuHeader}
-                        >
-                            <View>
-                                <Text style={styles.adminMenuTitle}>EXECUTIVE CONTROL</Text>
-                                <Text style={styles.adminMenuSubtitle}>System Authority & Navigation</Text>
-                            </View>
-                            <TouchableOpacity style={styles.closeCircleBtn} onPress={() => setShowAdminMenu(false)}>
-                                <Text style={styles.closeCircleText}>✕</Text>
-                            </TouchableOpacity>
-                        </LinearGradient>
-
-                        <ScrollView style={styles.adminMenuBody} showsVerticalScrollIndicator={false}>
-                            {/* Outlet Selection */}
-                            <View style={styles.menuSection}>
-                                <Text style={styles.menuSectionTitle}>📍 MONITORING OUTLET</Text>
-                                <TouchableOpacity
-                                    style={styles.outletSelectionCard}
-                                    onPress={() => {
-                                        setShowAdminMenu(false);
-                                        setTimeout(() => setShowOutletModal(true), 300);
-                                    }}
-                                >
-                                    <View style={{ flex: 1 }}>
-                                        <Text style={styles.outletSelectionLabel}>Outlet Aktif:</Text>
-                                        <Text style={styles.outletSelectionValue}>{selectedOutlet?.nama_outlet || "Semua Outlet"}</Text>
-                                    </View>
-                                    <Text style={styles.outletSelectionAction}>Ganti ›</Text>
-                                </TouchableOpacity>
-                            </View>
-
-                            {/* Shortcuts Grid */}
-                            <View style={styles.menuSection}>
-                                <Text style={styles.menuSectionTitle}>🚀 AKSES CEPAT</Text>
-                                <View style={styles.adminGrid}>
-                                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin" as any); }}>
-                                        <View style={[styles.adminGridIconBg, { backgroundColor: '#fffbeb' }]}>
-                                            <Text style={styles.adminGridIcon}>📊</Text>
-                                        </View>
-                                        <Text style={styles.adminGridLabel}>Dashboard</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/approval" as any); }}>
-                                        <View style={[styles.adminGridIconBg, { backgroundColor: '#ecfdf5' }]}>
-                                            <Text style={styles.adminGridIcon}>✅</Text>
-                                        </View>
-                                        <Text style={styles.adminGridLabel}>Approval</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/settings" as any); }}>
-                                        <View style={[styles.adminGridIconBg, { backgroundColor: '#f0f9ff' }]}>
-                                            <Text style={styles.adminGridIcon}>⚙️</Text>
-                                        </View>
-                                        <Text style={styles.adminGridLabel}>Settings</Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/users" as any); }}>
-                                        <View style={[styles.adminGridIconBg, { backgroundColor: '#f5f3ff' }]}>
-                                            <Text style={styles.adminGridIcon}>👥</Text>
-                                        </View>
-                                        <Text style={styles.adminGridLabel}>Users</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            {/* Logout */}
-                            <TouchableOpacity
-                                style={styles.menuLogoutBtn}
-                                onPress={() => {
-                                    setShowAdminMenu(false);
-                                    setTimeout(handleLogoutPress, 300);
-                                }}
-                            >
-                                <Text style={styles.menuLogoutText}>🚪 Keluar Aplikasi</Text>
-                            </TouchableOpacity>
-                        </ScrollView>
-                    </View>
-                </Modal>
-
-                {/* Custom Logout Confirmation Modal */}
-                <Modal visible={showLogoutConfirm} transparent animationType="fade" onRequestClose={() => setShowLogoutConfirm(false)}>
-                    <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                        <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, marginHorizontal: 20, width: '80%' }}>
-                            <Text style={{ fontSize: 18, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: '#ef4444' }}>
-                                ⚠️ Konfirmasi Keluar
-                            </Text>
-                            <Text style={{ textAlign: 'center', marginBottom: 24, fontSize: 16, color: '#374151' }}>
-                                Apakah Anda yakin ingin keluar dari aplikasi?
-                            </Text>
-                            <View style={{ flexDirection: 'row', gap: 12 }}>
-                                <TouchableOpacity
-                                    style={{ flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                    onPress={() => setShowLogoutConfirm(false)}
-                                >
-                                    <Text style={{ fontWeight: '700', color: '#64748b' }}>Batal</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                    onPress={() => {
-                                        setShowLogoutConfirm(false);
-                                        setTimeout(() => useAuthStore.getState().signOut(), 300);
-                                    }}
-                                >
-                                    <Text style={{ fontWeight: '700', color: 'white' }}>Ya, Keluar</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </Modal>
-
-                {/* Outlet Selector Modal */}
-                <Modal
-                    visible={showOutletModal}
-                    animationType="fade"
-                    transparent={true}
-                    onRequestClose={() => setShowOutletModal(false)}
-                >
-                    <TouchableOpacity
-                        style={styles.modalOverlay}
-                        activeOpacity={1}
-                        onPress={() => setShowOutletModal(false)}
+                    <LinearGradient
+                        colors={['#DC2626', '#991B1B']}
+                        style={styles.bigPopupActionGradient}
                     >
-                        <View style={styles.modalContent}>
-                            <View style={styles.modalHeader}>
-                                <Text style={styles.modalTitle}>Pilih Outlet Monitoring</Text>
-                                <TouchableOpacity onPress={() => setShowOutletModal(false)}>
-                                    <Text style={styles.closeText}>✕</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <FlatList
-                                data={outletsList}
-                                keyExtractor={(item) => item.id}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.outletItem,
-                                            selectedOutlet?.id === item.id && styles.outletItemSelected
-                                        ]}
-                                        onPress={() => handleSelectOutlet(item)}
-                                    >
-                                        <Text style={[
-                                            styles.outletName,
-                                            selectedOutlet?.id === item.id && styles.outletNameSelected
-                                        ]}>{item.nama_outlet}</Text>
-                                        {selectedOutlet?.id === item.id && <Text style={styles.checkIcon}>✓</Text>}
-                                    </TouchableOpacity>
-                                )}
-                            />
+                        <Text style={styles.bigPopupActionText}>SUBMIT REQUEST</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
+        </View>
+    )
+}
+
+
+
+{/* Fixed Bottom Navigation */ }
+<ActionButtons />
+
+{/* Admin Menu Modal - Fullscreen */ }
+<Modal
+    visible={showAdminMenu}
+    animationType="slide"
+    transparent={false}
+    onRequestClose={() => setShowAdminMenu(false)}
+>
+    <View style={styles.adminMenuFullscreen}>
+        {/* Header with Emerald Gradient */}
+        <LinearGradient
+            colors={['#FF3131', '#991B1B']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.adminMenuHeader}
+        >
+            <View>
+                <Text style={styles.adminMenuTitle}>EXECUTIVE CONTROL</Text>
+                <Text style={styles.adminMenuSubtitle}>System Authority & Navigation</Text>
+            </View>
+            <TouchableOpacity style={styles.closeCircleBtn} onPress={() => setShowAdminMenu(false)}>
+                <Text style={styles.closeCircleText}>✕</Text>
+            </TouchableOpacity>
+        </LinearGradient>
+
+        <ScrollView style={styles.adminMenuBody} showsVerticalScrollIndicator={false}>
+            {/* Outlet Selection */}
+            <View style={styles.menuSection}>
+                <Text style={styles.menuSectionTitle}>📍 MONITORING OUTLET</Text>
+                <TouchableOpacity
+                    style={styles.outletSelectionCard}
+                    onPress={() => {
+                        setShowAdminMenu(false);
+                        setTimeout(() => setShowOutletModal(true), 300);
+                    }}
+                >
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.outletSelectionLabel}>Outlet Aktif:</Text>
+                        <Text style={styles.outletSelectionValue}>{selectedOutlet?.nama_outlet || "Semua Outlet"}</Text>
+                    </View>
+                    <Text style={styles.outletSelectionAction}>Ganti ›</Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* Shortcuts Grid */}
+            <View style={styles.menuSection}>
+                <Text style={styles.menuSectionTitle}>🚀 AKSES CEPAT</Text>
+                <View style={styles.adminGrid}>
+                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin" as any); }}>
+                        <View style={[styles.adminGridIconBg, { backgroundColor: '#fffbeb' }]}>
+                            <Text style={styles.adminGridIcon}>📊</Text>
                         </View>
+                        <Text style={styles.adminGridLabel}>Dashboard</Text>
                     </TouchableOpacity>
-                </Modal>
-            </SafeAreaView>
+
+                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/approval" as any); }}>
+                        <View style={[styles.adminGridIconBg, { backgroundColor: '#ecfdf5' }]}>
+                            <Text style={styles.adminGridIcon}>✅</Text>
+                        </View>
+                        <Text style={styles.adminGridLabel}>Approval</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/settings" as any); }}>
+                        <View style={[styles.adminGridIconBg, { backgroundColor: '#f0f9ff' }]}>
+                            <Text style={styles.adminGridIcon}>⚙️</Text>
+                        </View>
+                        <Text style={styles.adminGridLabel}>Settings</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.adminGridItem} onPress={() => { setShowAdminMenu(false); router.push("/(app)/(tabs)/admin/users" as any); }}>
+                        <View style={[styles.adminGridIconBg, { backgroundColor: '#f5f3ff' }]}>
+                            <Text style={styles.adminGridIcon}>👥</Text>
+                        </View>
+                        <Text style={styles.adminGridLabel}>Users</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            {/* Logout */}
+            <TouchableOpacity
+                style={styles.menuLogoutBtn}
+                onPress={() => {
+                    setShowAdminMenu(false);
+                    setTimeout(handleLogoutPress, 300);
+                }}
+            >
+                <Text style={styles.menuLogoutText}>🚪 Keluar Aplikasi</Text>
+            </TouchableOpacity>
+        </ScrollView>
+    </View>
+</Modal>
+
+{/* Custom Logout Confirmation Modal */ }
+<Modal visible={showLogoutConfirm} transparent animationType="fade" onRequestClose={() => setShowLogoutConfirm(false)}>
+    <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+        <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, marginHorizontal: 20, width: '80%' }}>
+            <Text style={{ fontSize: 18, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: '#ef4444' }}>
+                ⚠️ Konfirmasi Keluar
+            </Text>
+            <Text style={{ textAlign: 'center', marginBottom: 24, fontSize: 16, color: '#374151' }}>
+                Apakah Anda yakin ingin keluar dari aplikasi?
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity
+                    style={{ flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
+                    onPress={() => setShowLogoutConfirm(false)}
+                >
+                    <Text style={{ fontWeight: '700', color: '#64748b' }}>Batal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
+                    onPress={() => {
+                        setShowLogoutConfirm(false);
+                        setTimeout(() => useAuthStore.getState().signOut(), 300);
+                    }}
+                >
+                    <Text style={{ fontWeight: '700', color: 'white' }}>Ya, Keluar</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    </View>
+</Modal>
+
+{/* Outlet Selector Modal */ }
+<Modal
+    visible={showOutletModal}
+    animationType="fade"
+    transparent={true}
+    onRequestClose={() => setShowOutletModal(false)}
+>
+    <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={() => setShowOutletModal(false)}
+    >
+        <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Pilih Outlet Monitoring</Text>
+                <TouchableOpacity onPress={() => setShowOutletModal(false)}>
+                    <Text style={styles.closeText}>✕</Text>
+                </TouchableOpacity>
+            </View>
+            <FlatList
+                data={outletsList}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        style={[
+                            styles.outletItem,
+                            selectedOutlet?.id === item.id && styles.outletItemSelected
+                        ]}
+                        onPress={() => handleSelectOutlet(item)}
+                    >
+                        <Text style={[
+                            styles.outletName,
+                            selectedOutlet?.id === item.id && styles.outletNameSelected
+                        ]}>{item.nama_outlet}</Text>
+                        {selectedOutlet?.id === item.id && <Text style={styles.checkIcon}>✓</Text>}
+                    </TouchableOpacity>
+                )}
+            />
+        </View>
+    </TouchableOpacity>
+</Modal>
+            </SafeAreaView >
         </LinearGradient >
     );
 }

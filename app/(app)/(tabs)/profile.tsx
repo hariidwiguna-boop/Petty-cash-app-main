@@ -1,12 +1,17 @@
-import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Modal, Platform } from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "../../../stores/authStore";
+import { LinearGradient } from "expo-linear-gradient";
+import GlassCard from "../../../src/design-system/components/glass/GlassCard";
+import { Ionicons } from "@expo/vector-icons";
+import { useResponsive } from "../../../src/hooks/useResponsive";
 
 export default function ProfileScreen() {
     const { profile, outlet, signOut, isAdmin } = useAuthStore();
     const router = useRouter();
+    const { fontScale } = useResponsive();
 
     // Debug
     console.log("Profile:", profile);
@@ -34,274 +39,272 @@ export default function ProfileScreen() {
     const showAdminMenu = isAdmin || profile?.role?.toLowerCase() === 'admin';
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
-            <View style={styles.modalCard}>
-                <View style={styles.modalHeader}>
-                    <View>
-                        <Text style={styles.modalTitle}>Pengaturan</Text>
-                        <Text style={styles.modalSubtitle}>Kelola akun Anda</Text>
-                    </View>
-                    <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
-                        <Text style={styles.closeBtnText}>X</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <ScrollView style={styles.modalContent}>
-                    {/* User Info Card */}
-                    <View style={styles.userCard}>
-                        <View style={styles.avatarContainer}>
-                            <Text style={styles.avatarText}>👤</Text>
+        <LinearGradient
+            colors={['#E61E28', '#FFFFFF']} // Brand Red to White
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={styles.gradientBackground}
+        >
+            <SafeAreaView style={styles.container} edges={["top"]}>
+                <GlassCard
+                    elevation="extreme"
+                    radius="2xl"
+                    style={styles.mainCard}
+                    reflection={true}
+                >
+                    <View style={styles.modalHeader}>
+                        <View>
+                            <Text style={[styles.modalTitle, { fontSize: fontScale(22) }]}>Pengaturan</Text>
+                            <Text style={[styles.modalSubtitle, { fontSize: fontScale(13) }]}>Kelola akun Anda</Text>
                         </View>
-                        <Text style={styles.userName}>{profile?.nama || "User"}</Text>
-                        <Text style={styles.userUsername}>@{profile?.username || "user"}</Text>
-                        <View style={[styles.roleBadge, showAdminMenu && styles.adminRoleBadge]}>
-                            <Text style={[styles.roleText, showAdminMenu && styles.adminRoleText]}>
-                                {profile?.role || "User"}
-                            </Text>
-                        </View>
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => router.back()}>
+                            <Ionicons name="close" size={24} color="rgba(0,0,0,0.5)" />
+                        </TouchableOpacity>
                     </View>
 
-                    {/* Outlet Info */}
-                    <View style={styles.infoCard}>
-                        <Text style={styles.infoTitle}>Outlet</Text>
-                        <Text style={styles.infoValue}>{outlet?.nama_outlet || "Tidak terdaftar"}</Text>
-                        {outlet && (
-                            <View style={styles.infoRow}>
-                                <View style={styles.infoItem}>
-                                    <Text style={styles.infoLabel}>Saldo Awal</Text>
-                                    <Text style={styles.infoAmount}>{formatCurrency(outlet.saldo_awal || 0)}</Text>
+                    <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                        {/* User Info Card */}
+                        <View style={styles.userCard}>
+                            <LinearGradient
+                                colors={['#FEE2E2', '#FEF2F2']}
+                                style={styles.avatarContainer}
+                            >
+                                <Ionicons name="person" size={32} color="#DC2626" />
+                            </LinearGradient>
+                            <Text style={[styles.userName, { fontSize: fontScale(20) }]}>{profile?.nama || "User"}</Text>
+                            <Text style={styles.userUsername}>@{profile?.username || "user"}</Text>
+                            <View style={[styles.roleBadge, showAdminMenu && styles.adminRoleBadge]}>
+                                <Text style={[styles.roleText, showAdminMenu && styles.adminRoleText]}>
+                                    {profile?.role || "User"}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Outlet Info */}
+                        <View style={styles.infoCard}>
+                            <Text style={styles.infoSectionTitle}>STORE INFORMATION</Text>
+                            <Text style={styles.infoValue}>{outlet?.nama_outlet || "Tidak terdaftar"}</Text>
+                            {outlet && (
+                                <View style={styles.infoRow}>
+                                    <View style={styles.infoItem}>
+                                        <Text style={styles.infoLabel}>Saldo Awal</Text>
+                                        <Text style={styles.infoAmount}>{formatCurrency(outlet.saldo_awal || 0)}</Text>
+                                    </View>
+                                    <View style={styles.infoItem}>
+                                        <Text style={styles.infoLabel}>Limit Alert</Text>
+                                        <Text style={styles.infoAmount}>{formatCurrency(outlet.saldo_limit || 0)}</Text>
+                                    </View>
                                 </View>
-                                <View style={styles.infoItem}>
-                                    <Text style={styles.infoLabel}>Limit Alert</Text>
-                                    <Text style={styles.infoAmount}>{formatCurrency(outlet.saldo_limit || 0)}</Text>
+                            )}
+                        </View>
+
+                        {/* Menu Items */}
+                        <View style={styles.menuContainer}>
+                            <Text style={styles.menuSectionTitle}>APP MENU</Text>
+                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/daily-report")}>
+                                <View style={styles.menuItemLeft}>
+                                    <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}>
+                                        <Ionicons name="bar-chart" size={18} color="#3B82F6" />
+                                    </View>
+                                    <Text style={styles.menuLabel}>Laporan Harian</Text>
                                 </View>
+                                <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.2)" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/status")}>
+                                <View style={styles.menuItemLeft}>
+                                    <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(16, 185, 129, 0.1)' }]}>
+                                        <Ionicons name="list" size={18} color="#10B981" />
+                                    </View>
+                                    <Text style={styles.menuLabel}>Status Reimburse</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.2)" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Admin Menu - Show for admin users */}
+                        {showAdminMenu && (
+                            <View style={[styles.menuContainer, { marginTop: 20 }]}>
+                                <Text style={[styles.menuSectionTitle, { color: '#D97706' }]}>ADMIN SUITE</Text>
+                                <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin" as any)}>
+                                    <View style={styles.menuItemLeft}>
+                                        <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(217, 119, 6, 0.1)' }]}>
+                                            <Ionicons name="shield-checkmark" size={18} color="#D97706" />
+                                        </View>
+                                        <Text style={styles.menuLabel}>Admin Dashboard</Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.2)" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin/approval" as any)}>
+                                    <View style={styles.menuItemLeft}>
+                                        <View style={[styles.menuIconContainer, { backgroundColor: 'rgba(217, 119, 6, 0.1)' }]}>
+                                            <Ionicons name="checkmark-circle" size={18} color="#D97706" />
+                                        </View>
+                                        <Text style={styles.menuLabel}>Approval Reimburse</Text>
+                                    </View>
+                                    <Ionicons name="chevron-forward" size={18} color="rgba(0,0,0,0.2)" />
+                                </TouchableOpacity>
                             </View>
                         )}
-                    </View>
+                    </ScrollView>
 
-                    {/* Menu Items */}
-                    <View style={styles.menuCard}>
-                        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/daily-report")}>
-                            <Text style={styles.menuIcon}>📊</Text>
-                            <Text style={styles.menuLabel}>Laporan Harian</Text>
-                            <Text style={styles.menuArrow}>›</Text>
+                    {/* Footer */}
+                    <View style={styles.modalFooter}>
+                        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                            <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+                            <Text style={styles.logoutText}>Keluar Sesi</Text>
                         </TouchableOpacity>
-                        <View style={styles.menuDivider} />
-                        <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/status")}>
-                            <Text style={styles.menuIcon}>📋</Text>
-                            <Text style={styles.menuLabel}>Status Reimburse</Text>
-                            <Text style={styles.menuArrow}>›</Text>
-                        </TouchableOpacity>
+                        <Text style={styles.version}>Petty Cash App v1.0.0</Text>
                     </View>
-
-                    {/* Admin Menu - Show for admin users */}
-                    {showAdminMenu && (
-                        <View style={styles.adminCard}>
-                            <View style={styles.adminHeader}>
-                                <Text style={styles.adminTitle}>👑 Menu Admin</Text>
-                            </View>
-                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin" as any)}>
-                                <Text style={styles.menuIcon}>🏠</Text>
-                                <Text style={styles.menuLabel}>Admin Dashboard</Text>
-                                <Text style={styles.menuArrow}>›</Text>
-                            </TouchableOpacity>
-                            <View style={styles.menuDivider} />
-                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin/approval" as any)}>
-                                <Text style={styles.menuIcon}>✅</Text>
-                                <Text style={styles.menuLabel}>Approval Reimburse</Text>
-                                <Text style={styles.menuArrow}>›</Text>
-                            </TouchableOpacity>
-                            <View style={styles.menuDivider} />
-                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin/users" as any)}>
-                                <Text style={styles.menuIcon}>👥</Text>
-                                <Text style={styles.menuLabel}>Kelola User</Text>
-                                <Text style={styles.menuArrow}>›</Text>
-                            </TouchableOpacity>
-                            <View style={styles.menuDivider} />
-                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin/outlets" as any)}>
-                                <Text style={styles.menuIcon}>🏪</Text>
-                                <Text style={styles.menuLabel}>Kelola Outlet</Text>
-                                <Text style={styles.menuArrow}>›</Text>
-                            </TouchableOpacity>
-                            <View style={styles.menuDivider} />
-                            <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/(app)/(tabs)/admin/reports" as any)}>
-                                <Text style={styles.menuIcon}>📊</Text>
-                                <Text style={styles.menuLabel}>Reports</Text>
-                                <Text style={styles.menuArrow}>›</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </ScrollView>
-
-                {/* Footer */}
-                <View style={styles.modalFooter}>
-                    <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                        <Text style={styles.logoutText}>Keluar</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.version}>Petty Cash App v1.0.0</Text>
-                </View>
-            </View>
-            {/* Logout Confirmation Modal */}
-            <Modal visible={logoutModalVisible} transparent animationType="fade">
-                <View style={[styles.modalCard, { backgroundColor: 'rgba(0,0,0,0.5)', margin: 0, borderRadius: 0, justifyContent: 'center', padding: 20 }]}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 20, padding: 24, marginHorizontal: 20 }}>
-                        <Text style={{ fontSize: 18, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: '#ef4444' }}>
-                            ⚠️ Konfirmasi Keluar
-                        </Text>
-
-                        <Text style={{ textAlign: 'center', marginBottom: 24, fontSize: 16, color: '#374151' }}>
-                            Apakah Anda yakin ingin keluar dari aplikasi?
-                        </Text>
-
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
-                            <TouchableOpacity
-                                style={{ flex: 1, backgroundColor: '#f1f5f9', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                onPress={() => setLogoutModalVisible(false)}
-                            >
-                                <Text style={{ fontWeight: '700', color: '#64748b' }}>Batal</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={{ flex: 1, backgroundColor: '#ef4444', paddingVertical: 12, borderRadius: 10, alignItems: 'center' }}
-                                onPress={confirmLogout}
-                            >
-                                <Text style={{ fontWeight: '700', color: 'white' }}>Ya, Keluar</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
-        </SafeAreaView>
+                </GlassCard>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#f0f4d0" },
-    modalCard: {
+    gradientBackground: {
         flex: 1,
-        backgroundColor: "white",
+    },
+    container: { flex: 1 },
+    mainCard: {
+        flex: 1,
         margin: 16,
-        borderRadius: 20,
-        overflow: "hidden",
+        alignSelf: 'center',
+        width: '94%',
+        maxWidth: 1000,
     },
     modalHeader: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "flex-start",
-        padding: 20,
+        alignItems: "center",
+        padding: 24,
         borderBottomWidth: 1,
-        borderBottomColor: "#e5e7eb",
+        borderBottomColor: "rgba(0,0,0,0.03)",
     },
-    modalTitle: { fontSize: 20, fontWeight: "800", color: "#1a1a1a" },
-    modalSubtitle: { fontSize: 13, color: "#666", marginTop: 2 },
+    modalTitle: {
+        fontWeight: "900",
+        color: "black",
+        letterSpacing: -0.5,
+    },
+    modalSubtitle: {
+        color: "rgba(0, 0, 0, 0.4)",
+        fontWeight: '600',
+        marginTop: 2,
+    },
     closeBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f1f5f9",
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: "rgba(0,0,0,0.03)",
         alignItems: "center",
         justifyContent: "center",
     },
-    closeBtnText: { fontSize: 16, color: "#64748b" },
-    modalContent: { flex: 1, padding: 20 },
+    modalContent: { flex: 1, padding: 24 },
     // User Card
     userCard: {
         alignItems: "center",
-        padding: 20,
-        backgroundColor: "#f9fafb",
-        borderRadius: 16,
-        marginBottom: 16,
+        padding: 24,
+        backgroundColor: "rgba(0,0,0,0.02)",
+        borderRadius: 24,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: "rgba(0,0,0,0.04)",
     },
     avatarContainer: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: "#e0e7ff",
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: "center",
         justifyContent: "center",
-        marginBottom: 12,
+        marginBottom: 16,
+        shadowColor: "#DC2626",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 4,
     },
-    avatarText: { fontSize: 32 },
-    userName: { fontSize: 18, fontWeight: "800", color: "#1a1a1a" },
-    userUsername: { fontSize: 13, color: "#666", marginTop: 2 },
+    userName: { fontWeight: "900", color: "black", letterSpacing: -0.5 },
+    userUsername: { fontSize: 13, color: "rgba(0, 0, 0, 0.4)", fontWeight: '600', marginTop: 4 },
     roleBadge: {
-        backgroundColor: "#dbeafe",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
         paddingHorizontal: 12,
-        paddingVertical: 4,
+        paddingVertical: 6,
         borderRadius: 12,
-        marginTop: 8,
+        marginTop: 12,
     },
-    adminRoleBadge: { backgroundColor: "#fef3c7" },
-    roleText: { fontSize: 12, fontWeight: "600", color: "#1d4ed8" },
-    adminRoleText: { color: "#d97706" },
+    adminRoleBadge: { backgroundColor: "rgba(217, 119, 6, 0.1)" },
+    roleText: { fontSize: 11, fontWeight: "800", color: "#3B82F6", textTransform: 'uppercase', letterSpacing: 0.5 },
+    adminRoleText: { color: "#D97706" },
     // Info Card
     infoCard: {
-        backgroundColor: "white",
+        backgroundColor: "rgba(0,0,0,0.02)",
+        borderRadius: 24,
+        padding: 20,
+        marginBottom: 20,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 14,
-        padding: 14,
-        marginBottom: 12,
+        borderColor: "rgba(0,0,0,0.04)",
     },
-    infoTitle: { fontSize: 11, color: "#9ca3af", fontWeight: "600", marginBottom: 4 },
-    infoValue: { fontSize: 16, fontWeight: "700", color: "#1a1a1a" },
+    infoSectionTitle: { fontSize: 10, fontWeight: "800", color: "rgba(0,0,0,0.3)", letterSpacing: 1, marginBottom: 12 },
+    infoValue: { fontSize: 18, fontWeight: "900", color: "black", letterSpacing: -0.5 },
     infoRow: {
         flexDirection: "row",
-        marginTop: 12,
-        paddingTop: 12,
+        marginTop: 16,
+        paddingTop: 16,
         borderTopWidth: 1,
-        borderTopColor: "#f3f4f6",
+        borderTopColor: "rgba(0,0,0,0.03)",
+        gap: 20,
     },
     infoItem: { flex: 1 },
-    infoLabel: { fontSize: 11, color: "#9ca3af" },
-    infoAmount: { fontSize: 14, fontWeight: "700", color: "#374151", marginTop: 2 },
-    // Menu Card
-    menuCard: {
-        backgroundColor: "white",
+    infoLabel: { fontSize: 11, color: "rgba(0,0,0,0.4)", fontWeight: '600' },
+    infoAmount: { fontSize: 14, fontWeight: "800", color: "black", marginTop: 4 },
+    // Menu
+    menuContainer: {
+        gap: 8,
+    },
+    menuSectionTitle: { fontSize: 10, fontWeight: "800", color: "rgba(0,0,0,0.3)", letterSpacing: 1, marginBottom: 8, marginLeft: 4 },
+    menuItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: 'space-between',
+        padding: 14,
+        backgroundColor: "rgba(0,0,0,0.02)",
+        borderRadius: 16,
         borderWidth: 1,
-        borderColor: "#e5e7eb",
-        borderRadius: 14,
-        overflow: "hidden",
-        marginBottom: 12,
+        borderColor: "rgba(0,0,0,0.04)",
     },
-    menuItem: { flexDirection: "row", alignItems: "center", padding: 14 },
-    menuIcon: { fontSize: 18, marginRight: 12 },
-    menuLabel: { flex: 1, fontSize: 14, color: "#374151", fontWeight: "500" },
-    menuArrow: { fontSize: 18, color: "#d1d5db" },
-    menuDivider: { height: 1, backgroundColor: "#f3f4f6", marginLeft: 44 },
-    // Admin Card
-    adminCard: {
-        backgroundColor: "white",
-        borderWidth: 1,
-        borderColor: "#fbbf24",
-        borderRadius: 14,
-        overflow: "hidden",
+    menuItemLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
     },
-    adminHeader: {
-        backgroundColor: "#fffbeb",
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: "#fef3c7",
+    menuIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    adminTitle: { fontSize: 12, fontWeight: "700", color: "#92400e" },
+    menuLabel: { fontSize: 14, color: "black", fontWeight: "700" },
     // Footer
     modalFooter: {
-        padding: 20,
+        padding: 24,
         borderTopWidth: 1,
-        borderTopColor: "#e5e7eb",
+        borderTopColor: "rgba(0,0,0,0.03)",
         alignItems: "center",
+        gap: 12,
     },
     logoutBtn: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#fee2e2",
-        paddingHorizontal: 32,
-        paddingVertical: 12,
-        borderRadius: 12,
+        backgroundColor: "rgba(220, 38, 38, 0.05)",
+        paddingVertical: 14,
+        borderRadius: 14,
         width: "100%",
-        marginBottom: 12,
+        gap: 8,
     },
-    logoutText: { fontSize: 14, fontWeight: "700", color: "#dc2626" },
-    version: { fontSize: 11, color: "#9ca3af" },
+    logoutText: { fontSize: 14, fontWeight: "800", color: "#DC2626" },
+    version: { fontSize: 11, color: "rgba(0, 0, 0, 0.2)", fontWeight: '600' },
 });

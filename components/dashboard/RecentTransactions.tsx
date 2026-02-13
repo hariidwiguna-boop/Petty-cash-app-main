@@ -1,8 +1,6 @@
 import * as React from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import { useResponsive } from '../../src/hooks/useResponsive';
+import { View, Text, StyleSheet } from 'react-native';
 import { Transaction } from '../../lib/supabase';
-import { theme } from '../../src/design-system/theme';
 
 interface RecentTransactionsProps {
     transactions: Transaction[];
@@ -13,127 +11,108 @@ export const RecentTransactions: React.FC<RecentTransactionsProps> = ({
     transactions,
     onTransactionPress
 }) => {
-    const { fontScale, isTablet } = useResponsive();
     const formatCurrency = (amount: number) => {
-        return "Rp " + amount.toLocaleString("id-ID");
+        return "Rp . " + amount.toLocaleString("id-ID").replace(/\s/g, '');
     };
 
-    if (transactions.length === 0) {
-        return (
-            <View style={styles.recentSection}>
-                <Text style={styles.sectionTitle}>RECENT ACTIVITY</Text>
-                <Text style={styles.txEmpty}>No recent activity found.</Text>
-            </View>
-        );
-    }
-
     return (
-        <View style={styles.recentSection}>
-            <View style={styles.headerRow}>
-                <Text style={[styles.sectionTitle, { fontSize: fontScale(12) }]}>RECENT ACTIVITY</Text>
-                <View style={styles.activeDot} />
+        <View style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>TRANSAKSI HARI INI</Text>
             </View>
 
-            {transactions.map((tx, index) => (
-                <View key={tx.id || index} style={styles.txItem}>
-                    <View style={styles.txItemInfo}>
-                        <Text style={styles.txItemDesc}>{tx.tipe.toUpperCase()}</Text>
-                        <Text style={styles.txItemDate}>
-                            {new Date(tx.tanggal).toLocaleDateString("id-ID", { day: '2-digit', month: 'short' })}
-                        </Text>
-                    </View>
-                    <View style={styles.txValueRow}>
-                        <Text style={styles.txItemAmount}>
-                            -{formatCurrency(tx.grand_total)}
-                        </Text>
-                        <View style={styles.chevron} />
-                    </View>
+            {transactions.length === 0 ? (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>Belum ada transaksi hari ini.</Text>
                 </View>
-            ))}
+            ) : (
+                <View style={styles.list}>
+                    {transactions.map((tx, index) => (
+                        <View key={tx.id || index} style={styles.txItem}>
+                            <View style={styles.leftCol}>
+                                <Text style={styles.txDesc}>{tx.tipe || 'Transaksi'}</Text>
+                                <Text style={styles.txDate}>
+                                    {new Date(tx.tanggal).toLocaleDateString("id-ID", { day: '2-digit', month: 'long', year: 'numeric' })}
+                                </Text>
+                            </View>
+                            <View style={styles.rightCol}>
+                                <Text style={[
+                                    styles.txAmount,
+                                    { color: tx.tipe === 'Kas Masuk' ? '#22C55E' : '#FF0000' }
+                                ]}>
+                                    {tx.tipe === 'Kas Masuk' ? '' : '-'} {formatCurrency(tx.grand_total)}
+                                </Text>
+                            </View>
+                        </View>
+                    ))}
+                </View>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    recentSection: {
-        backgroundColor: "rgba(255, 255, 255, 0.03)",
-        borderRadius: 24,
-        padding: 24,
-        marginHorizontal: 20,
-        marginBottom: 100, // Extra margin for bottom nav
-        borderWidth: 1,
-        borderColor: "rgba(255, 255, 255, 0.08)",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 16 },
-        shadowOpacity: 0.4,
-        shadowRadius: 24,
-        elevation: 8,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(40px)' } : {}),
+    container: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        padding: 30,
+        minHeight: 300,
+        marginTop: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 10,
     },
-    headerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+    header: {
         marginBottom: 20,
     },
-    sectionTitle: {
-        fontWeight: "900",
-        color: "#94A3B8",
+    title: {
+        fontSize: 14,
+        fontWeight: '900',
+        color: '#94A3B8',
         letterSpacing: 2,
     },
-    activeDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: '#FF3131',
+    emptyContainer: {
+        padding: 40,
+        alignItems: 'center',
+    },
+    emptyText: {
+        color: '#94A3B8',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    list: {
+        gap: 0,
     },
     txItem: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingVertical: 14,
-        borderBottomWidth: 1,
-        borderBottomColor: "rgba(255, 255, 255, 0.05)",
-    },
-    txItemInfo: {
-        flex: 1,
-        gap: 2,
-    },
-    txItemDesc: {
-        fontSize: 13,
-        fontWeight: "800",
-        color: "#F8FAFC",
-        letterSpacing: 0.5,
-    },
-    txItemDate: {
-        fontSize: 11,
-        color: "#64748B",
-        fontWeight: '600',
-    },
-    txValueRow: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 8,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
     },
-    txItemAmount: {
-        fontSize: 14,
-        fontWeight: "900",
-        color: "#FF3131",
+    leftCol: {
+        flex: 1,
+        gap: 4,
     },
-    chevron: {
-        width: 6,
-        height: 6,
-        borderTopWidth: 1.5,
-        borderRightWidth: 1.5,
-        borderColor: '#475569',
-        transform: [{ rotate: '45deg' }],
+    txDesc: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: '#1E293B',
     },
-    txEmpty: {
-        textAlign: "center",
-        color: "#475569",
+    txDate: {
         fontSize: 12,
-        padding: 32,
+        color: '#94A3B8',
         fontWeight: '600',
-        letterSpacing: 1,
+    },
+    rightCol: {
+        alignItems: 'flex-end',
+    },
+    txAmount: {
+        fontSize: 16,
+        fontWeight: '900',
     },
 });

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { useResponsive } from '../../src/hooks/useResponsive';
-import { theme } from '../../src/design-system/theme';
+import { Ionicons } from '@expo/vector-icons';
+import GlassCard from '../../src/design-system/components/glass/GlassCard';
 
 interface KpiCardsProps {
     data: {
@@ -13,132 +13,135 @@ interface KpiCardsProps {
 }
 
 export const KpiCards: React.FC<KpiCardsProps> = ({ data }) => {
-    const { isTablet, fontScale, horizontalScale } = useResponsive();
     const formatCurrency = (amount: number) => {
-        return "Rp " + amount.toLocaleString("id-ID");
+        return amount.toLocaleString("id-ID").replace(/\s/g, '');
     };
 
     return (
-        <View style={styles.kpiGrid}>
-            <View style={styles.topRow}>
-                {/* 1. Kas Awal Hari Ini */}
-                <View style={[styles.kpiCard, isTablet && { flex: 1 }]}>
-                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(148, 163, 184, 0.1)' }]}>
-                        <Text style={styles.kpiIconText}>🏦</Text>
-                    </View>
-                    <View style={styles.kpiInfo}>
-                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>ASSET START</Text>
-                        <Text style={[styles.kpiValue, { color: '#F8FAFC', fontSize: fontScale(14) }]}>
-                            {formatCurrency(data.kasAwalHariIni)}
-                        </Text>
+        <View style={styles.container}>
+            {/* Main Balance Card (Saldo Saat Ini) */}
+            <View style={styles.mainCardContainer}>
+                <View style={styles.walletIconContainer}>
+                    <Ionicons name="wallet-outline" size={40} color="#CBD5E1" />
+                    <View style={styles.checkBadge}>
+                        <Ionicons name="checkmark" size={14} color="#FFFFFF" />
                     </View>
                 </View>
 
-                {/* 2. Kas Masuk Hari Ini */}
-                <View style={[styles.kpiCard, styles.kpiKasMasuk, isTablet && { flex: 1 }]}>
-                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
-                        <Text style={styles.kpiIconText}>📈</Text>
-                    </View>
-                    <View style={styles.kpiInfo}>
-                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>INCOME TODAY</Text>
-                        <Text style={[styles.kpiValue, { color: '#10B981', fontSize: fontScale(14) }]}>
-                            {formatCurrency(data.kasMasukHariIni)}
-                        </Text>
-                    </View>
-                </View>
+                <GlassCard elevation="light" radius="xl" style={styles.mainCard}>
+                    <Text style={styles.mainLabel}>S A L D O   S A A T   I N I</Text>
+                    <Text style={styles.mainValue}>Rp . {formatCurrency(data.saldoSekarang)}</Text>
+                </GlassCard>
             </View>
 
-            <View style={styles.bottomRow}>
-                {/* 3. Kas Keluar Hari Ini */}
-                <View style={[styles.kpiCard, styles.kpiKasKeluar, isTablet && { flex: 1 }]}>
-                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(220, 38, 38, 0.15)' }]}>
-                        <Text style={styles.kpiIconText}>📉</Text>
-                    </View>
-                    <View style={styles.kpiInfo}>
-                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>EXPENSE TODAY</Text>
-                        <Text style={[styles.kpiValue, { color: '#FF3131', fontSize: fontScale(14) }]}>
-                            {formatCurrency(data.kasKeluarHariIni)}
-                        </Text>
-                    </View>
-                </View>
+            {/* 3-Column Grid */}
+            <View style={styles.gridRow}>
+                {/* Saldo Awal */}
+                <GlassCard radius="lg" style={StyleSheet.flatten([styles.gridCard, styles.cardAwal])}>
+                    <Text style={styles.gridLabel}>SALDO AWAL</Text>
+                    <Text style={styles.gridValue}>Rp . {formatCurrency(data.kasAwalHariIni)}</Text>
+                </GlassCard>
 
-                {/* 4. Saldo Saat Ini */}
-                <View style={[styles.kpiCard, styles.kpiSaldo, isTablet && { flex: 1 }]}>
-                    <View style={[styles.kpiIcon, { backgroundColor: 'rgba(220, 38, 38, 0.2)' }]}>
-                        <Text style={styles.kpiIconText}>💎</Text>
-                    </View>
-                    <View style={styles.kpiInfo}>
-                        <Text style={[styles.kpiLabel, { fontSize: fontScale(9) }]}>CURRENT BALANCE</Text>
-                        <Text style={[styles.kpiValue, { color: '#FFFFFF', fontSize: fontScale(14) }]}>
-                            {formatCurrency(data.saldoSekarang)}
-                        </Text>
-                    </View>
-                </View>
+                {/* Saldo Masuk */}
+                <GlassCard radius="lg" style={StyleSheet.flatten([styles.gridCard, styles.cardMasuk])}>
+                    <Text style={styles.gridLabel}>SALDO MASUK</Text>
+                    <Text style={[styles.gridValue, { color: '#22C55E' }]}>Rp . {formatCurrency(data.kasMasukHariIni)}</Text>
+                </GlassCard>
+
+                {/* Saldo Keluar */}
+                <GlassCard radius="lg" style={StyleSheet.flatten([styles.gridCard, styles.cardKeluar])}>
+                    <Text style={styles.gridLabel}>SALDO KELUAR</Text>
+                    <Text style={[styles.gridValue, { color: '#FF0000' }]}>Rp . {formatCurrency(data.kasKeluarHariIni)}</Text>
+                </GlassCard>
             </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    kpiGrid: {
-        padding: 20,
-        paddingTop: 8,
-        gap: 12,
+    container: {
+        paddingHorizontal: 20,
+        gap: 20,
+        zIndex: 10,
     },
-    topRow: {
-        flexDirection: 'row',
-        gap: 12,
+    mainCardContainer: {
+        alignItems: 'center',
+        marginTop: 20,
     },
-    bottomRow: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    kpiCard: {
-        flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.04)',
-        borderRadius: 20,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.08)',
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
+    walletIconContainer: {
+        position: 'absolute',
+        top: -30,
+        zIndex: 20,
+        width: 70,
+        height: 70,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 35,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
         elevation: 10,
-        ...(Platform.OS === 'web' ? { backdropFilter: 'blur(30px)' } : {}),
     },
-    kpiSaldo: {
-        borderColor: 'rgba(220, 38, 38, 0.3)',
-        backgroundColor: 'rgba(220, 38, 38, 0.05)',
+    checkBadge: {
+        position: 'absolute',
+        bottom: 5,
+        left: 0,
+        backgroundColor: '#CBD5E1',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
     },
-    kpiKasMasuk: {
-        borderColor: 'rgba(16, 185, 129, 0.2)',
+    mainCard: {
+        width: '100%',
+        paddingVertical: 32,
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: '#0000FF55', // Soft blue border seen in mockup
     },
-    kpiKasKeluar: {
-        borderColor: 'rgba(220, 38, 38, 0.2)',
-    },
-    kpiIcon: {
-        width: 32,
-        height: 32,
-        borderRadius: 10,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 12,
-    },
-    kpiIconText: {
+    mainLabel: {
         fontSize: 14,
+        fontWeight: '700',
+        color: '#94A3B8',
+        letterSpacing: 2,
+        marginBottom: 8,
     },
-    kpiInfo: {
-        gap: 4,
+    mainValue: {
+        fontSize: 24,
+        fontWeight: '900',
+        color: '#2563EB', // Distinctive Blue
     },
-    kpiLabel: {
-        color: "#94A3B8",
-        fontWeight: "800",
-        letterSpacing: 1,
-        textTransform: "uppercase",
+    gridRow: {
+        flexDirection: 'row',
+        gap: 8,
     },
-    kpiValue: {
-        fontWeight: "900",
-        letterSpacing: -0.5,
+    gridCard: {
+        flex: 1,
+        padding: 12,
+        alignItems: 'center',
+        minHeight: 100,
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    cardAwal: { backgroundColor: 'rgba(241, 245, 249, 0.5)' },
+    cardMasuk: { borderColor: '#22C55E55' },
+    cardKeluar: { borderColor: '#FF000055' },
+    gridLabel: {
+        fontSize: 10,
+        fontWeight: '800',
+        color: '#94A3B8',
+        marginBottom: 6,
+    },
+    gridValue: {
+        fontSize: 14,
+        fontWeight: '900',
+        color: '#94A3B8',
+        textAlign: 'center',
     },
 });
